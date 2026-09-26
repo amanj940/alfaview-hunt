@@ -35438,3 +35438,38 @@ testability: PASSIVE
 
 **STEP 7 — RISK**
 [RISK] alfaview: 63 — up from 61. Up: a newly-mapped anonymous resolver performing a live third-party registry lookup per call, plus an unconstrained `vat_id` on a payment form — the first alfaview finding to touch a money flow in 33 cycles. Down, and larger: the speculative HIGH on anonymous GraphQL exposure is **retired** — 45/54 roots probed, 43 auth-gated, the audit log and all PII roots clean, mutations unreachable over GET, so exposure is provably confined to two low-yield anonymous resolvers. The highest-confidence weakness remains the introspect client-auth bypass, unchanged at 92 and stable across 30+ cycles. Discipline held: no customer data read — every GraphQL body was `{__typename}` or boolean-only, the two scalar mass-PII fields were read for **length only** with contents discarded, all identifiers and VAT numbers were synthetic and unassigned, no rate-limit testing, and no POST.
+===== ANALYST bigpickle 2026-09-26 20:34:27 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mfor u in "https://apis.alfaview.com/v2/docs/openapi.json" "https://apis.alfaview.com/v2/users/me" "https://apis.alfaview.com/v2/stats" "https://apis.alfaview.com/v2/rooms/00000000-0000-0000-0000-000000000000/attendances"; do printf "== %s -> " "$u"; curl -s -o /tmp/o.bin -w "%{http_code} %{size_download}" --max-time 15 "$u"; printf " md5=%s\n" "$(md5sum < /tmp/o.bin | cut -c1-32)"; done
+== https://apis.alfaview.com/v2/docs/openapi.json -> 200 127532 md5=357b94d367909a40b9299b543d23712b
+== https://apis.alfaview.com/v2/users/me -> 401 107 md5=60ed2f29d492ec872c598cc7d36aa37e
+== https://apis.alfaview.com/v2/stats -> 422 319 md5=6d812e83dc4c27328dd16cd4c4f02092
+== https://apis.alfaview.com/v2/rooms/00000000-0000-0000-0000-000000000000/attendances -> 422 232 md5=b4adcd157348f493646c0196c185bd34
+[0m
+[0m$ [0mfor u in "https://sso.alfaview.com/.well-known/openid-configuration" "https://sso.alfaview.com/.well-known/jwks.json"; do printf "== %s -> " "$u"; curl -s -o /tmp/s.bin -w "%{http_code} %{size_download}" --max-time 15 "$u"; printf " md5=%s\n" "$(md5sum < /tmp/s.bin | cut -c1-32)"; done; printf "introspect OPTIONS -> "; curl -s -o /dev/null -X OPTIONS -w "%{http_code}\n" --max-time 15 https://sso.alfaview.com/oauth2/introspect; printf "authorize -> "; curl -s -o /tmp/a.bin -w "%{http_code} %{size_download}\n" --max-time 15 "https://sso.alfaview.com/oauth2/authorize?client_id=notregistered123&redirect_uri=https%3A%2F%2Fexample.com%2Fcb"; printf "tools list -> "; curl -s -o /tmp/t.bin -w "%{http_code} %{size_download}\n" --max-time 15 "https://tools.alfaview.com/poll/pollservice/list"
+== https://sso.alfaview.com/.well-known/openid-configuration -> 200 2169 md5=f78a08fced8b042093396383b74d8458
+== https://sso.alfaview.com/.well-known/jwks.json -> 200 16257 md5=3f8d456c7fd92c6107f3fd77732bd0f4
+introspect OPTIONS -> 405
+authorize -> 200 6156
+tools list -> 501 55
+[0m
+[93m[1m! [0mpermission requested: external_directory (/tmp/*); auto-rejecting
+[0m✗ [0mcd /tmp && curl -s --max-time 20 -o oa.json https://apis.alfaview.com/v2/docs/openapi.json && python3 - <<'EOF'
+import json
+d=json.load(open('oa.json'))
+p=d['paths']
+gets=[]
+for path,ops in p.items():
+    for m,op in ops.items():
+        if m.lower() in ('get','head','options'):
+            params=[(q.get('name'),q.get('in'),q.get('required'),(q.get('schema') or {}).get('type'),q.get('style')) for q in op.get('parameters',[])]
+            gets.append((m.upper(),path,params))
+gets.sort()
+for m,path,params in gets:
+    print(m,path)
+    for pa in params: print("   ",pa)
+print("TOTAL",len(gets))
+EOF failed
+[91m[1mError: [0mThe user rejected permission to use this specific tool call.
