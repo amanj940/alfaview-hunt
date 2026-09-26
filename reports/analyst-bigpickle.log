@@ -35473,3 +35473,24 @@ for m,path,params in gets:
 print("TOTAL",len(gets))
 EOF failed
 [91m[1mError: [0mThe user rejected permission to use this specific tool call.
+===== ANALYST bigpickle 2026-09-26 23:08:35 UTC =====
+[0m
+> build · big-pickle
+[0m
+[93m[1m! [0mpermission requested: external_directory (/tmp/opencode/*, /tmp/*); auto-rejecting
+[0m✗ [0mcd /tmp/opencode 2>/dev/null || cd /tmp
+UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36'
+for u in "https://apis.alfaview.com/v2/docs/openapi.json" "https://sso.alfaview.com/.well-known/openid-configuration" "https://sso.alfaview.com/.well-known/jwks.json" "https://apis.alfaview.com/v2/users/me" "https://app.alfaview.com/graphql" "https://tools.alfaview.com/poll/pollservice/list" "https://client-diagnostics-ingest.alfaview.com/health"; do
+  out=$(curl -sS -o /tmp/body.$$ -w '%{http_code} %{size_download} %{content_type}' -m 12 -A "$UA" "$u" 2>&1)
+  echo "$u => $out"
+  md5sum /tmp/body.$$ 2>/dev/null | cut -c1-40
+done
+echo "--- OPTIONS introspect ---"
+curl -sS -X OPTIONS -o /dev/null -w '%{http_code}\n' -m 12 -A "$UA" https://sso.alfaview.com/oauth2/introspect
+echo "--- authorize ---"
+curl -sS -o /tmp/az.$$ -w '%{http_code} %{size_download}\n' -m 12 -A "$UA" "https://sso.alfaview.com/oauth2/authorize?client_id=probe-hunt&redirect_uri=https://example.com/cb&response_type=code"
+echo "--- whiteboard gRPC-web OPTIONS/GET ---"
+curl -sS -X OPTIONS -D - -o /dev/null -m 12 -A "$UA" "https://tools.alfaview.com/whiteboard/" 2>&1 | head -20
+echo "--- test.alfaview.com ---"
+curl -sS -o /tmp/tv.$$ -w '%{http_code} %{size_download}\n' -m 12 -A "$UA" https://test.alfaview.com/ ; grep -oE 'v4[0-9]{5}' /tmp/tv.$$ | sort -u | head failed
+[91m[1mError: [0mThe user rejected permission to use this specific tool call.

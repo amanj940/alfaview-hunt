@@ -3646,3 +3646,30 @@
 - LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: /v2/auth/token-info exposes no third error tier. Base64 of {}, {"token":"x"}, a raw UUID, and random 16/32/48/64/128-byt
 - LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: GET /v2/users/invitation answers 405/19B text/plain (Go-native) rather than the application/problem+json 401 the rest of
 - LEARN: NO_DELTA @ apis/sso/app: OpenAPI md5 357b94d367909a40b9299b543d23712b (127532B, 37 paths), users/me 401/107B, OIDC 200/2169B (issuer=acme.com, introspection_end
+
+## RANKED HYPOTHESES 2026-09-26 23:08:35 UTC
+- [85] tools.alfaview.com/whiteboard/: Unmapped gRPC-web RPC at /whiteboard/* with unknown verbs and auth enforcement (from art/lead_nemotron3.txt)
+- NEXT(hypotheses-nemotron3.txt): PROBE: POST `https://tools.alfaview.com/whiteboard/` with `Content-Type: application/grpc-web+proto` and minimal gRPC-web frame (empty payload, 5-byte header: `
+- LEARN: ACCEPTED MISCONFIG @ tools.alfaview.com/whiteboard/: Second unmapped RPC backend proven by controlled differential — `/whiteboard/` returns 47B gRPC status enve
+- LEARN: ACCEPTED MISCONFIG @ staging-tools.alfaview.com/whiteboard/: Byte-identical 47B envelope ⇒ unmapped RPC mount mirrored to staging with exposure equal to product
+- LEARN: ACCEPTED MISCONFIG @ whiteboard.alfaview.com: `/whiteboard/` absent from renderer host (302→`/`, strict single-route) ⇒ board renderer and board data RPC are se
+- LEARN: ACCEPTED MISCONFIG @ support.alfaview.com: First full map — WordPress (myracloud/ax4z, 272 REST routes, 14 namespaces incl. custom alfaview/v1) — no unauthentic
+- LEARN: ACCEPTED MISCONFIG @ app.alfaview.com (public bundle): Asset generation rotated to app.min.67e8a68d4318b34ca241.js (md5 2cb9128353b1f7444e222b4f61e4ffa5); bundl
+- LEARN: REJECTED MISCONFIG @ staging.alfaview.com: Staging twin now fully edge-gated (401 HTTP Basic on /, /en/, /xmlrpc.php, /wp-json/) — was 301 → /en on 2026-09-02. 
+- LEARN: REJECTED MISCONFIG @ staging-app.alfaview.com + webviewer.dev.alfaview.com: Two bundle-referenced hosts absent from inventory; both exhausted immediately (401 B
+- LEARN: REJECTED MISCONFIG @ design-assets.alfaview.com, design-tokens.alfaview.com, ops.alfaview.com: 404/548B and 404/19B plaintext — no independent surface, targets 
+- LEARN: NO_DELTA @ apis/sso/app/tools: All standing probes byte-identical for 32nd consecutive cycle; only structural change is addition of mapped host, not change to k
+- LEARN: ACCEPTED AUTH @ sso.alfaview.com/oauth2/introspect: 27th+ consecutive stable cycle — fabricated client_id accepted on POST-body and Basic channels (200 `{"activ
+- LEARN: ACCEPTED AUTH @ app.alfaview.com/graphql: signup mutation remains the sole standing unauthenticated path to a legit bearer token (public JS bundles); all HIGH-v
+- LEARN: ACCEPTED MISCONFIG @ sso.alfaview.com/.well-known/jwks.json: Returns 200 with 7 RSA keys — JWKS endpoint restored; MD5 3f8d456c stable.
+- LEARN: ACCEPTED MISCONFIG @ sso.alfaview.com/.well-known/openid-configuration: introspection_endpoint advertisement oscillates (absent this cycle) while `/oauth2/intro
+- LEARN: ACCEPTED MISCONFIG @ tools.alfaview.com: Verb-based JSON RPC (8 verbs) at POST `/poll/pollservice/<verb>` with custom auth header `Grpc-Metadata-alfaview.token`
+- LEARN: REJECTED MISCONFIG @ test.alfaview.com: alfacheck binary — no `client_id`, no credentials; internal topology only. Client_id-in-binary refuted.
+- LEARN: REJECTED AUTH @ apis.alfaview.com: Access tokens opaque/base64 — JWT alg-confusion closed.
+- LEARN: REJECTED MISCONFIG @ app.alfaview.com/graphql: Anonymous resolver slice closed — listIdentityProviders returns [], listComponents errors 500, searchCompanies/ge
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com/v2/stats: GET unauthenticated, no params → 422/319B with per-field validation body (query.from, query.to, query.stepDurat
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: the validation-before-authentication ordering is systemic, not a one-off — it is reproduced on two of 26 GET operations 
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: the defect is bounded to the query/header validation layer. Path-parameter routes return 401 even for malformed identifi
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: /v2/auth/token-info exposes no third error tier. Base64 of {}, {"token":"x"}, a raw UUID, and random 16/32/48/64/128-byt
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: GET /v2/users/invitation answers 405/19B text/plain (Go-native) rather than the application/problem+json 401 the rest of
+- LEARN: NO_DELTA @ apis/sso/app: OpenAPI md5 357b94d367909a40b9299b543d23712b (127532B, 37 paths), users/me 401/107B, OIDC 200/2169B (issuer=acme.com, introspection_end

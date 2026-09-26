@@ -1047,3 +1047,10 @@ www.alfaview.com
 - CHANGED app.alfaview.com/graphql: Signup mutation remains sole unauthenticated path to legit bearer token (public JS bundles confirmed); all HIGH-value chains (tools BOLA 85, IDOR 80, introspect 70) gate on i
 
 ## 2026-09-26 20:34:27 UTC
+
+## 2026-09-26 23:08:35 UTC
+- NEW tools.alfaview.com/whiteboard/: Second unmapped RPC backend confirmed by controlled differential — `/whiteboard/` returns 47B gRPC status envelope (`{"code":5, "message":...}`) vs poll gateway's 45B c
+- NEW staging-tools.alfaview.com/whiteboard/: Byte-identical 47B envelope ⇒ unmapped RPC mount mirrored to staging with exposure equal to production.
+- NEW whiteboard.alfaview.com: `/whiteboard/` absent from renderer host (302→`/`, strict single-route) ⇒ board renderer and board data RPC are separate systems; renderer's 200-vs-302 existence oracle not th
+- NEW apis.alfaview.com/v2/rooms/{roomId}/attendances: GET unauthenticated → 422/232B pre-auth validation (`query.from`, `query.to` required); completes the pre-auth validation map — **9 of 26** GET ops now
+- NEW apis.alfaview.com/v2/stats: Validation-before-auth defect confirmed systemic and environment-wide; OpenAPI declares `components.securitySchemes={}`, `security=null` — auth purely handler middleware.
