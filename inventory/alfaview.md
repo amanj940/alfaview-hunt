@@ -1066,3 +1066,21 @@ www.alfaview.com
 - CHANGED staging.alfaview.com: Now fully edge-gated (401 HTTP Basic on /, /en/, /xmlrpc.php, /wp-json/) — was 301 → /en on 2026-09-02
 - CHANGED staging-app.alfaview.com + webviewer.dev.alfaview.com: Bundle-referenced hosts exhausted (401 Basic incl. /graphql; 000)
 - CHANGED design-assets.alfaview.com, design-tokens.alfaview.com, ops.alfaview.com: 404/548B and 404/19B plaintext — no independent surface, targets confirmed exhausted
+
+## 2026-09-27 13:06:33 UTC
+- NEW apis.alfaview.com/v2/users/invitation advertises `Allow: DELETE, POST` (405/19B text/plain, server: edge-proxy) while the public OpenAPI declares POST ONLY — an undeclared destructive method on the do
+- NEW apis.alfaview.com/v2/users/invitations (plural, ABSENT from the 37-path spec) is DELETE-only (`Allow: DELETE`), same 19B Go-native envelope; also live on beta. Never enumerated in 34 cycles.
+- NEW Pre-auth route-existence oracle on that second runtime, usable with GET/HEAD only: registered-but-no-GET → `405 "Method Not Allowed"`; unregistered → `404 "404 page not found"`; declared app routes → 
+- NEW The 405 is returned BEFORE authentication (405, not 401) → router-layer pre-auth processing, one layer below the 9 already-proven pre-auth-validation ops.
+- NEW REJECTED AUTH @ sso.alfaview.com/oauth2/userinfo: third-tier probe closed. 3 JOSE-shaped self-issued tokens (iss=https://sso.alfaview.com, iss=acme.com, exp=2036) all → byte-identical `access_token_fa
+- CHANGED apis.alfaview.com OpenAPI unchanged: md5 357b94d367909a40b9299b543d23712b, 127532B, 37 paths, `components.securitySchemes` absent, top-level `security` absent.
+- CHANGED sso.alfaview.com unchanged: introspect OPTIONS 405 (alive), OIDC 200/2169B, issuer=acme.com, `introspection_endpoint` absent, `token_endpoint_auth_methods_supported`=[client_secret_basic, client_secre
+- CHANGED Control `/v2/rooms/invitation` → 401 application/problem+json = match on `/v2/rooms/{id}`, NOT a new route; reconfirms the path-param pre-auth-401 bound.
+- NEW `tools.alfaview.com/whiteboard/` — second unmapped gRPC-web RPC backend confirmed by controlled differential: returns 47B gRPC status envelope (`{"code":5, "message":...}`) vs poll gateway's 45B compa
+- NEW `staging-tools.alfaview.com/whiteboard/` — byte-identical 47B envelope ⇒ unmapped RPC mount mirrored to staging with exposure equal to production
+- NEW `whiteboard.alfaview.com` — `/whiteboard/` absent from renderer host (302→`/`, strict single-route) ⇒ board renderer and board data RPC are separate systems; renderer's 200-vs-302 existence oracle not
+- NEW `support.alfaview.com` — first full map: WordPress (myracloud/ax4z, 272 REST routes, 14 namespaces incl. custom `alfaview/v1`); no unauthenticated data exposure; every sensitive route 401s, only publi
+- NEW `app.alfaview.com` (public bundle) — asset generation rotated to `app.min.67e8a68d4318b34ca241.js` (md5 `2cb9128353b1f7444e222b4f61e4ffa5`); bundle carries admin session flow (`AdminTokenAuthenticate`
+- CHANGED `staging.alfaview.com` — now fully edge-gated (401 HTTP Basic on `/`, `/en/`, `/xmlrpc.php`, `/wp-json/`) — was 301→`/en` on 2026-09-02
+- CHANGED `staging-app.alfaview.com` + `webviewer.dev.alfaview.com` — bundle-referenced hosts exhausted immediately (401 Basic incl. `/graphql`; 000)
+- CHANGED `design-assets.alfaview.com`, `design-tokens.alfaview.com`, `ops.alfaview.com` — 404/548B and 404/19B plaintext confirmed exhausted
