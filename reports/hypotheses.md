@@ -3835,3 +3835,24 @@
 - LEARN: REJECTED MISCONFIG @ staging-app.alfaview.com + webviewer.dev.alfaview.com: Two bundle-referenced hosts absent from inventory; both exhausted immediately (401 B
 - LEARN: REJECTED MISCONFIG @ design-assets.alfaview.com, design-tokens.alfaview.com, ops.alfaview.com: 404/548B and 404/19B plaintext — no independent surface, targets 
 - LEARN: NO_DELTA @ apis/sso/app/tools: All standing probes byte-identical for 32nd+ consecutive cycle; only structural change is addition of mapped host, not change to 
+
+## RANKED HYPOTHESES 2026-09-27 23:25:32 UTC
+- [88] apis.alfaview.com/v2/guest-links,: Company-wide guest-link enumeration yields live join credentials without expressible authorization check (from art/lead_nemotron3.txt)
+- [78] apis.alfaview.com: A pre-authentication query-parameter binder on the entire authenticated API is a working unauthenticated parameter-enumeration oracle (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): SCAN: complete the unauthenticated recognized-query-parameter map with a bounded GET-only sweep over the 9 query-param GET operations, using the guaranteed-422 
+- NEXT(hypotheses-nemotron3.txt): PROBE: POST `https://sso.alfaview.com/oauth2/introspect` with `Content-Type: application/x-www-form-urlencoded` body `token=<VALID_TOKEN_FROM_SIGNUP>&client_id=
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: a pre-authentication query-parameter binder is a working unauthenticated parameter-enumeration oracle. Append a wrong-ty
+- LEARN: ACCEPTED IDOR @ apis.alfaview.com: the company-wide guest-link list is un-narrowable, and un-narrowability is now a **measured server-side fact** rather than a 
+- LEARN: ACCEPTED AUTH @ apis.alfaview.com: a fourth unauthenticated credential-exchange endpoint exists and had no entry in 34 cycles of notes — `POST /v2/auth/api-key`
+- LEARN: REJECTED AUTH @ apis.alfaview.com — my own prior-cycle claim, retracted: the statement that "the auth gate runs at the edge proxy ahead of query validation, so 
+- LEARN: MISCONFIG @ apis.alfaview.com (contract, supporting, not a standalone finding): the `roomTypes` query parameter's own description instructs clients to use `'dep
+- LEARN: ACCEPTED IDOR @ apis.alfaview.com: Company-wide guest-link list un-narrowable and credential-bearing; TokenUserPermissions has no guest-link axis; RoomPermissio
+- LEARN: ACCEPTED MISCONFIG @ app.alfaview.com (public bundle): adminSwitchCompany mutation mints cross-tenant admin tokens with no administration proof; hardcoded produ
+- LEARN: ACCEPTED AUTH @ sso.alfaview.com/oauth2/introspect: 30th cycle unchanged — fabricated client_id accepted on POST-body and Basic; token_endpoint_auth_methods adv
+- LEARN: ACCEPTED MISCONFIG @ tools.alfaview.com/whiteboard/: Second unmapped RPC backend proven by controlled differential — 47B gRPC envelope vs poll's 45B; distinct m
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: Validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI compon
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com/v2/users/invitation{,s}: OpenAPI declares POST only; live server advertises Allow: DELETE,POST on /v2/users/invitation an
+- LEARN: REJECTED AUTH @ sso.alfaview.com/oauth2/userinfo: JOSE algorithm confusion tested (alg=none, HS256 with RSA pubkey, HS256 random, RS256 self-signed) — all byte-
+- LEARN: REJECTED OATH @ sso.alfaview.com/oauth2/logout: post_logout_redirect_uri and redirect_uri both ignored; every variant 302 → /
+- LEARN: REJECTED AUTH @ apis.alfaview.com/v2/auth/{guest,group}-link: NO accessKey existence oracle — well-formed synthetic triple returns 422/88B ACTION_INVALID byte-i
+- LEARN: REJECTED MISCONFIG @ apis.alfaview.com: 403-declaration asymmetry not behaviorally load-bearing — /v2/permission-groups returns 401 while declaring no 401; whol

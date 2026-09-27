@@ -1114,3 +1114,21 @@ www.alfaview.com
 - CHANGED The 403 asymmetry is real and now quoted exactly. ListGuestLinks declares 200, 401 and 403 where 403 reads "The requesting user does not have the necessary permissions". ListGroupLinks declares only 2
 - CHANGED GuestLink is additionalProperties:false with 12 of 15 fields required: id, roomId, createdBy, createdAt, permissionGroupId, accessKey, emailAddress, locale, origin, dialInAllowed, dialInCode, joinUrl.
 - CHANGED New amplification from the same schema: dialInCode is an unconditionally required member sitting beside the boolean dialInAllowed, which is itself required. The contract therefore provisions and retur
+
+## 2026-09-27 23:25:32 UTC
+- CHANGED **Self-correction, material: `GET /v2/guest-links?limit=abc` → 422/141B `application/problem+json` `{"title":"Unprocessable Entity","status":422,"detail":"validation failed","errors":[{"message":"inva
+- NEW Same-route same-session **negative proof for H1**: `/v2/guest-links?roomId=abc&limit=abc` → 422/141B and `?companyId=abc&limit=abc` → 422/141B, both md5 `551221c3`, byte-identical to `?limit=abc` alon
+- NEW `/v2/group-links?limit=abc` → identical 422/141B md5 `551221c3` — pre-auth oracle is a shared binder across both link families, not a per-route quirk.
+- NEW **Unauthenticated parameter-schema enumeration oracle** (no credential): `GET <route>?<param>=<wrong-typed-value>` → 422 carrying `location: query.<param>` if the parameter is recognized and format-co
+- NEW `/v2/rooms?roomTypes=abc` → 422/190B `"expected value to be one of \"department, room, meeting\""` at `query.roomTypes[0]` — new validator class: array item, indexed location, complete enum whitelist 
+- NEW `POST /v2/auth/api-key` (`AuthenticateAPIKey`) — the **4th unauthenticated `/v2/auth/*` endpoint, absent from 34 cycles of notes**. `HEAD` → 405 `allow: POST`; `OPTIONS` → 405/19B `text/plain`, `serve
+- NEW `/v2/auth/api-key` is the **only** auth endpoint in the contract declaring a 403 account-status tier ("account is inactive") that guest-link, group-link and password do not — a distinct third response
+- CHANGED `/v2/rooms/abc` → 401/107B md5 `60ed2f29` reconfirmed. Mechanism is now **asymmetric and exact**: query params validate pre-auth, path params validate post-auth.
+- CHANGED **Retraction of my own prior-cycle methodology**: I recorded that the test "422 ⇒ parameter recognized" "could not have worked." It does work. The missing piece was a positive control on a schema-decl
+- NEW apis.alfaview.com/v2/guest-links + /v2/group-links: company-wide lists accept NO scoping parameter (only pageToken+limit); room-scoped siblings exist separately; TokenUserPermissions vocabulary (7 fie
+- NEW apis.alfaview.com/v2/auth/group-link: HEAD → 405 allow: POST (live, unprobed 34 cycles); requires displayName (422/171B if omitted) unlike guest-link
+- NEW app.alfaview.com bundle (md5 2cb9128353b1f7444e222b4f61e4ffa5): adminSwitchCompany($nextCompanyId: String!) returns {companyId, accessToken, permissions} from caller's token with no proof of administe
+- NEW apis.alfaview.com: 9 of 26 GET ops validation-before-auth (stats, rooms/{id}/attendances, meetings, rooms?limit=abc, users?emailAddress=, etc.); path-param routes correctly 401; root cause: OpenAPI co
+- NEW tools.alfaview.com/whiteboard/: second unmapped gRPC-web RPC backend confirmed (47B envelope vs poll's 45B); distinct marshaller; no WWW-Authenticate/401 on any probed path; public bundle (md5 b7f17c8
+- NEW sso.alfaview.com/oauth2/introspect: 30th consecutive cycle — fabricated client_id accepted on POST-body and Basic (200 {"active":false}); token_endpoint_auth_methods advertises client_secret_basic/pos
+- CHANGED NO_DELTA on all other standing probes (34th consecutive byte-stable cycle)

@@ -1368,3 +1368,14 @@ https://staging-tools.alfaview.com/whiteboard/` -> HTTP 404
 https://apis.alfaview.com/v2/guest-links?roomId=00000000-0000-0000-0000-000000000000 -> HTTP 401
 https://app.alfaview.com/graphql -> HTTP 400
 https://sso.alfaview.com/.well-known/openid-configuration -> 200 len=0
+
+## 2026-09-27 23:25:45 UTC
+https://apis.alfaview.com/v2/guest-links -> HTTP 401
+https://apis.alfaview.com/v2/group-links -> HTTP 401
+https://apis.alfaview.com/v2/auth/guest-link -> HTTP 405
+https://app.alfaview.com/graphql -> HTTP 400
+https://sso.alfaview.com/oauth2/introspect -> HTTP 405
+https://sso.alfaview.com/oauth2/introspect` -> HTTP 404
+https://apis.alfaview.com/v2/guest-links?roomId=abc&limit=abc` -> HTTP 422
+https://apis.alfaview.com/v2/auth/token-info` -> HTTP 404
+https://apis.alfaview.com/v2/guest-links?limit=1` -> HTTP 422
