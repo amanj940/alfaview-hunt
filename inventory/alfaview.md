@@ -1054,3 +1054,5 @@ www.alfaview.com
 - NEW whiteboard.alfaview.com: `/whiteboard/` absent from renderer host (302→`/`, strict single-route) ⇒ board renderer and board data RPC are separate systems; renderer's 200-vs-302 existence oracle not th
 - NEW apis.alfaview.com/v2/rooms/{roomId}/attendances: GET unauthenticated → 422/232B pre-auth validation (`query.from`, `query.to` required); completes the pre-auth validation map — **9 of 26** GET ops now
 - NEW apis.alfaview.com/v2/stats: Validation-before-auth defect confirmed systemic and environment-wide; OpenAPI declares `components.securitySchemes={}`, `security=null` — auth purely handler middleware.
+
+## 2026-09-27 01:29:33 UTC
