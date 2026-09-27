@@ -3769,3 +3769,34 @@
 - LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: the defect is bounded to the query/header validation layer. Path-parameter routes return 401 even for malformed identifi
 - LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: /v2/auth/token-info exposes no third error tier. Base64 of {}, {"token":"x"}, a raw UUID, and random 16/32/48/64/128-byt
 - LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: GET /v2/users/invitation answers 405/19B text/plain (Go-native) rather than the application/problem+json 401 the rest of
+
+## RANKED HYPOTHESES 2026-09-27 17:56:02 UTC
+- [88] apis.alfaview.com/v2/users/invitation,: Undeclared DELETE on /v2/users/invitation and /v2/users/invitations enables pre-auth route enumeration and potential account deletion (from art/lead_nemotron3.txt)
+- [62] apis.alfaview.com: Guest-link and group-link updates are the only link mutations reachable without room context, and the sibling read returns the guest join credential (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): SCAN: `HEAD https://apis.alfaview.com/v2/group-links/00000000-0000-0000-0000-000000000000` and `HEAD https://apis.alfaview.com/v2/rooms/00000000-0000-0000-0000-
+- NEXT(hypotheses-nemotron3.txt): PROBE: POST `https://tools.alfaview.com/whiteboard/` with `Content-Type: application/grpc-web+proto` and minimal gRPC-web frame (empty payload, 5-byte header: `
+- LEARN: ACCEPTED IDOR @ apis.alfaview.com: all link creates and deletes are room-scoped (POST/DELETE /v2/rooms/{roomId}/guest-links, /v2/rooms/{roomId}/group-links) but
+- LEARN: REJECTED MISCONFIG @ apis.alfaview.com: the spec's missing 403 responses cannot be used as evidence of missing authorization checks. `GET /v2/permission-groups`
+- LEARN: REJECTED MISCONFIG @ apis.alfaview.com: SSRF closed as a class on the REST surface. Across all 37 operations and every `components.schemas` entry, the only `for
+- LEARN: REJECTED AUTH @ apis.alfaview.com: mass assignment closed on `PATCH /v2/users`. `UserUpdate` is `additionalProperties: false` with only seven cosmetic fields (c
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: queued `Allow:`-versus-spec scan executed across all 37 paths and returned exactly one divergence — `/v2/users/invitatio
+- LEARN: NO_DELTA @ sso/apis/app/tools: 33rd consecutive stable cycle. OpenAPI md5 357b94d3 (127532B, 37 paths), OIDC 200/2169B (issuer=acme.com, `introspection_endpoint
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com/v2/users/invitation{,s}: the public OpenAPI declares POST only, but the live server advertises `Allow: DELETE, POST` on `
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: the validation-before-authentication ordering is systemic, not a one-off — it is reproduced on two of 26 GET operations 
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: the defect is bounded to the query/header validation layer. Path-parameter routes return 401 even for malformed identifi
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: /v2/auth/token-info exposes no third error tier. Base64 of {}, {"token":"x"}, a raw UUID, and random 16/32/48/64/128-byt
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: GET /v2/users/invitation answers 405/19B text/plain (Go-native) rather than the application/problem+json 401 the rest of
+- LEARN: REJECTED AUTH @ sso.alfaview.com/oauth2/userinfo: JOSE algorithm confusion tested directly against the IdP — `alg=none`, HS256 keyed with published 4096-bit RSA
+- LEARN: REJECTED OATH @ sso.alfaview.com/oauth2/logout: `post_logout_redirect_uri` and `redirect_uri` both ignored on `end_session_endpoint`; every variant returns `302
+- LEARN: ACCEPTED MISCONFIG @ sso.alfaview.com/oauth2/introspect: same-deployment control `/oauth2/userinfo` correctly tiers and enforces token validation in same Fusion
+- LEARN: ACCEPTED MISCONFIG @ sso.alfaview.com: `grant_types_supported` advertises `password` (ROPC) alongside `client_credentials` (returns `not_licensed`). Resource-ow
+- LEARN: ACCEPTED MISCONFIG @ sso.alfaview.com/oauth2/logout: unauthenticated `GET` mints `fusionauth.sso` cookie with `Max-Age=2147483647` (~68 years) before any authen
+- LEARN: ACCEPTED MISCONFIG @ tools.alfaview.com/whiteboard/: Second unmapped RPC backend proven by controlled differential — `/whiteboard/` returns 47B gRPC status enve
+- LEARN: ACCEPTED MISCONFIG @ staging-tools.alfaview.com/whiteboard/: Byte-identical 47B envelope ⇒ unmapped RPC mount mirrored to staging with exposure equal to product
+- LEARN: ACCEPTED MISCONFIG @ whiteboard.alfaview.com: `/whiteboard/` absent from renderer host (302→`/`, strict single-route) ⇒ board renderer and board data RPC are se
+- LEARN: ACCEPTED MISCONFIG @ support.alfaview.com: First full map — WordPress (myracloud/ax4z, 272 REST routes, 14 namespaces incl. custom alfaview/v1) — no unauthentic
+- LEARN: ACCEPTED MISCONFIG @ app.alfaview.com (public bundle): Asset generation rotated to app.min.67e8a68d4318b34ca241.js (md5 2cb9128353b1f7444e222b4f61e4ffa5); bundl
+- LEARN: REJECTED MISCONFIG @ staging.alfaview.com: Staging twin now fully edge-gated (401 HTTP Basic on /, /en/, /xmlrpc.php, /wp-json/) — was 301→/en on 2026-09-02
+- LEARN: REJECTED MISCONFIG @ staging-app.alfaview.com + webviewer.dev.alfaview.com: Two bundle-referenced hosts absent from inventory; both exhausted immediately (401 B
+- LEARN: REJECTED MISCONFIG @ design-assets.alfaview.com, design-tokens.alfaview.com, ops.alfaview.com: 404/548B and 404/19B plaintext — no independent surface, targets 
+- LEARN: NO_DELTA @ apis/sso/app/tools: All standing probes byte-identical for 32nd+ consecutive cycle; only structural change is addition of mapped host, not change to 

@@ -1084,3 +1084,14 @@ www.alfaview.com
 - CHANGED `staging.alfaview.com` — now fully edge-gated (401 HTTP Basic on `/`, `/en/`, `/xmlrpc.php`, `/wp-json/`) — was 301→`/en` on 2026-09-02
 - CHANGED `staging-app.alfaview.com` + `webviewer.dev.alfaview.com` — bundle-referenced hosts exhausted immediately (401 Basic incl. `/graphql`; 000)
 - CHANGED `design-assets.alfaview.com`, `design-tokens.alfaview.com`, `ops.alfaview.com` — 404/548B and 404/19B plaintext confirmed exhausted
+
+## 2026-09-27 17:56:02 UTC
+- NEW apis.alfaview.com `/v2/guest-links/{id}` + `/v2/group-links/{id}`: the only link **mutations** without `roomId` in the path, while every link create/delete is room-scoped. Unscoped GET returns `access
+- NEW apis.alfaview.com `PATCH /v2/guest-links/{id}` accepts `emailAddress` + `permissionGroupId` + `validFrom`/`validUntil` + `sendEmail:true` in one call — credential rebinding plus permission-group assig
+- CHANGED Queued SCAN closed: full 37-path `Allow:`-vs-spec diff run. Exactly **one** divergence in 37 paths (`/v2/users/invitation` spec=[POST] live=[DELETE, POST]). The undeclared-method class is a single rou
+- CHANGED `GET /v2/permission-groups` = 401/107B `application/problem+json` — **proves the spec under-declares auth codes**, invalidating response-code declarations as evidence of code behaviour.
+- CHANGED `sso.alfaview.com` byte-stable: OIDC 200/2169B (issuer=acme.com, `introspection_endpoint` null, `password`+`client_credentials` advertised), JWKS 200/16257B (7×RS256, RSA-only, zero symmetric/ECDSA vs
+- CHANGED `apis.alfaview.com` OpenAPI unchanged: md5 `357b94d367909a40b9299b543d23712b`, 127532B, 37 paths, `components.securitySchemes` absent, top-level `security` absent.
+- CHANGED `apis.alfaview.com/v2/users/invitations` reconfirmed `allow: DELETE`, 405/19B Go-native, `server: edge-proxy`.
+- CHANGED `app.alfaview.com/graphql` 400/406B, `tools` poll 501/55B, `/whiteboard/` 404/47B, `/health/` 200/615B, `client-diagnostics /health` 200/16B — all byte-identical.
+- CHANGED NO_DELTA @ sso/apis/app/tools: 33rd consecutive stable cycle on every standing probe; no new endpoints, no regressions.

@@ -1340,3 +1340,17 @@ https://sso.alfaview.com -> 200 len=0
 https://apis.alfaview.com/v2/users/invitations` -> HTTP 405
 https://apis.alfaview.com/v2/users/invitation` -> HTTP 405
 https://sso.alfaview.com/oauth2/introspect` -> HTTP 404
+
+## 2026-09-27 17:56:18 UTC
+https://apis.alfaview.com/v2/users/invitation -> HTTP 405
+https://apis.alfaview.com/v2/users/invitations -> HTTP 405
+https://apis.alfaview.com/v2/users/invitation/{valid-uuid -> HTTP 404
+https://app.alfaview.com/ -> 200 len=1381
+https://sso.alfaview.com/oauth2/introspect -> HTTP 405
+https://tools.alfaview.com/whiteboard/ -> HTTP 404
+https://staging-tools.alfaview.com/whiteboard/ -> HTTP 404
+https://tools.alfaview.com/whiteboard/` -> HTTP 404
+https://tools.alfaview.com/whiteboard/List` -> HTTP 404
+https://staging-tools.alfaview.com/whiteboard/` -> HTTP 404
+https://apis.alfaview.com/v2/guest-links/00000000-0000-0000-0000-000000000000 -> HTTP 401
+https://sso.alfaview.com/.well-known/openid-configuration -> 200 len=0
