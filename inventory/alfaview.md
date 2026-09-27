@@ -1056,3 +1056,13 @@ www.alfaview.com
 - NEW apis.alfaview.com/v2/stats: Validation-before-auth defect confirmed systemic and environment-wide; OpenAPI declares `components.securitySchemes={}`, `security=null` — auth purely handler middleware.
 
 ## 2026-09-27 01:29:33 UTC
+
+## 2026-09-27 07:05:29 UTC
+- NEW tools.alfaview.com/whiteboard/: Second unmapped RPC backend confirmed by controlled differential — `/whiteboard/` returns 47B gRPC status envelope vs poll gateway's 45B compact jsonpb; distinct marsha
+- NEW staging-tools.alfaview.com/whiteboard/: Byte-identical 47B envelope ⇒ unmapped RPC mount mirrored to staging with exposure equal to production
+- NEW whiteboard.alfaview.com: `/whiteboard/` absent from renderer host (302→`/`, strict single-route) ⇒ board renderer and board data RPC are separate systems
+- NEW support.alfaview.com: First full map — WordPress (myracloud/ax4z, 272 REST routes, 14 namespaces incl. custom alfaview/v1) — no unauthenticated data exposure; every sensitive route 401s, only public r
+- NEW app.alfaview.com (public bundle): Asset generation rotated to app.min.67e8a68d4318b34ca241.js (md5 2cb9128353b1f7444e222b4f61e4ffa5); bundle carries admin session flow (AdminTokenAuthenticate → adminS
+- CHANGED staging.alfaview.com: Now fully edge-gated (401 HTTP Basic on /, /en/, /xmlrpc.php, /wp-json/) — was 301 → /en on 2026-09-02
+- CHANGED staging-app.alfaview.com + webviewer.dev.alfaview.com: Bundle-referenced hosts exhausted (401 Basic incl. /graphql; 000)
+- CHANGED design-assets.alfaview.com, design-tokens.alfaview.com, ops.alfaview.com: 404/548B and 404/19B plaintext — no independent surface, targets confirmed exhausted
