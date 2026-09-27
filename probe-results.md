@@ -1354,3 +1354,17 @@ https://tools.alfaview.com/whiteboard/List` -> HTTP 404
 https://staging-tools.alfaview.com/whiteboard/` -> HTTP 404
 https://apis.alfaview.com/v2/guest-links/00000000-0000-0000-0000-000000000000 -> HTTP 401
 https://sso.alfaview.com/.well-known/openid-configuration -> 200 len=0
+
+## 2026-09-27 20:38:39 UTC
+https://app.alfaview.com/ -> 200 len=1381
+https://sso.alfaview.com/oauth2/introspect -> HTTP 405
+https://tools.alfaview.com/whiteboard/ -> HTTP 404
+https://staging-tools.alfaview.com/whiteboard/ -> HTTP 404
+https://apis.alfaview.com/v2/guest-links/00000000-0000-0000-0000-000000000000 -> HTTP 401
+https://apis.alfaview.com/v2/guest-links/{owned-uuid -> HTTP 401
+https://tools.alfaview.com/whiteboard/` -> HTTP 404
+https://tools.alfaview.com/whiteboard/List` -> HTTP 404
+https://staging-tools.alfaview.com/whiteboard/` -> HTTP 404
+https://apis.alfaview.com/v2/guest-links?roomId=00000000-0000-0000-0000-000000000000 -> HTTP 401
+https://app.alfaview.com/graphql -> HTTP 400
+https://sso.alfaview.com/.well-known/openid-configuration -> 200 len=0

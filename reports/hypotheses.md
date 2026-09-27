@@ -3800,3 +3800,38 @@
 - LEARN: REJECTED MISCONFIG @ staging-app.alfaview.com + webviewer.dev.alfaview.com: Two bundle-referenced hosts absent from inventory; both exhausted immediately (401 B
 - LEARN: REJECTED MISCONFIG @ design-assets.alfaview.com, design-tokens.alfaview.com, ops.alfaview.com: 404/548B and 404/19B plaintext — no independent surface, targets 
 - LEARN: NO_DELTA @ apis/sso/app/tools: All standing probes byte-identical for 32nd+ consecutive cycle; only structural change is addition of mapped host, not change to 
+
+## RANKED HYPOTHESES 2026-09-27 20:38:21 UTC
+- [94] sso.alfaview.com/oauth2/introspect: OAuth2 token introspection client authentication fully bypassable on both Basic and POST-body channels (from art/lead_nemotron3.txt)
+- [71] apis.alfaview.com: The company-wide guest-link list returns live join credentials under a token vocabulary that has no permission able to express the check (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): PROBE: GET https://apis.alfaview.com/v2/guest-links?roomId=00000000-0000-0000-0000-000000000000 then GET https://apis.alfaview.com/v2/guest-links?companyId=0000
+- NEXT(hypotheses-nemotron3.txt): PROBE: POST `https://tools.alfaview.com/whiteboard/` with `Content-Type: application/grpc-web+proto` and minimal gRPC-web frame (empty payload, 5-byte header: `
+- LEARN: REJECTED AUTH @ apis.alfaview.com/v2/auth/{guest,group}-link: there is NO accessKey existence oracle. Five cycles of lead text treated the documented 401 "A gue
+- LEARN: ACCEPTED IDOR @ apis.alfaview.com: the guest-link surface has no expressible authorization primitive. Guest links are first-class permission-bearing principals 
+- LEARN: ACCEPTED MISCONFIG @ app.alfaview.com (public bundle): a public asset discloses a complete cross-tenant token-minting signature. adminSwitchCompany($nextCompany
+- LEARN: NO_DELTA @ apis/sso/app/tools: 34th consecutive byte-stable cycle on all standing probes; no new endpoints, no regressions.
+- LEARN: ACCEPTED IDOR @ apis.alfaview.com: the company-wide guest-link list is un-narrowable and credential-bearing, and the published contract contains no permission a
+- LEARN: ACCEPTED MISCONFIG @ app.alfaview.com (public bundle): a public asset discloses a complete cross-tenant token-minting signature. adminSwitchCompany($nextCompany
+- LEARN: ACCEPTED AUTH @ sso.alfaview.com/oauth2/introspect: 30th cycle unchanged, re-confirmed passively only. Liveness OPTIONS 405; metadata 200/2169B md5 f78a08fc wit
+- LEARN: REJECTED AUTH @ apis.alfaview.com/v2/auth/{guest,group}-link: no accessKey existence oracle exists. Five cycles of lead text rested on the documented 401-versus
+- LEARN: REJECTED MISCONFIG @ apis.alfaview.com: the 403-declaration asymmetry as a standalone finding. It is retained only as corroboration inside H1, because this cycl
+- LEARN: NO_DELTA @ apis/sso/app/tools: 8 requests this round, all 401/107B md5 60ed2f29, no new endpoints, no reflection, no divergence anywhere on the authenticated su
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com/v2/users/invitation{,s}: the public OpenAPI declares POST only, but the live server advertises `Allow: DELETE, POST` on `
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: the validation-before-authentication ordering is systemic, not a one-off — it is reproduced on two of 26 GET operations 
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: the defect is bounded to the query/header validation layer. Path-parameter routes return 401 even for malformed identifi
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: /v2/auth/token-info exposes no third error tier. Base64 of {}, {"token":"x"}, a raw UUID, and random 16/32/48/64/128-byt
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: GET /v2/users/invitation answers 405/19B text/plain (Go-native) rather than the application/problem+json 401 the rest of
+- LEARN: REJECTED AUTH @ sso.alfaview.com/oauth2/userinfo: JOSE algorithm confusion tested directly against the IdP — `alg=none`, HS256 keyed with published 4096-bit RSA
+- LEARN: REJECTED OATH @ sso.alfaview.com/oauth2/logout: `post_logout_redirect_uri` and `redirect_uri` both ignored on `end_session_endpoint`; every variant returns `302
+- LEARN: ACCEPTED MISCONFIG @ sso.alfaview.com/oauth2/introspect: same-deployment control `/oauth2/userinfo` correctly tiers and enforces token validation in same Fusion
+- LEARN: ACCEPTED MISCONFIG @ sso.alfaview.com: `grant_types_supported` advertises `password` (ROPC) alongside `client_credentials` (returns `not_licensed`). Resource-ow
+- LEARN: ACCEPTED MISCONFIG @ sso.alfaview.com/oauth2/logout: unauthenticated `GET` mints `fusionauth.sso` cookie with `Max-Age=2147483647` (~68 years) before any authen
+- LEARN: ACCEPTED MISCONFIG @ tools.alfaview.com/whiteboard/: Second unmapped RPC backend proven by controlled differential — `/whiteboard/` returns 47B gRPC status enve
+- LEARN: ACCEPTED MISCONFIG @ staging-tools.alfaview.com/whiteboard/: Byte-identical 47B envelope ⇒ unmapped RPC mount mirrored to staging with exposure equal to product
+- LEARN: ACCEPTED MISCONFIG @ whiteboard.alfaview.com: `/whiteboard/` absent from renderer host (302→`/`, strict single-route) ⇒ board renderer and board data RPC are se
+- LEARN: ACCEPTED MISCONFIG @ support.alfaview.com: First full map — WordPress (myracloud/ax4z, 272 REST routes, 14 namespaces incl. custom alfaview/v1) — no unauthentic
+- LEARN: ACCEPTED MISCONFIG @ app.alfaview.com (public bundle): Asset generation rotated to app.min.67e8a68d4318b34ca241.js (md5 2cb9128353b1f7444e222b4f61e4ffa5); bundl
+- LEARN: REJECTED MISCONFIG @ staging.alfaview.com: Staging twin now fully edge-gated (401 HTTP Basic on /, /en/, /xmlrpc.php, /wp-json/) — was 301→/en on 2026-09-02
+- LEARN: REJECTED MISCONFIG @ staging-app.alfaview.com + webviewer.dev.alfaview.com: Two bundle-referenced hosts absent from inventory; both exhausted immediately (401 B
+- LEARN: REJECTED MISCONFIG @ design-assets.alfaview.com, design-tokens.alfaview.com, ops.alfaview.com: 404/548B and 404/19B plaintext — no independent surface, targets 
+- LEARN: NO_DELTA @ apis/sso/app/tools: All standing probes byte-identical for 32nd+ consecutive cycle; only structural change is addition of mapped host, not change to 

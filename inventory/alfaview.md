@@ -1095,3 +1095,22 @@ www.alfaview.com
 - CHANGED `apis.alfaview.com/v2/users/invitations` reconfirmed `allow: DELETE`, 405/19B Go-native, `server: edge-proxy`.
 - CHANGED `app.alfaview.com/graphql` 400/406B, `tools` poll 501/55B, `/whiteboard/` 404/47B, `/health/` 200/615B, `client-diagnostics /health` 200/16B — all byte-identical.
 - CHANGED NO_DELTA @ sso/apis/app/tools: 33rd consecutive stable cycle on every standing probe; no new endpoints, no regressions.
+
+## 2026-09-27 20:38:21 UTC
+- NEW apis.alfaview.com GET /v2/guest-links + GET /v2/group-links: the two company-wide link lists accept NO scoping parameter — only pageToken + limit. Room-scoped siblings exist separately (/v2/rooms/{roo
+- NEW apis.alfaview.com TokenUserPermissions is a CLOSED vocabulary: additionalProperties:false, all 7 fields required = manageCompany, roomAdmin, roomCreate, roomList, userAdmin, userList, userShow. There 
+- NEW apis.alfaview.com RoomPermissions proves guest links ARE permission-bearing principals: guestLinkPermissions[] and groupLinkPermissions[] of ParticipantPermissions{participantId, permissions}; Permiss
+- NEW apis.alfaview.com POST /v2/auth/group-link is LIVE and unprobed in 34 cycles: HEAD → 405 `allow: POST`, text/plain, edge-proxy. The 2026-09-26 standing-probe list recorded it as 404 (that was a GET on
+- NEW app.alfaview.com admin surface now completely enumerated from the unchanged bundle (1092529B, md5 2cb9128353b1f7444e222b4b61e4ffa5): exactly 4 admin operations — adminTokenAuthenticate{accessToken,per
+- CHANGED /v2/auth/group-link requires displayName, /v2/auth/guest-link does not — server-confirmed: omitting it gives 422/171B `expected required property displayName to be present` on group-link, while guest-
+- CHANGED The 422/88B `ACTION_INVALID: ACTION_INVALID` tier is a POST-LOOKUP business tier, not a format gate: it is returned for zero-UUID companyId+roomId with a synthetic 20-char key, for a `../../etc/passwd
+- CHANGED Queued 37-path scan closed: all four link-family routes return byte-identical 401/107B `application/problem+json` with `www-authenticate: AccessToken` pre-auth — /v2/group-links/{uuid}, /v2/guest-link
+- CHANGED NO_DELTA on every other standing probe: OpenAPI 200/127532B md5 357b94d367909a40b9299b543d23712b, users/me 401/107B md5 60ed2f29, OIDC 200/2169B md5 f78a08fc (introspection_endpoint null), JWKS 200/16
+- NEW apis.alfaview.com authentication gate precedes ALL request parsing. Eight GETs, all 401/107B application/problem+json, all body md5 60ed2f29d492ec872c598cc7d36aa37e, all headers identical: `server: ed
+- NEW The negative control settles the parameter question in the strong direction. `?bogusParam=abc` returns the identical 401, so the endpoint does not distinguish recognized from unrecognized query parame
+- NEW Whole-surface uniformity: the same 107-byte body is emitted by /v2/guest-links, /v2/group-links, /v2/rooms/{id}/guest-links, /v2/rooms/{id} and the standing /v2/users/me probe. The authenticated API h
+- CHANGED Methodological correction to my own prior turn — I must record this rather than let it stand: I proposed the test "422 on roomId ⇒ the parameter is recognized" as the discriminator for H1. That test c
+- CHANGED Contract precision confirmed against the local 37-path spec for ListGuestLinks: parameters are exactly Authorization (header), pageToken (string), limit (int32, default 100, minimum 0, maximum 500). N
+- CHANGED The 403 asymmetry is real and now quoted exactly. ListGuestLinks declares 200, 401 and 403 where 403 reads "The requesting user does not have the necessary permissions". ListGroupLinks declares only 2
+- CHANGED GuestLink is additionalProperties:false with 12 of 15 fields required: id, roomId, createdBy, createdAt, permissionGroupId, accessKey, emailAddress, locale, origin, dialInAllowed, dialInCode, joinUrl.
+- CHANGED New amplification from the same schema: dialInCode is an unconditionally required member sitting beside the boolean dialInAllowed, which is itself required. The contract therefore provisions and retur

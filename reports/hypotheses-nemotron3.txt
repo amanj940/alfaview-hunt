@@ -1,20 +1,11 @@
-## 2026-09-27 17:55:54 UTC [target] (model nemotron3)
-[PRIO] apis.alfaview.com/v2/users/invitation, 8.9, attack_surface=9 business_value=9 tech_exposure=8 gate_ease=9 cloud_surface=7 freshness=10
-[PRIO] apis.alfaview.com/v2/users/invitations, 8.7, attack_surface=9 business_value=9 tech_exposure=8 gate_ease=9 cloud_surface=7 freshness=10
+## 2026-09-27 20:33:05 UTC [target] (model nemotron3)
 [PRIO] sso.alfaview.com/oauth2/introspect, 8.5, attack_surface=8 business_value=9 tech_exposure=9 gate_ease=10 cloud_surface=8 freshness=7
 [PRIO] tools.alfaview.com/whiteboard/, 7.8, attack_surface=9 business_value=7 tech_exposure=9 gate_ease=8 cloud_surface=7 freshness=10
 [PRIO] app.alfaview.com (bundle), 7.2, attack_surface=7 business_value=8 tech_exposure=9 gate_ease=6 cloud_surface=6 freshness=10
 [PRIO] apis.alfaview.com/v2/rooms/{roomId}/attendances, 6.9, attack_surface=7 business_value=7 tech_exposure=8 gate_ease=9 cloud_surface=7 freshness=10
 [PRIO] apis.alfaview.com/v2/stats, 6.7, attack_surface=7 business_value=7 tech_exposure=8 gate_ease=9 cloud_surface=7 freshness=9
-[HYP] Undeclared DELETE on /v2/users/invitation and /v2/users/invitations enables pre-auth route enumeration and potential account deletion
-class: IDOR
-asset: apis.alfaview.com/v2/users/invitation, apis.alfaview.com/v2/users/invitations
-confidence: 88
-reasoning: OpenAPI declares only POST on /v2/users/invitation; live server returns `Allow: DELETE, POST` (405 pre-auth). Plural `/v2/users/invitations` absent from spec entirely, returns `Allow: DELETE` only (405 pre-auth). Both served by Go router (19B text/plain) distinct from app runtime (application/problem+json). `405` before `401` proves router-layer pre-auth processing. Route-existence oracle works: GET registered-but-no-GET → 405; GET unregistered → 404; GET declared → 401. Cross-tenant IDOR risk if DELETE processes without ownership check.
-evidence_needed: Authenticated DELETE to /v2/users/invitation with valid invitation UUID → observe 204/403/404; same for /v2/users/invitations; test cross-tenant invitation UUID from second account
-verify_steps: HEAD https://apis.alfaview.com/v2/users/invitation → 405 Allow: DELETE,POST; HEAD https://apis.alfaview.com/v2/users/invitations → 405 Allow: DELETE; HEAD https://apis.alfaview.com/v2/users/invitation/{valid-uuid} → 405/401/404; repeat on beta-apis.alfaview.com
-impact: Pre-auth route enumeration oracle; potential invitation deletion/cross-tenant access if authz missing (HIGH, OWASP A01:2021)
-testability: PASSIVE (route enum); AUTH_HELPED (DELETE execution)
+[PRIO] apis.alfaview.com/v2/users/invitation, 6.5, attack_surface=8 business_value=6 tech_exposure=7 gate_ease=9 cloud_surface=6 freshness=10
+[PRIO] sso.alfaview.com (OIDC metadata), 6.3, attack_surface=7 business_value=8 tech_exposure=8 gate_ease=10 cloud_surface=7 freshness=5
 [HYP] OAuth2 token introspection client authentication fully bypassable on both Basic and POST-body channels
 class: AUTH
 asset: sso.alfaview.com/oauth2/introspect
@@ -33,12 +24,21 @@ evidence_needed: Enumerate verbs via common gRPC-web patterns (List, Get, Create
 verify_steps: POST https://tools.alfaview.com/whiteboard/ with `Content-Type: application/grpc-web+proto` and minimal gRPC-web frame (empty payload, 5-byte header: `\x00\x00\x00\x00\x00`) → observe 47B envelope; repeat for `/whiteboard/List`, `/whiteboard/Get`, `/whiteboard/Create`, `/whiteboard/Delete`, `/whiteboard/Update`, `/whiteboard/Watch` with minimal protobuf payloads; test unauthenticated vs with `Grpc-Metadata-alfaview.token` from owned room; mirror on https://staging-tools.alfaview.com/whiteboard/
 impact: Unmapped RPC surface with unknown verbs and auth → potential board data access/manipulation, verb enumeration, BOLA (HIGH)
 testability: PASSIVE
-[PARKED] Passwordless magic-token bearer issuance via CreateMagicToken mutation: confidence 70 but CreateMagicToken confirmed UNAUTHENTICATED with no optionalAccessToken argument (GRAPHQL_VALIDATION_FAILED) — lead closed 2026-09-25
+[HYP] Unscoped guest-link and group-link update mutations enable cross-room credential rebinding and privilege escalation
+class: IDOR
+asset: apis.alfaview.com/v2/guest-links/{id}, apis.alfaview.com/v2/group-links/{id}
+confidence: 82
+reasoning: All link creates/deletes are room-scoped (`POST/DELETE /v2/rooms/{roomId}/guest-links`, `/v2/rooms/{roomId}/group-links`) but both updates are bare — `PATCH /v2/guest-links/{id}` and `PATCH /v2/group-links/{id}` carry no `roomId` or `companyId`, so scope must be resolved from UUID before authorizing. Unscoped sibling read (`GET /v2/guest-links/{id}`) returns `accessKey` (documented required input to `POST /v2/auth/guest-link`), `joinUrl`, `dialInCode`. Update body additionally permits `emailAddress` + `permissionGroupId` + `validFrom`/`validUntil` + `sendEmail` in one call. Every probe returned 401 — but replaces generic "UUID path params" note with specific route and impact chain.
+evidence_needed: Authenticated PATCH to `/v2/guest-links/{valid-uuid}` with `emailAddress=attacker@domain, permissionGroupId=<elevated>, sendEmail:true` → observe 200/403/404; test cross-room UUID from second account; verify `accessKey` rotation or credential leakage
+verify_steps: HEAD https://apis.alfaview.com/v2/guest-links/00000000-0000-0000-0000-000000000000 → 405/401; with valid token: PATCH https://apis.alfaview.com/v2/guest-links/{owned-uuid} with `{"emailAddress":"attacker@x","permissionGroupId":"admin","sendEmail":true}` → observe response; repeat with foreign UUID from second tenant
+impact: Cross-room guest link takeover, credential rebinding, privilege escalation via permissionGroupId (HIGH, OWASP A01:2021)
+testability: AUTH_HELPED
 [PARKED] JWT alg-confusion against API gateway: REJECTED class — access tokens confirmed opaque/base64 (distinct 401 "No base64 encoded access token was provided")
 [PARKED] Beta API weaker auth enforcement: REJECTED class — OpenAPI specs identical, both require auth identically (401)
 [PARKED] XSS on alfatraining/bhc/kh-freiburg/qa/uni-stuttgart: REJECTED class — byte-identical SPA shells (1381B, MD5 554a39), no tenant-specific rendering
 [PARKED] Client_id in alfacheck binary: REJECTED class — binary analyzed, no client_id/credentials, internal topology only
 [PARKED] tools.alfaview.com/whiteboard/ service/method enumeration: REJECTED class — mount returns flat code:5 for all paths, verb set not passively discoverable; confidence demoted from 85→75
+[PARKED] Passwordless magic-token bearer issuance via CreateMagicToken: CLOSED — UNAUTHENTICATED, no optionalAccessToken argument (GRAPHQL_VALIDATION_FAILED)
 [FINAL] Ranked survivors:
 [NEXT] PROBE: POST `https://tools.alfaview.com/whiteboard/` with `Content-Type: application/grpc-web+proto` and minimal gRPC-web frame (empty payload, 5-byte header: `\x00\x00\x00\x00\x00`) → observe 47B envelope structure; then enumerate verbs via `POST https://tools.alfaview.com/whiteboard/List`, `/whiteboard/Get`, `/whiteboard/Create`, `/whiteboard/Delete`, `/whiteboard/Update`, `/whiteboard/Watch` with minimal protobuf payloads; mirror on `https://staging-tools.alfaview.com/whiteboard/`
 [LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com/v2/users/invitation{,s}: the public OpenAPI declares POST only, but the live server advertises `Allow: DELETE, POST` on `/v2/users/invitation` and a DELETE-only `Allow: DELETE` on the entirely undocumented plural `/v2/users/invitations`; both served by a Go router distinct from the app runtime (19B text/plain vs application/problem+json), both replicated byte-identically on beta-apis, and both answering 405 before any 401
