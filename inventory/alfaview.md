@@ -1132,3 +1132,15 @@ www.alfaview.com
 - NEW tools.alfaview.com/whiteboard/: second unmapped gRPC-web RPC backend confirmed (47B envelope vs poll's 45B); distinct marshaller; no WWW-Authenticate/401 on any probed path; public bundle (md5 b7f17c8
 - NEW sso.alfaview.com/oauth2/introspect: 30th consecutive cycle — fabricated client_id accepted on POST-body and Basic (200 {"active":false}); token_endpoint_auth_methods advertises client_secret_basic/pos
 - CHANGED NO_DELTA on all other standing probes (34th consecutive byte-stable cycle)
+
+## 2026-09-28 02:01:17 UTC
+- NEW **`/v2/rooms?limit=51` → 422/147B `{"message":"expected number <= 50","location":"query.limit"}`** — new oracle class: per-operation numeric *upper bound* disclosed pre-auth, and it matches the contra
+- NEW **The binder is per-operation, not global — proven with three negative controls.** `/v2/meetings?limit=abc` → 401/107B; `/v2/rooms?from=abc` → 401/107B; `/v2/permission-groups?limit=abc` → 401/107B. E
+- NEW **Binder active on the room-scoped credential siblings.** `/v2/rooms/{uuid}/guest-links?limit=abc` and `/v2/rooms/{uuid}/group-links?limit=abc` → both 422/141B md5 `551221c3`, byte-identical to the un
+- NEW **Zero undocumented parameters found** — 10 candidate tests (`includeArchived`, `search`, `sort`, `filter`, `offset` on `/v2/guest-links`; `search` on `/v2/group-links`; `roomId`, `companyId` on the l
+- NEW **Required-ness and multi-entry accumulation disclosed pre-auth.** `/v2/rooms/{uuid}/attendances?from=abc` → 422/261B with two entries: `query.from` `"invalid date/time for format 2006-01-02T15:04:05.
+- CHANGED **`/v2/guest-links` has two unauthenticated 401 tiers, not one.** No `Authorization` header → 401/107B md5 `60ed2f29` `"No access token was provided…"`; any `Authorization: Bearer …` → 401/122B md5 `3
+- CHANGED **Self-correction, material: my recorded 401 body lengths are not stable (107/115/122B across cycles); the md5 is the reliable discriminator.** My prior-cycle claim "the whole authenticated surface re
+- CHANGED **Message-accuracy defect:** `Bearer Zm9vOmJhcg==` is valid base64 yet still returns the *"No base64 encoded access token"* tier, and a raw UUID returns the same tier — the string is emitted unconditi
+- CHANGED Contract re-verified: `components.securitySchemes` absent, top-level `security` absent. OpenAPI md5 `357b94d367909a40b9299b543d23712b` / 127532B / 37 paths — 35th consecutive stable cycle.
+- NEW NO_DELTA — last leads (2026-09-27 23:25) already incorporated into knowledge base; all standing probes byte-identical 34th consecutive cycle
