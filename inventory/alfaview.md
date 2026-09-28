@@ -1161,3 +1161,12 @@ www.alfaview.com
 - CHANGED app.alfaview.com (public bundle): adminSwitchCompany mutation mints cross-tenant admin tokens (`{companyId, accessToken, permissions}`) with no administration proof; hardcoded production tenant IDs (`
 - CHANGED tools.alfaview.com/whiteboard/: second unmapped RPC backend confirmed — 47B gRPC status envelope vs poll's 45B jsonpb; distinct marshaller; no auth challenge; zero client references in bundle (md5 `b7
 - CHANGED apis.alfaview.com: 9/26 GET ops validate query params pre-auth (stats, attendances, meetings, rooms?limit, users?emailAddress, guest-links?limit, group-links?limit, rooms?roomTypes, rooms/{id}/attenda
+
+## 2026-09-28 22:27:29 UTC
+- NEW `apis.alfaview.com/v2/auth/api-key`: 4th unauthenticated credential endpoint discovered (HEAD→405 allow:POST, OPTIONS→405/19B text/plain); declares unique 403 account-status tier
+- CHANGED `apis.alfaview.com/v2/guest-links` + `/v2/group-links`: room-scoped siblings return byte-identical 422/141B md5 `551221c3` for `?limit=abc`; 10 candidate filters (`includeArchived`, `search`, `sort`, 
+- CHANGED `sso.alfaview.com/oauth2/introspect`: 30+ cycles stable — fabricated `client_id` accepted on POST-body and Basic (200 `{"active":false}`); `token_endpoint_auth_methods_supported` advertises `client_se
+- CHANGED `app.alfaview.com` (public bundle): `adminSwitchCompany` mutation mints cross-tenant admin tokens (`{companyId, accessToken, permissions}`) with no administration proof; hardcoded production tenant ID
+- CHANGED `tools.alfaview.com/whiteboard/`: second unmapped RPC backend confirmed — 47B gRPC status envelope vs poll's 45B jsonpb; distinct marshaller; no auth challenge; zero client references in bundle (md5 `
+- CHANGED `apis.alfaview.com`: 9/26 GET ops validate query params pre-auth (stats, attendances, meetings, rooms?limit, users?emailAddress, guest-links?limit, group-links?limit, rooms?roomTypes, rooms/{id}/atten
+- CHANGED `apis.alfaview.com/v2/users/invitation{,s}`: OpenAPI declares POST only; live server advertises `Allow: DELETE,POST` on `/v2/users/invitation` and DELETE-only on undocumented `/v2/users/invitations`; 

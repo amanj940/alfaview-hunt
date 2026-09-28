@@ -1419,3 +1419,17 @@ https://apis.alfaview.com/v2/rooms/<own-room-id>/participants` -> HTTP 404
 https://sso.alfaview.com/.well-known/openid-configuration` -> HTTP 404
 https://sso.alfaview.com/.well-known/jwks.json` -> HTTP 404
 https://apis.alfaview.com/v2/rooms/{id -> HTTP 401
+
+## 2026-09-28 22:27:47 UTC
+https://apis.alfaview.com/v2/guest-links -> HTTP 401
+https://apis.alfaview.com/v2/group-links -> HTTP 401
+https://apis.alfaview.com/v2/auth/guest-link -> HTTP 405
+https://app.alfaview.com/graphql -> HTTP 400
+https://sso.alfaview.com/oauth2/introspect -> HTTP 405
+https://sso.alfaview.com/oauth2/introspect` -> HTTP 404
+https://apis.alfaview.com/v2/auth/token-info` -> HTTP 404
+https://apis.alfaview.com/v2/users/me/company` -> HTTP 404
+https://apis.alfaview.com/v2/guest-links/<own-guest-link-id>` -> HTTP 401
+https://apis.alfaview.com/v2/docs/openapi.json` -> HTTP 404
+https://sso.alfaview.com/.well-known/openid-configuration` -> HTTP 404
+https://sso.alfaview.com/.well-known/jwks.json` -> HTTP 404
