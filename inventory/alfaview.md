@@ -1144,3 +1144,12 @@ www.alfaview.com
 - CHANGED **Message-accuracy defect:** `Bearer Zm9vOmJhcg==` is valid base64 yet still returns the *"No base64 encoded access token"* tier, and a raw UUID returns the same tier — the string is emitted unconditi
 - CHANGED Contract re-verified: `components.securitySchemes` absent, top-level `security` absent. OpenAPI md5 `357b94d367909a40b9299b543d23712b` / 127532B / 37 paths — 35th consecutive stable cycle.
 - NEW NO_DELTA — last leads (2026-09-27 23:25) already incorporated into knowledge base; all standing probes byte-identical 34th consecutive cycle
+
+## 2026-09-28 08:06:22 UTC
+- NEW NO_DELTA — last leads (2026-09-27 23:25) already incorporated into knowledge base; all standing probes byte-identical 34th consecutive cycle
+- CHANGED apis.alfaview.com/v2/guest-links + /v2/group-links: room-scoped siblings return byte-identical 422/141B md5 `551221c3` for `?limit=abc`; 10 candidate filters (`includeArchived`, `search`, `sort`, `fil
+- CHANGED apis.alfaview.com/v2/auth/api-key: 4th unauthenticated credential endpoint discovered (HEAD→405 allow:POST, OPTIONS→405/19B text/plain); declares unique 403 account-status tier
+- CHANGED sso.alfaview.com/oauth2/introspect: 30+ cycles stable — fabricated client_id accepted on POST-body and Basic (200 `{"active":false}`); `token_endpoint_auth_methods_supported` advertises `client_secret
+- CHANGED app.alfaview.com (public bundle): adminSwitchCompany mutation mints cross-tenant admin tokens (`{companyId, accessToken, permissions}`) with no administration proof; hardcoded production tenant IDs (`
+- CHANGED tools.alfaview.com/whiteboard/: second unmapped RPC backend confirmed — 47B gRPC status envelope vs poll's 45B jsonpb; distinct marshaller; no auth challenge; zero client references in bundle (md5 `b7
+- CHANGED apis.alfaview.com: 9/26 GET ops validate query params pre-auth (stats, attendances, meetings, rooms?limit, users?emailAddress, guest-links?limit, group-links?limit, rooms?roomTypes, rooms/{id}/attenda

@@ -1392,3 +1392,17 @@ https://apis.alfaview.com/v2/guest-links?limit=1` -> HTTP 422
 https://apis.alfaview.com/v2/auth/api-key` -> HTTP 404
 https://sso.alfaview.com/.well-known/openid-configuration` -> HTTP 404
 https://sso.alfaview.com/.well-known/jwks.json` -> HTTP 404
+
+## 2026-09-28 08:06:40 UTC
+https://apis.alfaview.com/v2/guest-links -> HTTP 401
+https://apis.alfaview.com/v2/group-links -> HTTP 401
+https://apis.alfaview.com/v2/auth/guest-link -> HTTP 405
+https://app.alfaview.com/graphql -> HTTP 400
+https://sso.alfaview.com/oauth2/introspect -> HTTP 405
+https://sso.alfaview.com/oauth2/introspect` -> HTTP 404
+https://apis.alfaview.com/v2/zzznotreal` -> HTTP 404
+https://apis.alfaview.com/v2/languages` -> HTTP 404
+https://apis.alfaview.com/v2/users/invitations` -> HTTP 405
+https://apis.alfaview.com/v2/auth/token-info` -> HTTP 404
+https://apis.alfaview.com/v2/guest-links?limit=1` -> HTTP 422
+https://sso.alfaview.com/.well-known/openid-configuration` -> HTTP 404
