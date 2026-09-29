@@ -1,10 +1,21 @@
-## 2026-09-29 15:06:44 UTC [target] (model nemotron3)
+## 2026-09-29 20:02:24 UTC [target] (model nemotron3)
 [NEW] OpenAPI spec at apis.alfaview.com/v2/docs/openapi.json rotated to MD5 284a3383c1ac3cfc9152ffcc631891f2 (132100B, 38 paths, 57 ops) — byte-identical on beta-apis.alfaview.com
 [NEW] /v2/users/me/company (GetOwnCompany) identified as the 38th path — sole 200-response supplier of companyId across 57 operations; enables guest-link chain execution by authorized tester
+[NEW] alfaview 2FA is a shipped, customer-facing feature with a dedicated public KB article; measured 2FA enforcement asymmetry (SSO vs native password paths)
+[NEW] alfaview supports BRING-YOUR-OWN-IdP single sign-on (GitLab, Google Workspace, Azure AD, generic SAML/OIDC)
+[NEW] Every alfaview user provisioned with a NATIVE password independent of any IdP
+[NEW] NEGATIVE RESULT — v1 API is gone (/v1/docs/openapi.json and /v1/docs/openapi both 404/19B)
+[NEW] NEGATIVE RESULT — OpenAPI 3.0.3 twin semantically IDENTICAL to 3.1 original (132391B md5 34e9f231)
+[CHANGED] Complete 403-declaration map built across all 57 ops (37 declare 403); new divergence on /v2/group-links vs /v2/guest-links
+[CHANGED] apis.alfaview.com OpenAPI md5 `284a3383c1ac3cfc9152ffcc631891f2` (132100B, 38 paths, 57 ops) — 3rd consecutive stable cycle
+[CHANGED] sso.alfaview.com OIDC 200/2169B md5 `f78a08fc`, JWKS 200/16257B md5 `3f8d456c` (7×RS256) — 34th consecutive byte-stable cycle
+[CHANGED] tools.alfaview.com unchanged: /whiteboard/ 404/47B gRPC envelope, /poll/pollservice/list 501/55B
 [PRIO] apis.alfaview.com/v2/guest-links,7.65,attack_surface=9 business_value=9 tech_exposure=8 gate_ease=1 cloud_surface=8 freshness=10
 [PRIO] app.alfaview.com/graphql (adminSwitchCompany),7.80,attack_surface=8 business_value=10 tech_exposure=9 gate_ease=1 cloud_surface=8 freshness=10
 [PRIO] sso.alfaview.com/oauth2/introspect,7.10,attack_surface=8 business_value=8 tech_exposure=9 gate_ease=1 cloud_surface=7 freshness=9
 [PRIO] apis.alfaview.com/v2/auth/api-key,7.15,attack_surface=8 business_value=8 tech_exposure=8 gate_ease=1 cloud_surface=8 freshness=10
+[PRIO] apis.alfaview.com/v2/users/me/company,6.90,attack_surface=7 business_value=9 tech_exposure=7 gate_ease=1 cloud_surface=8 freshness=10
+[PRIO] tools.alfaview.com/whiteboard/,6.25,attack_surface=7 business_value=6 tech_exposure=8 gate_ease=1 cloud_surface=7 freshness=8
 [HYP] Company-wide guest-link/group-link enumeration yields live join credentials without expressible authorization check
 class: IDOR
 asset: apis.alfaview.com/v2/guest-links, apis.alfaview.com/v2/group-links
@@ -35,6 +46,7 @@ testability: AUTH_HELPED
 [PARKED] tools.alfaview.com/whiteboard/ BOLA via unmapped RPC: No passive verify steps — requires valid gRPC-metadata token from authenticated session (AUTH_HELPED) and verb enumeration is not passively discoverable (flat code:5 for all verbs); demoted from active hunt
 [PARKED] Validation-before-auth on query-param routes: Informational only — reproduces public OpenAPI schema, no data exposure, no auth bypass; downgraded from standalone finding
 [PARKED] Undeclared DELETE on /v2/users/invitation{,s}: Single isolated route, not systemic; 405 before 401 means auth still enforced; no exploit path without token
+[PARKED] 2FA enforcement asymmetry (SSO vs native): No exploitation path without credentialed accounts on both paths; program prohibits brute-force/credential testing
 [FINAL] Ranked survivors:
 [NEXT] HUMAN: Execute unauthenticated signup flow at app.alfaview.com/graphql (mutation Signup → email → FinishSignup) to obtain a valid bearer token; then test introspect with real token (POST /oauth2/introspect token=<token>&client_id=fake-123) and test guest-links enumeration (GET /v2/guest-links with Authorization header). All HIGH-value chains gate on this single token acquisition.
 [LEARN] ACCEPTED IDOR @ apis.alfaview.com: Company-wide guest-link list un-narrowable and credential-bearing; TokenUserPermissions has no guest-link axis; RoomPermissions proves guest links are permission-bearing principals

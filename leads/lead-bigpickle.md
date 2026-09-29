@@ -7082,3 +7082,4 @@ testability: PASSIVE
 [LEARN] REJECTED SURFACE @ apis.alfaview.com v1: /v1/docs/openapi.json and /v1/docs/openapi both 404/19B. The
 [LEARN] METHOD: Two of this round's four findings came from re-reading the vendor's own knowledge base rather than
 [RISK] alfaview gmbh: 68. Raised from 62 on a documentary chain, not on a confirmed weakness. The trigger is the
+## 2026-09-29 20:15:36 UTC [target] (model bigpickle)

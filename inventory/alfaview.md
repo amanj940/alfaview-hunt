@@ -1198,3 +1198,16 @@ www.alfaview.com
 - NEW NEGATIVE RESULT — the OpenAPI 3.0.3 twin is semantically IDENTICAL to the 3.1 original. 132391B md5 34e9f231,
 - NEW OpenAPI spec at apis.alfaview.com/v2/docs/openapi.json rotated to MD5 284a3383c1ac3cfc9152ffcc631891f2 (132100B, 38 paths, 57 ops) — byte-identical on beta-apis.alfaview.com
 - NEW /v2/users/me/company (GetOwnCompany) identified as the 38th path — sole 200-response supplier of companyId across 57 operations; enables guest-link chain execution by authorized tester
+
+## 2026-09-29 20:15:47 UTC
+- NEW OpenAPI spec at apis.alfaview.com/v2/docs/openapi.json rotated to MD5 284a3383c1ac3cfc9152ffcc631891f2 (132100B, 38 paths, 57 ops) — byte-identical on beta-apis.alfaview.com
+- NEW /v2/users/me/company (GetOwnCompany) identified as the 38th path — sole 200-response supplier of companyId across 57 operations; enables guest-link chain execution by authorized tester
+- NEW alfaview 2FA is a shipped, customer-facing feature with a dedicated public KB article; measured 2FA enforcement asymmetry (SSO vs native password paths)
+- NEW alfaview supports BRING-YOUR-OWN-IdP single sign-on (GitLab, Google Workspace, Azure AD, generic SAML/OIDC)
+- NEW Every alfaview user provisioned with a NATIVE password independent of any IdP
+- NEW NEGATIVE RESULT — v1 API is gone (/v1/docs/openapi.json and /v1/docs/openapi both 404/19B)
+- NEW NEGATIVE RESULT — OpenAPI 3.0.3 twin semantically IDENTICAL to 3.1 original (132391B md5 34e9f231)
+- CHANGED Complete 403-declaration map built across all 57 ops (37 declare 403); new divergence on /v2/group-links vs /v2/guest-links
+- CHANGED apis.alfaview.com OpenAPI md5 `284a3383c1ac3cfc9152ffcc631891f2` (132100B, 38 paths, 57 ops) — 3rd consecutive stable cycle
+- CHANGED sso.alfaview.com OIDC 200/2169B md5 `f78a08fc`, JWKS 200/16257B md5 `3f8d456c` (7×RS256) — 34th consecutive byte-stable cycle
+- CHANGED tools.alfaview.com unchanged: /whiteboard/ 404/47B gRPC envelope, /poll/pollservice/list 501/55B

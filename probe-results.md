@@ -1463,3 +1463,10 @@ https://sso.alfaview.com/oauth2/introspect -> HTTP 405
 https://apis.alfaview.com/v2/auth/token-info` -> HTTP 404
 https://apis.alfaview.com/v2/docs/openapi.json -> 200 len=?
 https://apis.alfaview.com/v1/docs/openapi.json -> HTTP 404
+
+## 2026-09-29 20:15:54 UTC
+https://apis.alfaview.com/v2/guest-links -> HTTP 401
+https://apis.alfaview.com/v2/group-links -> HTTP 401
+https://apis.alfaview.com/v2/auth/guest-link -> HTTP 405
+https://app.alfaview.com/graphql -> HTTP 400
+https://sso.alfaview.com/oauth2/introspect -> HTTP 405
