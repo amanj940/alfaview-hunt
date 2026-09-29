@@ -1,4 +1,6 @@
-## 2026-09-29 02:06:46 UTC [target] (model nemotron3)
+## 2026-09-29 08:34:07 UTC [target] (model nemotron3)
+[NEW] /v2/users/me/company (GetOwnCompany) identified as the 38th OpenAPI path — sole 200-response supplier of companyId across 57 operations; enables guest-link chain execution by authorized tester
+[CHANGED] OpenAPI spec md5 rotated to 284a3383c1ac3cfc9152ffcc631891f2 (132100B, 38 paths, 57 ops) — byte-identical on beta-apis.alfaview.com
 [PRIO] apis.alfaview.com/v2/guest-links,9.00,attack_surface=9 business_value=9 tech_exposure=8 gate_ease=10 cloud_surface=8 freshness=10
 [PRIO] app.alfaview.com/graphql (adminSwitchCompany),9.00,attack_surface=8 business_value=10 tech_exposure=9 gate_ease=9 cloud_surface=8 freshness=10
 [PRIO] sso.alfaview.com/oauth2/introspect,8.50,attack_surface=8 business_value=8 tech_exposure=9 gate_ease=10 cloud_surface=7 freshness=9
@@ -9,7 +11,7 @@
 class: IDOR
 asset: apis.alfaview.com/v2/guest-links, apis.alfaview.com/v2/group-links
 confidence: 88
-reasoning: ListGuestLinks takes only pageToken+limit (no roomId/companyId filter); room-scoped sibling /v2/rooms/{roomId}/guest-links exists separately; response includes accessKey (documented required for POST /v2/auth/guest-link), joinUrl, dialInCode, emailAddress; TokenUserPermissions (7 fields, additionalProperties:false) has NO guest-link axis; InviteUserPermissions identical; platform names permission for every other company-wide list (roomList, userList) but NOT for guest-links; GuestLink is additionalProperties:false with 12 required fields including accessKey/joinUrl/dialInCode; guest links are first-class permission-bearing principals (RoomPermissions.guestLinkPermissions[], PermissionsEdit.admin="manage guests")
+reasoning: ListGuestLinks takes only pageToken+limit (no roomId/companyId filter); room-scoped sibling /v2/rooms/{roomId}/guest-links exists separately; response includes accessKey (documented required for POST /v2/auth/guest-link), joinUrl, dialInCode, emailAddress; TokenUserPermissions (7 fields, additionalProperties:false) has NO guest-link axis; InviteUserPermissions identical; platform names permission for every other company-wide list (roomList, userList) but NOT for guest-links; GuestLink is additionalProperties:false with 12 required fields including accessKey/joinUrl/dialInCode; guest links are first-class permission-bearing principals (RoomPermissions.guestLinkPermissions[], PermissionsEdit.admin="manage guests"); GetOwnCompany now supplies companyId for authorized testers
 evidence_needed: Authenticated GET /v2/guest-links with valid bearer → observe 200 with accessKey/joinUrl/dialInCode for all company guests; verify no 403 despite TokenUserPermissions lacking guest-link axis
 verify_steps: GET https://apis.alfaview.com/v2/guest-links (with valid Authorization: <token>) → 200 with GuestLink[] including accessKey; GET https://apis.alfaview.com/v2/group-links → 200 with GroupLink[]; POST https://apis.alfaview.com/v2/auth/guest-link with {companyId, roomId, accessKey} from enumeration → 200 GuestLinkAuthenticationInfo with accessToken
 impact: Cross-tenant guest credential harvesting → room access via stolen accessKey, dial-in codes, join URLs (CRITICAL, OWASP A01:2021)
@@ -32,6 +34,9 @@ evidence_needed: Valid access token from signup→finishSignup flow; POST to int
 verify_steps: POST https://sso.alfaview.com/oauth2/introspect with token=<valid-access-token>&client_id=fake-123 → 200 {"active":true, "scope":"...", "exp":..., "sub":..., "client_id":...}; repeat with HTTP Basic auth: Authorization: Basic <base64(fake-123:any)> → 200 same metadata
 impact: OAuth token metadata disclosure → token reconnaissance, scope enumeration, client_id mapping, potential validation bypass (CRITICAL, OWASP A07:2021)
 testability: AUTH_HELPED
+[PARKED] tools.alfaview.com/whiteboard/ BOLA via unmapped RPC: No passive verify steps — requires valid gRPC-metadata token from authenticated session (AUTH_HELPED) and verb enumeration is not passively discoverable (flat code:5 for all verbs); demoted from active hunt
+[PARKED] Validation-before-auth on query-param routes: Informational only — reproduces public OpenAPI schema, no data exposure, no auth bypass; downgraded from standalone finding
+[PARKED] Undeclared DELETE on /v2/users/invitation{,s}: Single isolated route, not systemic; 405 before 401 means auth still enforced; no exploit path without token
 [FINAL] Ranked survivors:
 [NEXT] HUMAN: Execute unauthenticated signup flow at app.alfaview.com/graphql (mutation Signup → email → FinishSignup) to obtain a valid bearer token; then test introspect with real token (POST /oauth2/introspect token=<token>&client_id=fake-123) and test guest-links enumeration (GET /v2/guest-links with Authorization header). All HIGH-value chains gate on this single token acquisition.
 [LEARN] ACCEPTED IDOR @ apis.alfaview.com: Company-wide guest-link list un-narrowable and credential-bearing; TokenUserPermissions has no guest-link axis; RoomPermissions proves guest links are permission-bearing principals

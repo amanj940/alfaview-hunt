@@ -1179,3 +1179,7 @@ www.alfaview.com
 - CHANGED GET /v2/users/me/company unauth → 401/107B md5 60ed2f29d492ec872c598cc7d36aa37e; `?bogus=abc` and `?companyId=abc` both return that identical 401 (NOT 422) — the new path declares no query params, so 
 - CHANGED sso byte-stable 34th cycle: OIDC 200/2169B md5 f78a08fc, JWKS 200/16257B md5 3f8d456c (7×RS256), introspection_endpoint absent while /oauth2/introspect live at OPTIONS 405, grant_types still advertise
 - CHANGED tools unchanged: /whiteboard/ 404/47B gRPC envelope, /poll/pollservice/list 501/55B.
+
+## 2026-09-29 08:35:12 UTC
+- NEW /v2/users/me/company (GetOwnCompany) identified as the 38th OpenAPI path — sole 200-response supplier of companyId across 57 operations; enables guest-link chain execution by authorized tester
+- CHANGED OpenAPI spec md5 rotated to 284a3383c1ac3cfc9152ffcc631891f2 (132100B, 38 paths, 57 ops) — byte-identical on beta-apis.alfaview.com

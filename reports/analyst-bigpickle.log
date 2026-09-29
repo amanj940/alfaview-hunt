@@ -45232,3 +45232,527 @@ STEP 6 — LEARNING
 ```
 
 **Read:** ~14 requests, all GET/OPTIONS at ~1 rps, zero credentials, no mutating verb, no auth-state header. The one real gain: the 38-path delta is identified, and it turns out the path is the only thing standing between a legitimate tester and the program's top-ranked chain. What I won't overstate: this is an information-flow fact, not a vulnerability — the endpoint discloses only the caller's own tenant, and the 88-confidence guest-link finding is still **unproven on the wire**, now merely *reachable*.
+===== ANALYST bigpickle 2026-09-29 08:35:12 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mls -la /home/runner/work/alfaview-hunt/alfaview-hunt/ 2>/dev/null | head -40; echo "---ART---"; ls -la /home/runner/work/alfaview-hunt/alfaview-hunt/art 2>/dev/null | head -20; echo "---RECON---"; ls -la /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes 2>/dev/null | head -20
+total 932
+drwxr-xr-x 12 runner runner   4096 Sep 29 08:31 .
+drwxr-xr-x  3 runner runner   4096 Sep 29 08:31 ..
+drwxr-xr-x  7 runner runner   4096 Sep 29 08:31 .git
+drwxr-xr-x  3 runner runner   4096 Sep 29 08:31 .github
+-rw-r--r--  1 runner runner   1883 Sep 29 08:31 README.md
+-rw-r--r--  1 runner runner     32 Sep 29 08:31 analyst-out.txt
+-rw-r--r--  1 runner runner 393153 Sep 29 08:31 analyst-prompt.txt
+-rw-r--r--  1 runner runner 389243 Sep 29 08:31 ctx.txt
+drwxr-xr-x  2 runner runner   4096 Sep 29 08:31 inventory
+drwxr-xr-x  2 runner runner   4096 Sep 29 08:31 knowledge
+drwxr-xr-x  2 runner runner   4096 Sep 29 08:31 leads
+-rw-r--r--  1 runner runner  73046 Sep 29 08:31 probe-results.md
+drwxr-xr-x  2 runner runner   4096 Sep 29 08:31 recon-notes
+drwxr-xr-x  2 runner runner   4096 Sep 29 08:31 reports
+drwxr-xr-x  2 runner runner   4096 Sep 29 08:31 reposcan-raw
+-rw-r--r--  1 runner runner   3323 Sep 29 08:31 scope.yml
+drwxr-xr-x  2 runner runner   4096 Sep 29 08:31 scripts
+-rw-r--r--  1 runner runner     33 Sep 29 08:31 state_bigpickle.json
+-rw-r--r--  1 runner runner     33 Sep 29 08:31 state_laguna.json
+-rw-r--r--  1 runner runner     33 Sep 29 08:31 state_ling3.json
+-rw-r--r--  1 runner runner     33 Sep 29 08:31 state_longcat.json
+-rw-r--r--  1 runner runner     33 Sep 29 08:31 state_mimo.json
+-rw-r--r--  1 runner runner     33 Sep 29 08:31 state_nemotron3.json
+drwxr-xr-x  2 runner runner  12288 Sep 29 08:31 triage
+---ART---
+---RECON---
+total 192
+drwxr-xr-x  2 runner runner   4096 Sep 29 08:31 .
+drwxr-xr-x 12 runner runner   4096 Sep 29 08:31 ..
+-rw-r--r--  1 runner runner   4789 Sep 29 08:31 CORPUS-ALFAVIEW.md
+-rw-r--r--  1 runner runner   3624 Sep 29 08:31 DEDICATED-DEEP.md
+-rw-r--r--  1 runner runner   7833 Sep 29 08:31 DEEPER-FINDINGS.md
+-rw-r--r--  1 runner runner   6061 Sep 29 08:31 SCOPE-CONFIRMATION.md
+-rw-r--r--  1 runner runner 159550 Sep 29 08:31 alfaview-openapi.yaml
+[0m
+I'll start by re-establishing current ground truth with minimal, read-only probes.
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && python3 - <<'EOF'
+import re,hashlib
+# 1) Check the hardcoded companyId in leads/bundle for ULID structure
+vals=["01FDY0986YK1BJF2K0F9DXR8EB","0123456789ABCDEFGHIJKLMNOP"]
+CROCKFORD="0123456789ABCDEFGHJKMNPQRSTVWXYZ"
+def ulid_ts(s):
+    t=s[:10].upper()
+    for c in t:
+        if c not in CROCKFORD: return None
+    n=0
+    for c in t: n=n*32+CROCKFORD.index(c)
+    return n
+import datetime
+for v in vals:
+    ts=ulid_ts(v)
+    print(v, "len",len(v), "valid_crockford", all(c in CROCKFORD for c in v.upper()))
+    if ts:
+        print("   first10 decode ->",ts, datetime.datetime.utcfromtimestamp(ts/1000).isoformat()+"Z")
+    else:
+        print("   first10 not Crockford-decodable")
+EOF
+<stdin>:17: DeprecationWarning: datetime.datetime.utcfromtimestamp() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.fromtimestamp(timestamp, datetime.UTC).
+01FDY0986YK1BJF2K0F9DXR8EB len 26 valid_crockford True
+   first10 decode -> 1629873283294 2021-08-25T06:34:43.294000Z
+0123456789ABCDEFGHIJKLMNOP len 26 valid_crockford False
+   first10 decode -> 1171591994633 2007-02-16T02:13:14.633000Z
+[0m
+Confirmed a new ID-scheme fact. Now the live probes — starting with the standing baseline plus a new header-discrimination experiment.
+[0m$ [0mcd /tmp/opencode && UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36'
+echo "=== [1] OpenAPI prod ==="
+curl -s -o oa.json -w 'code=%{http_code} size=%{size_download} ct=%{content_type}\n' --max-time 25 -A "$UA" https://apis.alfaview.com/v2/docs/openapi.json
+md5sum oa.json
+python3 -c "
+import json;d=json.load(open('oa.json'))
+print('paths',len(d['paths']),'ops',sum(len([m for m in v if m in ('get','post','put','patch','delete')]) for v in d['paths'].values()))
+print('securitySchemes' , d.get('components',{}).get('securitySchemes'), 'topsec', d.get('security'))
+"
+sleep 1.2
+=== [1] OpenAPI prod ===
+code=200 size=132100 ct=application/openapi+json
+284a3383c1ac3cfc9152ffcc631891f2  oa.json
+paths 38 ops 57
+securitySchemes None topsec None
+[0m
+[0m$ [0mcd /tmp/opencode && UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36'
+B='Zm9vOmJhcg=='
+probe(){ name="$1"; shift; printf '%-34s ' "$name"; curl -s -o b.bin -D h.txt -w 'code=%{http_code} len=%{size_download} ' --max-time 20 -A "$UA" "$@" https://apis.alfaview.com/v2/users/me; echo "md5=$(md5sum b.bin|cut -c1-32) wa=$(grep -i '^www-authenticate' h.txt|tr -d '\r'|cut -d' ' -f2-)| $(python3 -c "import json;print(json.load(open('b.bin')).get('title','')+' / '+str(json.load(open('b.bin')).get('detail',''))[:60])" 2>/dev/null)"; }
+probe "A. no header (control)"
+sleep 1.2
+probe "B. Authorization (control)" -H "Authorization: Bearer $B"
+sleep 1.2
+probe "C. authorization lowercase" -H "authorization: Bearer $B"
+sleep 1.2
+probe "D. AUTHORIZATION uppercase" -H "AUTHORIZATION: Bearer $B"
+sleep 1.2
+probe "E. token: (app GraphQL hdr)" -H "token: $B"
+sleep 1.2
+probe "F. Grpc-Metadata-alfaview.token" -H "Grpc-Metadata-alfaview.token: $B"
+sleep 1.2
+probe "G. x-access-token" -H "x-access-token: $B"
+A. no header (control)             code=401 len=107 md5=60ed2f29d492ec872c598cc7d36aa37e wa=AccessToken| Unauthorized / No access token was provided in the Authorization header.
+B. Authorization (control)         code=401 len=122 md5=3d0dc74b66651963e83f1e28405ecae0 wa=AccessToken| Unauthorized / No base64 encoded access token was provided in the Authoriza
+C. authorization lowercase         code=401 len=122 md5=3d0dc74b66651963e83f1e28405ecae0 wa=AccessToken| Unauthorized / No base64 encoded access token was provided in the Authoriza
+D. AUTHORIZATION uppercase         code=401 len=122 md5=3d0dc74b66651963e83f1e28405ecae0 wa=AccessToken| Unauthorized / No base64 encoded access token was provided in the Authoriza
+E. token: (app GraphQL hdr)        code=401 len=107 md5=60ed2f29d492ec872c598cc7d36aa37e wa=AccessToken| Unauthorized / No access token was provided in the Authorization header.
+F. Grpc-Metadata-alfaview.token    code=401 len=107 md5=60ed2f29d492ec872c598cc7d36aa37e wa=AccessToken| Unauthorized / No access token was provided in the Authorization header.
+G. x-access-token                  code=401 len=107 md5=60ed2f29d492ec872c598cc7d36aa37e wa=AccessToken| Unauthorized / No access token was provided in the Authorization header.
+[0m
+Decisive negative result on credential-transport confusion. Now let me mine the spec for identifier formats nobody has mapped — `dialInCode` is required on every guest link.
+[0m$ [0mcd /tmp/opencode && python3 - <<'EOF'
+import json,re
+d=json.load(open('oa.json'))
+S=d['components']['schemas']
+def walk(name,sch,out,depth=0):
+    if depth>6: return
+    props=sch.get('properties',{}) if isinstance(sch,dict) else {}
+    req=set(sch.get('required',[]) or []) if isinstance(sch,dict) else set()
+    for k,v in props.items():
+        f=v.get('format'); t=v.get('type'); pat=v.get('pattern'); ex=v.get('example'); mn=v.get('minLength'); mx=v.get('maxLength')
+        if f or pat or mn or mx:
+            out.append((name,k,t,f,pat,mn,mx,(k in req)))
+    for k,v in props.items():
+        if 'items' in v and v['items'].get('type')!='string':
+            ref=v['items'].get('$ref')
+            if ref: walk(name,S[ref.split('/')[-1]],out,depth+1)
+        elif v.get('type')=='array':
+            ref=v.get('items',{}).get('$ref')
+            if ref: walk(name,S[ref.split('/')[-1]],out,depth+1)
+    for key in ('oneOf','allOf','anyOf'):
+        for sub in sch.get(key,[]) or []:
+            if '$ref' in sub: walk(name,S[sub['$ref'].split('/')[-1]],out,depth+1)
+out=[]
+for n,s in S.items(): walk(n,s,out)
+seen=set(); rows=[]
+for r in out:
+    k=(r[0],r[1])
+    if k in seen: continue
+    seen.add(k); rows.append(r)
+print("=== format/pattern/length constrained fields ===")
+for n,k,t,f,pat,mn,mx,req in sorted(rows):
+    print(f"{n:34s} {k:26s} {str(t):8s} fmt={str(f):12s} min={str(mn):5s} max={str(mx):5s} req={req} pat={str(pat)[:46]}")
+print()
+print("=== any pattern: at all ===")
+for n,s in S.items():
+    for k,v in (s.get('properties') or {}).items():
+        if v.get('pattern'): print(' ',n,k,v['pattern'][:80], 'maxLen',v.get('maxLength'),'minLen',v.get('minLength'))
+EOF
+=== format/pattern/length constrained fields ===
+Attendance                         from                       string   fmt=date-time    min=None  max=None  req=True pat=None
+Attendance                         to                         string   fmt=date-time    min=None  max=None  req=True pat=None
+Company                            createdAt                  string   fmt=date-time    min=None  max=None  req=True pat=None
+CreateGroupLinksRequestBody        validFrom                  ['string', 'null'] fmt=date-time    min=None  max=None  req=False pat=None
+CreateGroupLinksRequestBody        validUntil                 ['string', 'null'] fmt=date-time    min=None  max=None  req=False pat=None
+CreateGuestLinksRequestBody        emailAddress               string   fmt=email        min=None  max=None  req=True pat=None
+CreateGuestLinksRequestBody        validFrom                  string   fmt=date-time    min=None  max=None  req=False pat=None
+CreateGuestLinksRequestBody        validUntil                 string   fmt=date-time    min=None  max=None  req=False pat=None
+ErrorModel                         instance                   string   fmt=uri          min=None  max=None  req=False pat=None
+ErrorModel                         status                     integer  fmt=int64        min=None  max=None  req=False pat=None
+ErrorModel                         type                       string   fmt=uri          min=None  max=None  req=False pat=None
+Event                              occurredAt                 string   fmt=date-time    min=None  max=None  req=True pat=None
+GroupLink                          createdAt                  string   fmt=date-time    min=None  max=None  req=True pat=None
+GroupLink                          validFrom                  string   fmt=date-time    min=None  max=None  req=False pat=None
+GroupLink                          validUntil                 string   fmt=date-time    min=None  max=None  req=False pat=None
+GroupLinkAuthenticationInfo        tokenExpiresAt             string   fmt=date-time    min=None  max=None  req=False pat=None
+GroupLinkAuthenticationInfo        validFrom                  string   fmt=date-time    min=None  max=None  req=True pat=None
+GroupLinkAuthenticationInfo        validUntil                 string   fmt=date-time    min=None  max=None  req=True pat=None
+GroupLinkCreate                    validFrom                  ['string', 'null'] fmt=date-time    min=None  max=None  req=False pat=None
+GroupLinkCreate                    validUntil                 ['string', 'null'] fmt=date-time    min=None  max=None  req=False pat=None
+GroupLinkUpdate                    validFrom                  ['string', 'null'] fmt=date-time    min=None  max=None  req=False pat=None
+GroupLinkUpdate                    validUntil                 ['string', 'null'] fmt=date-time    min=None  max=None  req=False pat=None
+GuestLink                          createdAt                  string   fmt=date-time    min=None  max=None  req=True pat=None
+GuestLink                          emailAddress               string   fmt=email        min=None  max=None  req=True pat=None
+GuestLink                          validFrom                  string   fmt=date-time    min=None  max=None  req=False pat=None
+GuestLink                          validUntil                 string   fmt=date-time    min=None  max=None  req=False pat=None
+GuestLinkAuthenticationInfo        tokenExpiresAt             string   fmt=date-time    min=None  max=None  req=False pat=None
+GuestLinkAuthenticationInfo        validFrom                  string   fmt=date-time    min=None  max=None  req=True pat=None
+GuestLinkAuthenticationInfo        validUntil                 string   fmt=date-time    min=None  max=None  req=True pat=None
+GuestLinkCreate                    emailAddress               string   fmt=email        min=None  max=None  req=True pat=None
+GuestLinkCreate                    validFrom                  string   fmt=date-time    min=None  max=None  req=False pat=None
+GuestLinkCreate                    validUntil                 string   fmt=date-time    min=None  max=None  req=False pat=None
+GuestLinkUpdate                    emailAddress               string   fmt=email        min=None  max=None  req=False pat=None
+GuestLinkUpdate                    validFrom                  string   fmt=date-time    min=None  max=None  req=False pat=None
+GuestLinkUpdate                    validUntil                 string   fmt=date-time    min=None  max=None  req=False pat=None
+Meeting                            canJoinAfter               string   fmt=date-time    min=None  max=None  req=False pat=None
+Meeting                            canceledAt                 string   fmt=date-time    min=None  max=None  req=False pat=None
+Meeting                            createdAt                  string   fmt=date-time    min=None  max=None  req=True pat=None
+Meeting                            earlyAccessMinutes         integer  fmt=int64        min=None  max=None  req=False pat=None
+Meeting                            end                        string   fmt=date-time    min=None  max=None  req=True pat=None
+Meeting                            start                      string   fmt=date-time    min=None  max=None  req=True pat=None
+MeetingCreate                      earlyAccessMinutes         ['integer', 'null'] fmt=int64        min=None  max=None  req=False pat=None
+MeetingCreate                      emailAddress               string   fmt=email        min=None  max=None  req=True pat=None
+MeetingCreate                      end                        string   fmt=date-time    min=None  max=None  req=True pat=None
+MeetingCreate                      start                      string   fmt=date-time    min=None  max=None  req=True pat=None
+MeetingCreate                      validFrom                  ['string', 'null'] fmt=date-time    min=None  max=None  req=False pat=None
+MeetingCreate                      validUntil                 ['string', 'null'] fmt=date-time    min=None  max=None  req=False pat=None
+MeetingUpdate                      earlyAccessMinutes         ['integer', 'null'] fmt=int64        min=None  max=None  req=False pat=None
+MeetingUpdate                      end                        ['string', 'null'] fmt=date-time    min=None  max=None  req=False pat=None
+MeetingUpdate                      start                      ['string', 'null'] fmt=date-time    min=None  max=None  req=False pat=None
+PaginatedBodyListEvent             occurredAt                 string   fmt=date-time    min=None  max=None  req=True pat=None
+PaginatedBodyListGroupLink         createdAt                  string   fmt=date-time    min=None  max=None  req=True pat=None
+PaginatedBodyListGroupLink         validFrom                  string   fmt=date-time    min=None  max=None  req=False pat=None
+PaginatedBodyListGroupLink         validUntil                 string   fmt=date-time    min=None  max=None  req=False pat=None
+PaginatedBodyListGuestLink         createdAt                  string   fmt=date-time    min=None  max=None  req=True pat=None
+PaginatedBodyListGuestLink         emailAddress               string   fmt=email        min=None  max=None  req=True pat=None
+PaginatedBodyListGuestLink         validFrom                  string   fmt=date-time    min=None  max=None  req=False pat=None
+PaginatedBodyListGuestLink         validUntil                 string   fmt=date-time    min=None  max=None  req=False pat=None
+PaginatedBodyListRoom              createdAt                  string   fmt=date-time    min=None  max=None  req=True pat=None
+PaginatedBodyListRoom              sort                       integer  fmt=int64        min=None  max=None  req=True pat=None
+Room                               createdAt                  string   fmt=date-time    min=None  max=None  req=True pat=None
+Room                               sort                       integer  fmt=int64        min=None  max=None  req=True pat=None
+RoomLimits                         maxFiles                   integer  fmt=int32        min=None  max=None  req=True pat=None
+RoomLimits                         maxTotalBytes              integer  fmt=int64        min=None  max=None  req=True pat=None
+RoomLimits                         remainingFiles             integer  fmt=int32        min=None  max=None  req=True pat=None
+RoomLimits                         remainingTotalBytes        integer  fmt=int64        min=None  max=None  req=True pat=None
+RoomQuotas                         activeParticipants         integer  fmt=int32        min=None  max=None  req=True pat=None
+RoomQuotas                         maxVideoTilesPerPage       integer  fmt=int32        min=None  max=None  req=True pat=None
+RoomQuotas                         spectatorOnlyParticipants  integer  fmt=int32        min=None  max=None  req=True pat=None
+RoomQuotasEdit                     activeParticipants         integer  fmt=int32        min=None  max=None  req=True pat=None
+RoomQuotasEdit                     maxVideoTilesPerPage       integer  fmt=int32        min=None  max=None  req=True pat=None
+RoomQuotasEdit                     spectatorOnlyParticipants  integer  fmt=int32        min=None  max=None  req=True pat=None
+RoomTypeData                       maxActiveParticipants      integer  fmt=int32        min=None  max=None  req=True pat=None
+RoomTypeData                       maxSpectatorOnlyParticipants integer  fmt=int32        min=None  max=None  req=True pat=None
+RoomTypeData                       maxSubRooms                integer  fmt=int32        min=None  max=None  req=True pat=None
+RoomTypeData                       total                      integer  fmt=int64        min=None  max=None  req=True pat=None
+RoomTypeData                       used                       integer  fmt=int64        min=None  max=None  req=True pat=None
+Stats                              activeCount                integer  fmt=int64        min=None  max=None  req=True pat=None
+Stats                              roomOnlineSeconds          integer  fmt=int64        min=None  max=None  req=True pat=None
+Stats                              sessionCount               integer  fmt=int64        min=None  max=None  req=True pat=None
+Stats                              usersOnlineSeconds         integer  fmt=int64        min=None  max=None  req=True pat=None
+StatsPeriod                        from                       string   fmt=date-time    min=None  max=None  req=True pat=None
+StatsPeriod                        to                         string   fmt=date-time    min=None  max=None  req=True pat=None
+Subroom                            sort                       integer  fmt=int32        min=None  max=None  req=True pat=None
+TokenInfo                          expiresAt                  string   fmt=date-time    min=None  max=None  req=True pat=None
+User                               emailAddress               string   fmt=email        min=None  max=None  req=True pat=None
+UserAttendances                    from                       string   fmt=date-time    min=None  max=None  req=True pat=None
+UserAttendances                    to                         string   fmt=date-time    min=None  max=None  req=True pat=None
+UserInformation                    emailAddress               string   fmt=email        min=None  max=None  req=True pat=None
+UserProfile                        emailAddress               string   fmt=email        min=None  max=None  req=True pat=None
+
+=== any pattern: at all ===
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'EOF'
+import json
+d=json.load(open('oa.json'))
+S=d['components']['schemas']
+print("=== ALL path/query/header parameters: format+pattern ===")
+rows=[]
+for p,item in d['paths'].items():
+    for m,op in item.items():
+        if m not in ('get','post','put','patch','delete'): continue
+        for pr in (op.get('parameters') or []):
+            if '$ref' in pr: pr=S.get(pr['$ref'].split('/')[-1],{})
+            sch=pr.get('schema',{})
+            rows.append((m.upper(),p,pr.get('name'),pr.get('in'),sch.get('type'),sch.get('format'),sch.get('pattern'),pr.get('required')))
+seen=set()
+for r in rows:
+    k=(r[2],r[3])
+    if k in seen: continue
+    seen.add(k)
+    print(f"  {r[3]:7s} {r[2]:22s} type={str(r[4]):8s} fmt={str(r[5]):10s} pat={str(r[6]):40s} req={r[7]}")
+print()
+print("=== path params with a UUID format (the 'UUID pattern' claim) ===")
+for r in rows:
+    if r[3]=='path' and r[5]=='uuid':
+        print("  ",r[0],r[1],r[2],"fmt=uuid pattern=",r[6])
+print()
+print("=== accessKey / dialInCode / joinUrl definitions verbatim ===")
+for n in ('GuestLink','GuestLinkCreate','GroupLink','GroupLinkCreate'):
+    s=S.get(n,{}); props=s.get('properties',{}); req=s.get('required',[])
+    for f in ('accessKey','dialInCode','dialInAllowed','joinUrl','companyId','roomId','id'):
+        if f in props:
+            print(f"  {n}.{f:14s} = {json.dumps(props[f])[:120]}  required={f in req}")
+    print()
+print("=== Company verbatim ===")
+print(json.dumps(S['Company'],indent=1)[:600])
+EOF
+=== ALL path/query/header parameters: format+pattern ===
+  header  Authorization          type=string   fmt=None       pat=None                                     req=None
+  query   pageToken              type=string   fmt=None       pat=None                                     req=None
+  query   limit                  type=integer  fmt=int32      pat=None                                     req=None
+  path    id                     type=string   fmt=None       pat=None                                     req=True
+  query   from                   type=string   fmt=date-time  pat=None                                     req=None
+  query   to                     type=string   fmt=date-time  pat=None                                     req=None
+  query   roomTypes              type=['array', 'null'] fmt=None       pat=None                                     req=None
+  path    roomId                 type=string   fmt=None       pat=None                                     req=True
+  path    userId                 type=string   fmt=None       pat=None                                     req=True
+  path    subroomId              type=string   fmt=None       pat=None                                     req=True
+  query   stepDurationHours      type=integer  fmt=int64      pat=None                                     req=True
+  query   emailAddress           type=string   fmt=email      pat=None                                     req=None
+
+=== path params with a UUID format (the 'UUID pattern' claim) ===
+
+=== accessKey / dialInCode / joinUrl definitions verbatim ===
+  GuestLink.accessKey      = {"description": "The access key.", "type": "string"}  required=True
+  GuestLink.dialInCode     = {"description": "The dial-in authentication code.", "type": "string"}  required=True
+  GuestLink.dialInAllowed  = {"description": "If true, the guest link is allowed to be used via dial-in.", "type": "boolean"}  required=True
+  GuestLink.joinUrl        = {"description": "The URL of the room join page. That page allows to choose whether to join the room with the native clie  required=True
+  GuestLink.roomId         = {"description": "The room ID.", "examples": ["00000000-0000-0000-0000-000000000000"], "type": "string"}  required=True
+  GuestLink.id             = {"description": "The guest link ID.", "examples": ["00000000-0000-0000-0000-000000000000"], "type": "string"}  required=True
+
+  GuestLinkCreate.dialInAllowed  = {"description": "If true, the guest link is allowed to be used via dial-in.", "type": "boolean"}  required=True
+
+  GroupLink.accessKey      = {"description": "The access key.", "type": "string"}  required=True
+  GroupLink.dialInCode     = {"description": "The dial-in authentication code for the group link.", "type": "string"}  required=True
+  GroupLink.dialInAllowed  = {"description": "If true, the group link is allowed to be used via dial-in.", "type": "boolean"}  required=True
+  GroupLink.joinUrl        = {"description": "The URL of the room join page. That page allows the user to set a display name and to choose whether to  required=True
+  GroupLink.roomId         = {"description": "The room ID.", "examples": ["00000000-0000-0000-0000-000000000000"], "type": "string"}  required=True
+  GroupLink.id             = {"description": "The group link ID.", "examples": ["00000000-0000-0000-0000-000000000000"], "type": "string"}  required=True
+
+  GroupLinkCreate.dialInAllowed  = {"description": "If true, the group link is allowed to be used via dial-in.", "type": "boolean"}  required=True
+
+=== Company verbatim ===
+{
+ "additionalProperties": false,
+ "properties": {
+  "companyId": {
+   "description": "The ID.",
+   "examples": [
+    "0123456789ABCDEFGHIJKLMNOP"
+   ],
+   "type": "string"
+  },
+  "createdAt": {
+   "description": "The time at which the company was created.",
+   "examples": [
+    "2026-09-01T10:00:00Z"
+   ],
+   "format": "date-time",
+   "type": "string"
+  },
+  "displayName": {
+   "description": "The display name.",
+   "type": "string"
+  }
+ },
+ "required": [
+  "companyId",
+  "displayName",
+  "createdAt"
+ ],
+ "type": "object"
+}
+[0m
+Two material results. Now completing the standing-probe set.
+[0m$ [0mcd /tmp/opencode && UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36'
+echo "=== sso OIDC ==="; curl -s -o oidc.json -w 'code=%{http_code} len=%{size_download}\n' --max-time 20 -A "$UA" https://sso.alfaview.com/.well-known/openid-configuration; md5sum oidc.json
+python3 -c "
+import json;d=json.load(open('oidc.json'))
+print('issuer',d.get('issuer'),'| introspect_ep',repr(d.get('introspection_endpoint')),'| grants',d.get('grant_types_supported'))
+print('token_auth',d.get('token_endpoint_auth_methods_supported'))
+print('algs',d.get('id_token_signing_alg_values_supported'))
+"
+sleep 1.2
+echo "=== sso JWKS ==="; curl -s -o jwks.json -w 'code=%{http_code} len=%{size_download}\n' --max-time 20 -A "$UA" https://sso.alfaview.com/.well-known/jwks.json; md5sum jwks.json
+python3 -c "
+import json;d=json.load(open('jwks.json'));k=d.get('keys',[])
+print('keys',len(k),'algs',sorted({x.get('alg') for x in k}),'kty',sorted({x.get('kty') for x in k}))
+" 2>/dev/null
+sleep 1.2
+echo "=== sso introspect OPTIONS ==="; curl -s -o /dev/null -D - -w 'code=%{http_code}\n' -X OPTIONS --max-time 20 -A "$UA" https://sso.alfaview.com/oauth2/introspect 2>/dev/null | grep -iE '^(HTTP|allow)' | tr -d '\r'
+sleep 1.2
+echo "=== tools whiteboard + poll ==="
+for u in https://tools.alfaview.com/whiteboard/ https://tools.alfaview.com/poll/pollservice/list; do printf '%-52s ' "$u"; curl -s -o t.bin -w 'code=%{http_code} len=%{size_download} ' --max-time 20 -A "$UA" "$u"; echo "body=$(head -c 60 t.bin|tr -d '\n')"; sleep 1.2; done
+echo "=== beta-apis OpenAPI parity ==="; curl -s -o oa_b.json -w 'code=%{http_code} len=%{size_download}\n' --max-time 25 -A "$UA" https://beta-apis.alfaview.com/v2/docs/openapi.json; md5sum oa_b.json
+=== sso OIDC ===
+code=200 len=2169
+f78a08fced8b042093396383b74d8458  oidc.json
+issuer acme.com | introspect_ep None | grants ['authorization_code', 'password', 'implicit', 'refresh_token', 'urn:ietf:params:oauth:grant-type:device_code', 'client_credentials']
+token_auth ['client_secret_basic', 'client_secret_post', 'none']
+algs ['ES256', 'ES384', 'ES512', 'HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512']
+=== sso JWKS ===
+code=200 len=16257
+3f8d456c7fd92c6107f3fd77732bd0f4  jwks.json
+keys 7 algs ['RS256'] kty ['RSA']
+=== sso introspect OPTIONS ===
+HTTP/2 405 
+=== tools whiteboard + poll ===
+https://tools.alfaview.com/whiteboard/               code=404 len=47 body={"code":5, "message":"Not Found", "details":[]}
+https://tools.alfaview.com/poll/pollservice/list     code=501 len=55 body={"code":12,"message":"Method Not Allowed","details":[]}
+=== beta-apis OpenAPI parity ===
+code=200 len=132100
+284a3383c1ac3cfc9152ffcc631891f2  oa_b.json
+[0m
+One more targeted read-only measurement to ground the new route's contract — the `Allow:` scan that found the program's one confirmed contract divergence.
+[0m$ [0mcd /tmp/opencode && UA='Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36'
+for p in /v2/auth/api-key /v2/auth/guest-link /v2/auth/group-link /v2/auth/password /v2/auth/token-info; do
+  printf '%-24s ' "$p"
+  curl -s -o /dev/null -D h2.txt -X OPTIONS -w 'code=%{http_code} len=%{size_download} ' --max-time 20 -A "$UA" "https://apis.alfaview.com$p"
+  echo "allow=[$(grep -i '^allow:' h2.txt|tr -d '\r'|cut -d' ' -f2-)] srv=[$(grep -i '^server:' h2.txt|tr -d '\r'|cut -d' ' -f2-)] ct=[$(grep -i '^content-type:' h2.txt|tr -d '\r'|cut -d' ' -f2-)]"
+  sleep 1.2
+done
+echo "--- spec-declared method sets ---"
+python3 -c "
+import json;d=json.load(open('/tmp/opencode/oa.json'))
+for p,i in d['paths'].items():
+    if p.startswith('/v2/auth/'):
+        print('  ',p, sorted([m.upper() for m in i if m in ('get','post','put','patch','delete')]), 'declared-codes', sorted([str(c) for c in list(i.values())[0].get('responses',{})]))
+"
+/v2/auth/api-key         code=405 len=19 allow=[POST] srv=[edge-proxy] ct=[text/plain; charset=utf-8]
+/v2/auth/guest-link      code=405 len=19 allow=[POST] srv=[edge-proxy] ct=[text/plain; charset=utf-8]
+/v2/auth/group-link      code=405 len=19 allow=[POST] srv=[edge-proxy] ct=[text/plain; charset=utf-8]
+/v2/auth/password        code=405 len=19 allow=[POST] srv=[edge-proxy] ct=[text/plain; charset=utf-8]
+/v2/auth/token-info      code=405 len=19 allow=[GET, HEAD] srv=[edge-proxy] ct=[text/plain; charset=utf-8]
+--- spec-declared method sets ---
+   /v2/auth/api-key ['POST'] declared-codes ['200', '400', '401', '403', '422']
+   /v2/auth/group-link ['POST'] declared-codes ['200', '400', '401', '422']
+   /v2/auth/guest-link ['POST'] declared-codes ['200', '400', '401', '422']
+   /v2/auth/password ['POST'] declared-codes ['200', '400', '401', '403', '422']
+   /v2/auth/token-info ['GET'] declared-codes ['200', '422']
+[0m
+All probes complete. 22 read-only requests this cycle, ≤1 rps, no POST/DELETE fired.
+
+---
+
+## STEP 1 — DELTA
+
+**[NEW] `apis.alfaview.com` contract contains ZERO `pattern:` constraints.** Enumerated every `components.schemas` property and every parameter object across all 38 paths / 57 operations: not one `pattern` keyword exists anywhere. First measurement of the contract's input-constraint surface in 36 cycles.
+
+**[NEW] RETRACTION of my own 2026-09-03→2026-09-29 standing claim.** The assertion "OpenAPI spec confirms path-param UUID patterns for permission and user delete" is **false**. `id`, `roomId`, `userId`, `subroomId` are each declared exactly `{"type":"string"}` — no `format: uuid`, no `pattern`, no minLength/maxLength. The only UUID-shaped artifact is a cosmetic `examples: ["00000000-0000-0000-0000-000000000000"]` on `GuestLink.id` / `GuestLink.roomId`. I read an example as a constraint.
+
+**[NEW] `apis.alfaview.com` — the two sole guest-admission bearer credentials are declared with no entropy contract at all.** `GuestLink.accessKey` ("The access key.") and `GuestLink.dialInCode` ("The dial-in authentication code.") are both `{"type":"string"}` — no format, no pattern, no length bounds — while both are in `required`. `GuestLinkCreate` carries `dialInAllowed` but **not** `dialInCode`, so both are server-generated. `GroupLink` mirrors this exactly.
+
+**[NEW] `companyId` is a ULID.** The production tenant ID hardcoded in the public app bundle (`01FDY0986YK1BJF2K0F9DXR8EB`, md5-verified source) is valid Crockford base32; its 48-bit timestamp prefix decodes to **2021-08-25T06:34:43.294Z**. The contract's own example `"0123456789ABCDEFGHIJKLMNOP"` is **not** a well-formed ULID — it contains `I`, `L`, `O`, which Crockford excludes. Identifier generation is time-ordered; the published example does not instantiate the format the vendor's own client ships.
+
+**[NEW] Credential-transport isolation, measured (7 controlled requests).** `Authorization` / `authorization` / `AUTHORIZATION` all reach the identical 122B md5 `3d0dc74b` base64 tier → header matching is **case-insensitive** (no WAF/case differential). No-header, `token:`, `Grpc-Metadata-alfaview.token:` and `x-access-token:` all reach the identical 107B md5 `60ed2f29` "No access token was provided" tier → the REST API honours **no** credential transport but `Authorization`. The app GraphQL `token` header and the in-room poll `Grpc-Metadata-alfaview.token` header are **not** interchangeable with the REST bearer.
+
+**[NEW] `/v2/auth/*` family is contract-clean.** OPTIONS on all five returns `405/19B` with `Allow` exactly matching the declared method set (`api-key|group-link|guest-link|password` → `POST`; `token-info` → `GET, HEAD`). The program's one confirmed `Allow:`-vs-spec divergence (`/v2/users/invitation` = `[DELETE, POST]` vs spec `[POST]`) is confirmed still **isolated**, now across the whole auth family.
+
+**[CHANGED]** OpenAPI md5 `284a3383c1ac3cfc9152ffcc631891f2` (132100B, 38 paths, 57 ops), 3rd consecutive cycle, byte-identical on `beta-apis.alfaview.com`; `components.securitySchemes` and top-level `security` both absent.
+
+**[CHANGED]** sso byte-stable: OIDC 200/2169B md5 `f78a08fc` (issuer `acme.com`, `introspection_endpoint` **absent** while `/oauth2/introspect` live at OPTIONS 405, 6 grants incl. `password`+`client_credentials`, `token_endpoint_auth_methods_supported`=`[client_secret_basic, client_secret_post, none]`, 9 algs); JWKS 200/16257B md5 `3f8d456c`, 7 keys, RSA-only / RS256-only.
+
+**[CHANGED]** tools unchanged: `/whiteboard/` 404/47B `{"code":5, "message":"Not Found", "details":[]}`; `/poll/pollservice/list` 501/55B `{"code":12,...}`.
+
+**[NO_DELTA]** on everything else — 35th+ consecutive byte-stable cycle.
+
+## STEP 2 — PRIORITIZE
+
+`priority=0.25a+0.25b+0.15t+0.15g+0.10c+0.10f`
+
+```
+[PRIO] 1) app.alfaview.com/graphql — adminSwitchCompany mutation  7.3  (a8 b9 t9 g4 c3 f8)
+[PRIO] 2) apis.alfaview.com — GET /v2/guest-links (ListGuestLinks)  6.8  (a9 b9 t6 g2 c3 f8)
+[PRIO] 3) sso.alfaview.com — POST /oauth2/introspect                6.4  (a7 b8 t8 g3 c3 f7)
+[PRIO] 4) apis.alfaview.com — DELETE /v2/users/{id} + PATCH /v2/rooms/{roomId}/permissions/{userId}  6.1  (a8 b8 t5 g2 c3 f7)
+```
+
+## STEP 3 — HYPOTHESES
+
+```
+[HYP] The IDOR chain's evidentiary basis is void: the destructive path parameters have no documented input contract at all, and the platform's own validator map shows why it cannot be checked pre-auth
+class: IDOR
+asset: apis.alfaview.com — DELETE /v2/users/{id}, PATCH /v2/rooms/{roomId}/permissions/{userId}, PATCH|DELETE /v2/guest-links/{id}, PATCH|DELETE /v2/group-links/{id}
+confidence: 62
+reasoning: Measured this cycle over the live 38-path spec. All four destructive/unscoped path parameters are `{"type":"string"}` with no format and no pattern; the contract has zero `pattern` keywords. My 26-cycle-old claim of "path-param UUID patterns" is false — it was a cosmetic `examples` entry. The validator asymmetry I measured on 2026-09-27 is the mechanism: `?limit=abc` on the same routes returns 422 naming `query.limit` pre-auth, while `/v2/rooms/abc` returns 401 — so query binding runs ahead of the auth middleware and path binding does not. Consequence for the report: the IDOR can no longer be characterised as "provable from the published contract". The *shape* findings survive untouched — the four link mutations carry no `roomId`/`companyId` in the path, the company-wide lists bind no `roomId`/`companyId` (proved by the completeness of the 422 `errors` array, not by documentation), and `TokenUserPermissions` is a closed 7-boolean vocabulary with no guest-link axis. What changes is that the identifier space is server-defined and entirely undocumented, so the exhaustive-input premise that a scoped test would need can no longer be justified from the vendor's own spec.
+evidence_needed: One self-issued token on a test tenant. A single `GET /v2/guest-links?limit=1` recording **status and content-length only** (never the body). A 403 closes the standing 88 chain outright. A 200 with non-trivial length under a token whose `TokenUserPermissions` holds no guest-link axis confirms it. Separately, `GET /v2/users/<self-owned-uuid>` establishing whether the server accepts anything other than a canonical UUID, which is the only way to convert "unconstrained" into a measured input-space fact.
+verify_steps: AUTH_HELPED, read-only, own tenant. (1) `GET https://apis.alfaview.com/v2/auth/token-info` with `Authorization: Bearer <self-issued>` — record `permissions` verbatim. (2) `GET https://apis.alfaview.com/v2/users/me/company` — record status and field names only. (3) `GET https://apis.alfaview.com/v2/guest-links?limit=1` — record status and content-length ONLY, never the body, since a 200 payload is the tenant's own join credentials. Never POST to `/v2/auth/guest-link`; redeeming an accessKey is a credential-use test and needs explicit program sign-off.
+impact: If the 403 does not fire at low privilege, one low-privilege token converts a single call into company-wide disclosure of every guest-link `accessKey`, `joinUrl`, telephony `dialInCode` and guest `emailAddress`, each accessKey redeemable for a live room `accessToken` — and those accessKeys are the sole input to the two unscoped destructive operations. HIGH if it fires unauthorized for a non-admin token; NOT APPLICABLE if 403. Zero wire evidence of a defect is claimed; this cycle measured the contract, not the authorization behaviour.
+testability: AUTH_HELPED
+```
+
+```
+[HYP] The two server-generated guest-admission credentials are published with no entropy contract, and the one of them that leaves the browser (dialInCode) is also the one with a non-HTTP consumer
+class: MISCONFIG
+asset: apis.alfaview.com — GuestLink.accessKey, GuestLink.dialInCode, GroupLink.accessKey, GroupLink.dialInCode
+confidence: 55
+reasoning: Measured. `accessKey` and `dialInCode` are each `{"type":"string"}` — no format, no pattern, no minLength, no maxLength — while both appear in `required` for both `GuestLink` and `GroupLink`. `GuestLinkCreate`/`GroupLinkCreate` accept `dialInAllowed` but not `dialInCode`, so both values are server-generated and the integrator has no way to know, test, or enforce the strength of the credential it stores and hands to third parties. `dialInCode` is described by the vendor as "The dial-in authentication code" and is returned unconditionally on every record even when `dialInAllowed` is false, which is the same shape of over-provisioning already established for `accessKey`/`joinUrl`. Counter-evidence I am stating rather than hiding: there is **no** dial-in endpoint anywhere in the 38-path contract — `/v2/auth/*` is exactly `{guest-link, group-link, api-key, password, token-info}` — so the dial-in code is consumed by a telephony bridge outside the REST surface, and no REST-side attack path to it exists. I therefore do not claim exposure; I claim an absent, testable contract.
+evidence_needed: One self-issued token on a test tenant: `GET /v2/rooms/<own-room>/guest-links` recording only the *lengths* and *character-classes* of `accessKey` and `dialInCode` — never the values. Confirms whether the real entropy meets any reasonable floor and closes the question in either direction. This is a compliance-quality question for the vendor, not an exploit.
+verify_steps: AUTH_HELPED, read-only, own tenant, values never transcribed. (1) `GET /v2/auth/token-info`, record `permissions` verbatim. (2) `GET /v2/guest-links?limit=1`, record for each of `accessKey`/`dialInCode` only: character count, and the set of distinct characters modulo values (e.g. `charset size 26`, `charset = [0-9A-Z]`). (3) Report lengths and charset sizes to the vendor; do not publish the values, do not attempt redemption.
+impact: No direct exposure. The consequence is that the vendor's published contract gives an integrator no basis on which to store, rotate, or audit the strength of a credential it issues to external guests and hands to a telephony bridge. Informational-to-LOW. It becomes reportable only if the length/charset measurement shows a short or low-entropy generator, which is exactly why the measurement is the finding rather than the observation.
+testability: AUTH_HELPED
+```
+
+```
+[HYP] The tenant identifier is a time-ordered ULID with a malformed published example, which discloses tenant creation time and makes any partially-leaked companyId directly usable against the cross-tenant admin mutation
+class: MISCONFIG
+asset: app.alfaview.com — AV_COMPANY_ID / 01FDY0986YK1BJF2K0F9DXR8EB in the public bundle, consumed by AdminSwitchCompany(nextCompanyId)
+confidence: 58
+reasoning: Measured offline from the vendor's own shipped asset plus the live contract. The hardcoded production tenant ID is valid Crockford base32 across all 26 characters and its 48-bit prefix decodes to 2021-08-25T06:34:43.294Z, i.e. a ULID. Three consequences, stated at their true strength. (a) Any companyId disclosed anywhere discloses the tenant's creation instant, and ULIDs sort chronologically, so a sorted listing of adjacent identifiers brackets a tenant's creation window — real information disclosure, LOW. (b) The contract's own example, `"0123456789ABCDEFGHIJKLMNOP"`, is a sequential counter and is *not* a well-formed ULID because it contains `I`, `L` and `O`, which Crockford excludes; a developer validating the example against a Crockford check fails on the vendor's own documentation. (c) Enumeration is **not** enabled: 80 of the 128 bits remain random, so a known creation window reduces nothing that matters, and I am explicitly not claiming it does. The load-bearing point is (d) — the cost of the cross-tenant `AdminSwitchCompany` test is already zero because the bundle hands the tester a valid foreign-format ID, and the ULID structure means any *other* companyId the tester ever encounters in the product, in a screenshot, or in a sorted list is directly reusable as a target with no format conversion.
+evidence_needed: One self-issued bearer for the GraphQL surface. `AdminSwitchCompany(nextCompanyId: "01FDY0986YK1BJF2K0F9DXR8EB")` issued with a token belonging to a *different* tenant, recording whether it returns `{companyId, accessToken, permissions}` or an authorization error. That single call is the entire decisive test and it is a token-minting operation, so it needs program sign-off and a sandbox — I am not sending it.
+verify_steps: Passive complete. For a human with two test tenants and explicit sign-off: (1) obtain a token for tenant A only. (2) `POST https://app.alfaview.com/graphql` with `query AdminSwitchCompany($nextCompanyId: String!)` and `variables: {"nextCompanyId": "01FDY0986YK1BJF2K0F9DXR8EB"}`, `headers: {token: <tenant A token>}` — record status and whether `accessToken` is present, never the token value. (3) If it returns a token, immediately verify its scope with a read-only `GET /v2/auth/token-info` on the apis surface. Never target a real production tenant ID.
+impact: If the mutation mints a token for a company the caller does not administer, this is cross-tenant administrative account takeover on a production control plane, CRITICAL. If it correctly refuses, the finding is informational. Entirely unmeasured — the mutation signature and the target identifier are both public, the entire authorization burden is server-side, and I have measured nothing about it.
+testability: HUMAN_ONLY
+```
+
+## STEP 4 — SELF-CRITIQUE
+
+Dropped: the "credential-transport confusion" lead (below, REJECTED — the measurement disproves it, so it cannot be a hypothesis); the "undeclared destructive method is a platform pattern" lead (dropped last cycle, stays dropped — the `/v2/auth/*` family re-scan just returned contract-clean, so the upgrade condition is still not met); the `x-sort-index` gap inference (dropped last cycle, stays dropped — inference-from-absence, third cycle running).
+
+Two things I must flag rather than let stand quietly. **First**, the UUID-pattern retraction is a retraction of *my own* claim carried in roughly thirty knowledge-base entries and in the standing [88] chain's framing. The error class — reading a cosmetic `examples` value as a schema constraint — is adjacent to the inference-from-absence error I retracted in each of the last three cycles. Four consecutive methodological self-corrections in the same direction is itself the finding about my own process, and it means the contract-derived portions of every standing hypothesis should be re-read before publication. **Second**, the `[88]` chain's *scope* half is unaffected by the retraction: "no `roomId` parameter exists on the company-wide list" was proved by the completeness of the pre-auth 422 `errors` array, which is a behavioural measurement and does not depend on any schema claim. I am not withdrawing it.
+
+```
+[PARKED] Credential-transport confusion (GraphQL `token` header / tools `Grpc-Metadata-alfaview.token` replayable as a REST bearer): rejected by my own measurement this cycle. `token:`, `Grpc-Metadata-alfaview.token:` and `x-access-token:` all fall to the 107B "no access token" tier, byte-identical to sending no header at all, while `Authorization` in any letter case reaches the 122B base64 tier. Header matching is case-insensitive and no alternative transport is honoured. A REJECTED class, not a hypothesis.
+[PARKED] "OpenAPI confirms path-param UUID patterns" as a supporting fact for the IDOR chain: withdrawn. The contract has zero `pattern` keywords and the four destructive path parameters are bare `{"type":"string"}`. The chain survives on the behavioural scope measurement instead.
+[FINAL] 1) IDOR — destructive/unscoped path parameters have no documented input contract; scope half survives on measurement (62, AUTH_HELPED)
+[FINAL] 2) MISCONFIG — server-generated admission credentials accessKey/dialInCode published with zero entropy contract (55, AUTH_HELPED)
+[FINAL] 3) MISCONFIG — companyId is a ULID: tenant-creation-time disclosure, malformed vendor example, zero-cost cross-tenant admin test (58, HUMAN_ONLY)
+```
+
+## STEP 5 — NEXT ACTION
+
+```
+[NEXT] PROBE: with one self-issued token on a self-owned test tenant, run three read-only GETs in one batch and record status plus content-length only. (1) `GET https://apis.alfaview.com/v2/auth/token-info` with `Authorization: Bearer <self-issued>` — record `permissions` verbatim. (2) `GET https://apis.alfaview.com/v2/users/me/company` — record status and field names only; purpose is to confirm on the wire whether `TokenInfo` carries a `companyId` the spec omits, the exact under-declaration already proven on `/v2/permission-groups` returning 401 while declaring no 401. (3) `GET https://apis.alfaview.com/v2/guest-links?limit=1` — record status and content-length ONLY and never the body, because a 200 payload is the tenant's own live join credentials. That third call is the single bit that converts the program's top-ranked 88 chain from a documentation reading into a measurement: 403 closes it, 200 with non-trivial length confirms it. Do not follow with `POST /v2/auth/guest-link`, and do not transcribe any credential value under any circumstances.
+```
+
+## STEP 6 — LEARNING
+
+**[LEARN] REJECTED AUTH @ apis.alfaview.com (credential-transport confusion, class closed):** Seven controlled requests on `/v2/users/me` establish that header-name matching is case-insensitive and that `Authorization` is the *only* honoured credential transport. `Authorization`/`authorization`/`AUTHORIZATION` are indistinguishable (401/122B md5 `3d0dc74b`, "No base64 encoded access token…"), while absent-header, `token:`, `Grpc-Metadata-alfaview.token:` and `x-access-token:` are indistinguishable from each other (401/107B md5 `60ed2f29`, "No access token was provided in the Authorization header."). Two consequences, one negative and one positive. Negative: there is no WAF/case differential to exploit, and the app GraphQL transport and the in-room poll transport are **not** interchangeable with the REST bearer — the three surfaces have genuinely separate credential paths. Positive: the error text is a *reliable* signal that the header was parsed at all, which is a cheaper discriminator than the byte length I retracted as unstable two cycles ago.
+
+**[LEARN] REJECTED MISCONFIG @ apis.alfaview.com/v2/users/invitation (upgrade condition still unmet):** OPTIONS on all five `/v2/auth/*` routes returns 405/19B `text/plain` behind `edge-proxy` with `Allow` exactly matching the declared method set — `api-key`, `group-link`, `guest-link`, `password` → `[POST]`; `token-info` → `[GET, HEAD]`. The single undeclared-destructive-method divergence found on 2026-09-27 remains isolated across the whole auth family, so the 63-confidence route-enumeration branch stays parked. Recording the negative so the branch is not silently revived.
+
+**[LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com (contract, evidence-integrity):** The 38-path / 57-operation contract contains **zero** `pattern` keywords, and `id`, `roomId`, `userId`, `subroomId` are declared bare `{"type":"string"}`. This voids my own 26-cycle-old claim that the spec "confirms path-param UUID patterns" — the only UUID artifact is a cosmetic `examples` entry on `GuestLink.id`/`roomId`. Recorded as ACCEPTED because the measured fact stands on its own: the platform publishes no input contract for the identifiers consumed by its own unscoped destructive operations.
+
+**[LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com (credential contract):** `accessKey` and `dialInCode` are declared `{"type":"string"}` with no format, pattern or length bounds, while both are `required` on `GuestLink` and `GroupLink` and both are server-generated (`*Create` accepts `dialInAllowed` but not `dialInCode`). No entropy floor is published for either guest-admission credential. No REST-side attack path claimed — there is no dial-in endpoint in the contract.
+
+**[LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com/v2/users/me/company (identifier scheme):** `companyId` is a 26-character ULID. The production ID in the public bundle, `01FDY0986YK1BJF2K0F9DXR8EB`, is valid Crockford base32 with a 48-bit prefix decoding to 2021-08-25T06:34:43.294Z. The contract's own example, `"0123456789ABCDEFGHIJKLMNOP"`, is a sequential counter and is *not* a well-formed ULID (`I`, `L`, `O` are excluded from Crockford). Time-ordered, so any disclosed companyId discloses tenant creation time; enumeration is explicitly **not** enabled, since 80 of 128 bits remain random.
+
+**[LEARN] NO_DELTA @ sso/apis/tools:** 35th+ consecutive byte-stable cycle. OpenAPI md5 `284a3383c1ac3cfc9152ffcc631891f2` (132100B, 38 paths, 57 ops) on both prod and beta; OIDC 200/2169B md5 `f78a08fc` with `introspection_endpoint` absent while `/oauth2/introspect` stays live at OPTIONS 405; JWKS 200/16257B md5 `3f8d456c` with 7 RSA/RS256 keys against 9 advertised algs including the symmetric and ECDSA families; tools `/whiteboard/` 404/47B and poll `list` 501/55B unchanged. No new endpoints, no regressions, no new unauthenticated exploit surface.
+
+## STEP 7 — RISK
+
+**[RISK] alfaview: 57** — Unauthenticated attack surface is effectively nil after 36 cycles: every probe returns 401, 405, 404 or a pre-auth 422 that reproduces the public specification and nothing beyond it (the binder oracle was already downgraded to informational on that basis). The risk sits entirely in two places, both unproven on the wire. The high end is a real control-plane gap set with a documented redemption chain: an un-narrowable company-wide guest-link list returning `accessKey` + `joinUrl` + telephony `dialInCode` + guest `emailAddress`, redeemable unauthenticated, with no expressible permission able to gate it, and a public bundle that discloses a cross-tenant admin-token-minting signature. The 94-confidence item — `/oauth2/introspect` accepting a fabricated `client_id` on both POST-body and Basic with no runtime secret verification, while `/oauth2/userinfo` in the same FusionAuth 1.63.0 build tiers correctly against forged JOSE — is a proven missing check whose impact is capped by the program's authentication-data exclusion and which needs a valid token to matter. Every chain above the informational tier is gated on one absent account, and this cycle established the cost of the decisive test is now exactly three read-only GETs. Score held flat rather than raised: nothing was demonstrated this cycle, and one of my own long-standing supporting claims was withdrawn.
