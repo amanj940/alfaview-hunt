@@ -913,3 +913,16 @@
 - 2026-09-29 REJECTED CONFIG @ apis.alfaview.com OpenAPI 3.0.3 twin: The 3.0.3 and 3.1 renderings are semantically identical
 - 2026-09-29 REJECTED SURFACE @ apis.alfaview.com v1: /v1/docs/openapi.json and /v1/docs/openapi both 404/19B. The
 - 2026-09-29 METHOD: Two of this round's four findings came from re-reading the vendor's own knowledge base rather than
+- 2026-09-29 ACCEPTED IDOR @ apis.alfaview.com GET /v2/audit-log: a live, undocumented 39th path, absent from
+- 2026-09-29 REJECTED MISCONFIG @ apis.alfaview.com: the pre-auth 422 on /v2/audit-log is not itself a finding.
+- 2026-09-29 REJECTED MISCONFIG @ apis.alfaview.com: "/v2/audit-log is undocumented, therefore it is a weakness"
+- 2026-09-29 REJECTED SURFACE @ apis.alfaview.com: /v2/audit-log/{uuid} and /v2/audit-log/{metadata,
+- 2026-09-29 METHOD: an orphan-schema diff is a cheap, zero-request route-discovery primitive. Computing
+- 2026-09-29 ACCEPTED IDOR @ apis.alfaview.com GET /v2/audit-log (confidence 20, prior claim retracted): a live
+- 2026-09-29 REJECTED IDOR @ apis.alfaview.com GET /v2/audit-log: "the contract contains no permission axis able
+- 2026-09-29 REJECTED MISCONFIG @ app.alfaview.com: "an undocumented GraphQL surface with __typename is a
+- 2026-09-29 REJECTED SURFACE @ beta-app.alfaview.com, staging-app.alfaview.com: /graphql returns 401 on GET and on
+- 2026-09-29 REJECTED SURFACE @ apis.alfaview.com: /graphql 404/19B. The audit data is reachable on apis only via
+- 2026-09-29 REJECTED SURFACE @ apis.alfaview.com: /v2/audit-log/{uuid} and /v2/audit-log/{metadata,
+- 2026-09-29 METHOD: Apollo Server's per-field validation errors are a complete schema oracle with no auth and no
+- 2026-09-29 METHOD: the client bundle is a permission-model source, not just a route-string source. Numeric

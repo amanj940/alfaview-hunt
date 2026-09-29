@@ -1211,3 +1211,28 @@ www.alfaview.com
 - CHANGED apis.alfaview.com OpenAPI md5 `284a3383c1ac3cfc9152ffcc631891f2` (132100B, 38 paths, 57 ops) — 3rd consecutive stable cycle
 - CHANGED sso.alfaview.com OIDC 200/2169B md5 `f78a08fc`, JWKS 200/16257B md5 `3f8d456c` (7×RS256) — 34th consecutive byte-stable cycle
 - CHANGED tools.alfaview.com unchanged: /whiteboard/ 404/47B gRPC envelope, /poll/pollservice/list 501/55B
+
+## 2026-09-29 23:38:50 UTC
+- NEW apis.alfaview.com GET /v2/audit-log — LIVE, UNDOCUMENTED 39th path. Absent from the 38-path
+- NEW apis.alfaview.com /v2/audit-log pre-auth query binder COMPLETE (per-operation, negative-controlled):
+- NEW Orphan schema family in the published contract: Event, Actor, Target, PaginatedBodyListEvent.
+- NEW Event.metadata description names an operation — "refer to the 'List Searchable metadata attributes' endpoint" —
+- CHANGED Pre-auth validation-before-auth class: 9 → 10 GET operations, the new member fully characterised.
+- CHANGED Whole-contract confirmation: grep for "audit|event|log" across all 132100B returns only
+- NEW apis.alfaview.com GET /v2/audit-log — LIVE, UNDOCUMENTED 39th path. Absent from the 38-path
+- NEW /v2/audit-log pre-auth query binder COMPLETE, negative-controlled:
+- NEW The route's real consumer is NOT the REST API — it is app.alfaview.com/graphql, a second, entirely
+- NEW /v2/audit-log is therefore NOT an orphan. It is the REST mirror of GraphQL query ListAuditEvents
+- NEW app.alfaview.com/graphql reachable pre-auth: 400 with CSRF guard, __typename → 200/32B
+- NEW Full GraphQL type surface recovered WITHOUT introspection, using Apollo's per-field validation errors
+- NEW The permission model is now KNOWN, from the client, and it changes the hypothesis materially:
+- NEW The feature is flag-gated client-side, to alfaview's own companies only:
+- CHANGED apis.alfaview.com OpenAPI md5 rotated to `284a3383c1ac3cfc9152ffcc631891f2` (132100B, 38 paths, 57 ops) — 3rd consecutive stable cycle; byte-identical on beta-apis.alfaview.com
+- CHANGED `/v2/users/me/company` (GetOwnCompany) identified as the 38th path — sole 200-response supplier of `companyId` across 57 operations; enables guest-link chain execution by authorized tester
+- CHANGED alfaview 2FA is a shipped feature with public KB article; measured 2FA enforcement asymmetry (SSO vs native password paths)
+- CHANGED alfaview supports BYO-IdP SSO (GitLab, Google Workspace, Azure AD, generic SAML/OIDC); every user has native password independent of IdP
+- CHANGED NEGATIVE RESULT — v1 API gone (/v1/docs/openapi.json and /v1/docs/openapi both 404/19B)
+- CHANGED NEGATIVE RESULT — OpenAPI 3.0.3 twin semantically identical to 3.1 (132391B md5 34e9f231)
+- CHANGED Complete 403-declaration map built across all 57 ops (37 declare 403); new divergence on `/v2/group-links` vs `/v2/guest-links`
+- CHANGED sso.alfaview.com OIDC 200/2169B md5 `f78a08fc`, JWKS 200/16257B md5 `3f8d456c` (7×RS256) — 34th consecutive byte-stable cycle
+- CHANGED tools.alfaview.com unchanged: `/whiteboard/` 404/47B gRPC envelope, `/poll/pollservice/list` 501/55B

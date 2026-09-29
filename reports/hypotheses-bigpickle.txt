@@ -1,1 +1,110 @@
-## 2026-09-29 20:15:36 UTC [target] (model bigpickle)
+## 2026-09-29 23:38:38 UTC [target] (model bigpickle)
+[NEW] apis.alfaview.com GET /v2/audit-log — LIVE, UNDOCUMENTED 39th path. Absent from the 38-path
+[NEW] apis.alfaview.com /v2/audit-log pre-auth query binder COMPLETE (per-operation, negative-controlled):
+[NEW] Orphan schema family in the published contract: Event, Actor, Target, PaginatedBodyListEvent.
+[NEW] Event.metadata description names an operation — "refer to the 'List Searchable metadata attributes' endpoint" —
+[CHANGED] Pre-auth validation-before-auth class: 9 → 10 GET operations, the new member fully characterised.
+[CHANGED] Whole-contract confirmation: grep for "audit|event|log" across all 132100B returns only
+[PRIO] 1) apis.alfaview.com GET /v2/audit-log   7.2  (a8 b9 t5 g7 c2 f9)
+[PRIO] 2) sso.alfaview.com /oauth2/introspect   6.2  (a7 b7 t8 g7 c2 f2)   [carried, no probe fired this cycle]
+[PRIO] 3) apis.alfaview.com GET /v2/group-links  4.7  (a6 b7 t5 g2 c2 f2)   [carried, no probe fired this cycle]
+[HYP] The company-wide audit log is a live, credential- and identity-bearing read that the published
+class: IDOR
+asset: apis.alfaview.com GET /v2/audit-log
+confidence: 78
+reasoning: (a) MEASURED this cycle: the route is live, absent from the 38-path contract and from the 37-path
+evidence_needed: One self-owned low-privilege token (e.g. a room participant without manageCompany) on a
+verify_steps: AUTH_HELPED, read-only, one tenant only. (1) `GET /v2/auth/token-info` with the token,
+impact: If ungated, a single low-privilege token yields a company-wide, time-ranged, paginated
+testability: AUTH_HELPED
+[HYP] Token introspection client authentication is absent in the same FusionAuth build that validates
+class: MISCONFIG
+asset: sso.alfaview.com POST /oauth2/introspect
+confidence: 94  (unchanged — CARRIED, not re-measured this cycle)
+reasoning: Carried verbatim from the 2026-09-27 cycle, which strengthened it with a same-deployment
+evidence_needed: A valid, legitimately-issued access token, then introspection via a fabricated client_id
+verify_steps: AUTH_HELPED, one self-owned token. `POST /oauth2/introspect` with the real token in the body
+impact: MEDIUM. Disclosure of token validity and claims to an unauthenticated caller; no token forgery
+testability: AUTH_HELPED
+[HYP] The company-wide group-link list is documented asymmetrically against its guest-link twin, so a
+class: MISCONFIG
+asset: apis.alfaview.com GET /v2/group-links (ListGroupLinks) vs GET /v2/guest-links (ListGuestLinks)
+confidence: 55  (unchanged — CARRIED, not re-measured this cycle)
+reasoning: Unchanged. Measured this cycle that the full 57-op response-code map still shows
+evidence_needed: A low-privilege self-issued token on a self-owned tenant, GET /v2/auth/token-info to record
+verify_steps: AUTH_HELPED, read-only. `GET /v2/auth/token-info`, then `GET /v2/group-links?limit=1` with
+impact: LOW, API-contract defect. Explicitly NOT a claim that authorization is missing.
+testability: AUTH_HELPED
+[PARKED] "Undocumented route is itself a weakness" — REJECTED class, and I rejected it myself on
+[PARKED] Re-elevating the pre-auth query binder as a finding — I downgraded that oracle to informational on
+[PARKED] "The Event metadata pointer names a missing endpoint, therefore the contract is broken" — the
+[PARKED] /v2/audit-log/{id} detail route and the 4 metadata subpaths — 404/19B on all five. Closed, not
+[PARKED] Carried hypotheses 2 and 3 — no probe fired against them this cycle, so neither number moved.
+[FINAL] 1) apis.alfaview.com GET /v2/audit-log — live undocumented 39th path, schema-orphan-linked,
+[FINAL] 2) sso.alfaview.com /oauth2/introspect — absent client authentication on RFC7662, same-build
+[FINAL] 3) apis.alfaview.com GET /v2/group-links — credential-bearing list with no declared 403 tier
+[NEXT] PROBE: With one self-owned low-privilege token, `GET /v2/auth/token-info` and record the
+[LEARN] ACCEPTED IDOR @ apis.alfaview.com GET /v2/audit-log: a live, undocumented 39th path, absent from
+[LEARN] REJECTED MISCONFIG @ apis.alfaview.com: the pre-auth 422 on /v2/audit-log is not itself a finding.
+[LEARN] REJECTED MISCONFIG @ apis.alfaview.com: "/v2/audit-log is undocumented, therefore it is a weakness"
+[LEARN] REJECTED SURFACE @ apis.alfaview.com: /v2/audit-log/{uuid} and /v2/audit-log/{metadata,
+[LEARN] METHOD: an orphan-schema diff is a cheap, zero-request route-discovery primitive. Computing
+[RISK] alfaview gmbh: 72. Raised from 68 on one newly discovered live route, not on any confirmed weakness.
+[NEW] apis.alfaview.com GET /v2/audit-log — LIVE, UNDOCUMENTED 39th path. Absent from the 38-path
+[NEW] /v2/audit-log pre-auth query binder COMPLETE, negative-controlled:
+[NEW] The route's real consumer is NOT the REST API — it is app.alfaview.com/graphql, a second, entirely
+[NEW] /v2/audit-log is therefore NOT an orphan. It is the REST mirror of GraphQL query ListAuditEvents
+[NEW] app.alfaview.com/graphql reachable pre-auth: 400 with CSRF guard, __typename → 200/32B
+[NEW] Full GraphQL type surface recovered WITHOUT introspection, using Apollo's per-field validation errors
+[NEW] The permission model is now KNOWN, from the client, and it changes the hypothesis materially:
+[NEW] The feature is flag-gated client-side, to alfaview's own companies only:
+[PRIO] 1) sso.alfaview.com /oauth2/introspect   6.2  (a7 b7 t8 g7 c2 f2)   [carried, no probe fired]
+[PRIO] 2) apis.alfaview.com GET /v2/group-links  4.7  (a6 b7 t5 g2 c2 f2)   [carried, no probe fired]
+[PRIO] 3) apis.alfaview.com GET /v2/rooms        3.9  (a5 b6 t5 g2 c2 f1)   [demoted from the audit log]
+[HYP] Token introspection client authentication is absent in the same FusionAuth build that validates
+class: MISCONFIG
+asset: sso.alfaview.com POST /oauth2/introspect
+confidence: 94  (unchanged — CARRIED, not re-measured this cycle)
+reasoning: Carried verbatim from 2026-09-27, which strengthened it with a same-deployment control: /oauth2/userinfo
+evidence_needed: One valid, legitimately-issued self-owned access token, then introspection via fabricated
+verify_steps: AUTH_HELPED, one self-owned token. POST /oauth2/introspect with the real token in the body and
+impact: MEDIUM. Token validity and claims disclosed to an unauthenticated caller; no forgery follows because
+testability: AUTH_HELPED
+[HYP] The company-wide group-link list is documented asymmetrically against its guest-link twin, so a client
+class: MISCONFIG
+asset: apis.alfaview.com GET /v2/group-links (ListGroupLinks) vs GET /v2/guest-links (ListGuestLinks)
+confidence: 55  (unchanged — CARRIED, not re-measured this cycle)
+reasoning: Unchanged. The full 57-op response-code map still shows ListGuestLinks declaring {200,401,403} where
+evidence_needed: A low-privilege self-issued token on a self-owned tenant; GET /v2/auth/token-info to record the
+verify_steps: AUTH_HELPED, read-only. GET /v2/auth/token-info, then GET /v2/group-links?limit=1 with that
+impact: LOW, API-contract defect. Explicitly NOT a claim that authorization is missing.
+testability: AUTH_HELPED
+[HYP] The audit log is a company-admin-gated read, and the server enforces AUDIT_LOG correctly
+class: IDOR  (PREDICTED FALSE — carried so the disconfirming evidence is on the record)
+asset: apis.alfaview.com GET /v2/audit-log + app.alfaview.com/graphql listAuditEvents
+confidence: 20
+reasoning: The permission axis I asserted was absent on the first pass DOES exist — I was wrong, and the
+evidence_needed: A self-owned tenant with a user holding MANAGE_COMPANY, then a query window, then a second
+verify_steps: AUTH_HELPED, read-only, self-owned tenant only. GET /v2/auth/token-info to confirm bit 21, then
+impact: If the server honoured only authentication and not the company boundary, a company admin could read
+testability: AUTH_HELPED
+[PARKED] My first-pass hypothesis on /v2/audit-log is FALSIFIED, and this is the most important output of
+[PARKED] The [HYP] 20 is deliberate. I am not deleting the audit-log thread, because recording the
+[PARKED] "The audit log leaks user UUIDs and enables DELETE /v2/users/{id}." Withdrawn as stated. AuditActor
+[PARKED] "app.alfaview.com/graphql is a new undocumented attack surface." Rejected as a finding. It is
+[PARKED] "beta-app and staging-app are unauthenticated GraphQL." False. Both 401 on GET and on POST with the
+[PARKED] Re-elevating the pre-auth 422 binder. Still informational, same as 2026-09-28. It is the instrument,
+[PARKED] Carried hypotheses 1 and 2 — no probe fired against either, so neither number moved.
+[FINAL] 1) sso.alfaview.com /oauth2/introspect — absent client authentication on RFC7662, same-build control
+[FINAL] 2) apis.alfaview.com GET /v2/group-links — credential-bearing list with no declared 403 tier (55,
+[FINAL] 3) apis.alfaview.com GET /v2/audit-log — company-admin-gated, AUDIT_LOG = bit 21 under ROOT; first-pass
+[NEXT] PROBE: One authenticated read against the audit log, to replace the falsified IDOR with a real
+[LEARN] ACCEPTED IDOR @ apis.alfaview.com GET /v2/audit-log (confidence 20, prior claim retracted): a live
+[LEARN] REJECTED IDOR @ apis.alfaview.com GET /v2/audit-log: "the contract contains no permission axis able
+[LEARN] REJECTED MISCONFIG @ app.alfaview.com: "an undocumented GraphQL surface with __typename is a
+[LEARN] REJECTED SURFACE @ beta-app.alfaview.com, staging-app.alfaview.com: /graphql returns 401 on GET and on
+[LEARN] REJECTED SURFACE @ apis.alfaview.com: /graphql 404/19B. The audit data is reachable on apis only via
+[LEARN] REJECTED SURFACE @ apis.alfaview.com: /v2/audit-log/{uuid} and /v2/audit-log/{metadata,
+[LEARN] METHOD: Apollo Server's per-field validation errors are a complete schema oracle with no auth and no
+[LEARN] METHOD: the client bundle is a permission-model source, not just a route-string source. Numeric
+[RISK] alfaview gmbh: 62. LOWERED from 72. The 72 was priced on a hypothesis I built from a single source and
