@@ -1170,3 +1170,12 @@ www.alfaview.com
 - CHANGED `tools.alfaview.com/whiteboard/`: second unmapped RPC backend confirmed — 47B gRPC status envelope vs poll's 45B jsonpb; distinct marshaller; no auth challenge; zero client references in bundle (md5 `
 - CHANGED `apis.alfaview.com`: 9/26 GET ops validate query params pre-auth (stats, attendances, meetings, rooms?limit, users?emailAddress, guest-links?limit, group-links?limit, rooms?roomTypes, rooms/{id}/atten
 - CHANGED `apis.alfaview.com/v2/users/invitation{,s}`: OpenAPI declares POST only; live server advertises `Allow: DELETE,POST` on `/v2/users/invitation` and DELETE-only on undocumented `/v2/users/invitations`; 
+
+## 2026-09-29 02:06:54 UTC
+- NEW /v2/users/me/company (GetOwnCompany, x-sort-index 32) is the 38th path — identity of the 2026-09-28 37→38 delta RESOLVED by set-diff against recon-notes/alfaview-openapi.yaml (37 paths, removed=∅). So
+- NEW Company schema = additionalProperties:false {companyId (26-char example "0123456789ABCDEFGHIJKLMNOP"), displayName, createdAt}, all 3 required. Declares 200/401/422 — no 403.
+- NEW x-sort-index space is GLOBAL 0–32, not per-tag. Holes at 24,25,26,30,31; GetOwnCompany appended at 32 far outside its own Users group (0–4). Structural evidence it was bolted on late, separately from 
+- CHANGED apis OpenAPI md5 284a3383c1ac3cfc9152ffcc631891f2 (132100B, 38 paths, 57 ops) unchanged; components.securitySchemes absent, top-level security absent — 2nd consecutive cycle at this hash. Byte-identic
+- CHANGED GET /v2/users/me/company unauth → 401/107B md5 60ed2f29d492ec872c598cc7d36aa37e; `?bogus=abc` and `?companyId=abc` both return that identical 401 (NOT 422) — the new path declares no query params, so 
+- CHANGED sso byte-stable 34th cycle: OIDC 200/2169B md5 f78a08fc, JWKS 200/16257B md5 3f8d456c (7×RS256), introspection_endpoint absent while /oauth2/introspect live at OPTIONS 405, grant_types still advertise
+- CHANGED tools unchanged: /whiteboard/ 404/47B gRPC envelope, /poll/pollservice/list 501/55B.

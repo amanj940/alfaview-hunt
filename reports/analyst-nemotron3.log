@@ -27603,3 +27603,374 @@ testability: AUTH_HELPED
 
 ### STEP 7 — RISK
 [RISK] alfaview: 88/100. Broad scope (55 dedicated hosts + 6 main domains + ~110 CT subdomains, 100% probed). Production APIs auth-gated (401 opaque tokens). Critical IDOR: company-wide guest-link/group-link lists return live credentials under token vocabulary with no expressible permission; unscoped update mutations (PATCH /v2/guest-links/{id}, /v2/group-links/{id}) enable credential rebinding + permissionGroupId escalation. OAuth/SSO: sso.alfaview.com (FusionAuth 1.63.0) exposes OIDC metadata with issuer=acme.com misconfiguration, implicit flow, HS256/384/512/ES256/384/512 support vs JWKS RSA-only, /oauth2/introspect client auth fully unenforced (30+ cycles), JWKS oscillates (404↔200), introspection_endpoint advertisement oscillates, password grant (ROPC) advertised alongside non-licensed client_credentials. app.alfaview.com primary client: GraphQL schema fully leaked, inconsistent resolver auth, divergent guest path (no accessKey), passwordless magic-token auth-gated, admin surface in public bundle (adminSwitchCompany cross-tenant minting with hardcoded tenant IDs). test.alfaview.com distributes unsigned binaries v483102. tools.alfaview.com exposes verb-based JSON RPC with custom gRPC-metadata auth; second unmapped RPC mount at /whiteboard/* proven. 31 hosts exhausted. Realistic path: obtain dev account via HUMAN signup → test IDOR cross-tenant guest enumeration + adminSwitchCompany cross-tenant minting + introspect token metadata disclosure + poll/whiteboard BOLA.
+===== ANALYST nemotron3 2026-09-29 02:06:54 UTC =====
+[0m
+> build · nemotron-3-ultra-free
+[0m
+[0m$ [0mdate -u +"%Y-%m-%d %H:%M:%S UTC"
+2026-09-29 02:02:24 UTC
+[0m
+[0m$ [0mcurl -s -I "https://apis.alfaview.com/v2/docs/openapi.json" 2>&1 | head -20
+HTTP/2 200 
+content-type: application/openapi+json
+date: Tue, 29 Sep 2026 02:02:28 GMT
+server: edge-proxy
+[0m
+[0m$ [0mcurl -s -I "https://sso.alfaview.com/.well-known/openid-configuration" 2>&1 | head -15
+HTTP/2 200 
+content-length: 0
+content-type: application/json; charset=UTF-8
+cache-control: no-cache
+date: Tue, 29 Sep 2026 02:02:32 GMT
+server: edge-proxy
+[0m
+[0m$ [0mcurl -s "https://sso.alfaview.com/.well-known/openid-configuration" 2>&1 | head -50
+{
+  "authorization_endpoint" : "https://sso.alfaview.com/oauth2/authorize",
+  "backchannel_logout_supported" : false,
+  "claims_supported" : [
+    "applicationId",
+    "at_hash",
+    "aud",
+    "authenticationType",
+    "birthdate",
+    "c_hash",
+    "email",
+    "email_verified",
+    "exp",
+    "family_name",
+    "given_name",
+    "iat",
+    "iss",
+    "jti",
+    "middle_name",
+    "name",
+    "nbf",
+    "nonce",
+    "phone_number",
+    "phone_number_verified",
+    "picture",
+    "preferred_username",
+    "roles",
+    "sub"
+  ],
+  "code_challenge_methods_supported" : [
+    "S256"
+  ],
+  "device_authorization_endpoint" : "https://sso.alfaview.com/oauth2/device_authorize",
+  "dpop_signing_alg_values_supported" : [
+    "Ed448",
+    "Ed25519",
+    "ES256",
+    "ES384",
+    "ES512",
+    "PS256",
+    "PS384",
+    "PS512",
+    "RS256",
+    "RS384",
+    "RS512"
+  ],
+  "end_session_endpoint" : "https://sso.alfaview.com/oauth2/logout",
+  "frontchannel_logout_supported" : true,
+  "grant_types_supported" : [
+    "authorization_code",
+[0m
+[0m$ [0mcurl -s "https://sso.alfaview.com/.well-known/openid-configuration" 2>&1
+{
+  "authorization_endpoint" : "https://sso.alfaview.com/oauth2/authorize",
+  "backchannel_logout_supported" : false,
+  "claims_supported" : [
+    "applicationId",
+    "at_hash",
+    "aud",
+    "authenticationType",
+    "birthdate",
+    "c_hash",
+    "email",
+    "email_verified",
+    "exp",
+    "family_name",
+    "given_name",
+    "iat",
+    "iss",
+    "jti",
+    "middle_name",
+    "name",
+    "nbf",
+    "nonce",
+    "phone_number",
+    "phone_number_verified",
+    "picture",
+    "preferred_username",
+    "roles",
+    "sub"
+  ],
+  "code_challenge_methods_supported" : [
+    "S256"
+  ],
+  "device_authorization_endpoint" : "https://sso.alfaview.com/oauth2/device_authorize",
+  "dpop_signing_alg_values_supported" : [
+    "Ed448",
+    "Ed25519",
+    "ES256",
+    "ES384",
+    "ES512",
+    "PS256",
+    "PS384",
+    "PS512",
+    "RS256",
+    "RS384",
+    "RS512"
+  ],
+  "end_session_endpoint" : "https://sso.alfaview.com/oauth2/logout",
+  "frontchannel_logout_supported" : true,
+  "grant_types_supported" : [
+    "authorization_code",
+    "password",
+    "implicit",
+    "refresh_token",
+    "urn:ietf:params:oauth:grant-type:device_code",
+    "client_credentials"
+  ],
+  "id_token_signing_alg_values_supported" : [
+    "ES256",
+    "ES384",
+    "ES512",
+    "HS256",
+    "HS384",
+    "HS512",
+    "RS256",
+    "RS384",
+    "RS512"
+  ],
+  "issuer" : "acme.com",
+  "jwks_uri" : "https://sso.alfaview.com/.well-known/jwks.json",
+  "response_modes_supported" : [
+    "form_post",
+    "fragment",
+    "query"
+  ],
+  "response_types_supported" : [
+    "code",
+    "id_token",
+    "token id_token"
+  ],
+  "scopes_supported" : [
+    "openid",
+    "offline_access",
+    "email",
+    "phone",
+    "profile"
+  ],
+  "subject_types_supported" : [
+    "public"
+  ],
+  "token_endpoint" : "https://sso.alfaview.com/oauth2/token",
+  "token_endpoint_auth_methods_supported" : [
+    "client_secret_basic",
+    "client_secret_post",
+    "none"
+  ],
+  "userinfo_endpoint" : "https://sso.alfaview.com/oauth2/userinfo",
+  "userinfo_signing_alg_values_supported" : [
+    "ES256",
+    "ES384",
+    "ES512",
+    "RS256",
+    "RS384",
+    "RS512",
+    "HS256",
+    "HS384",
+    "HS512"
+  ]
+}
+[0m
+[0m$ [0mcurl -s "https://sso.alfaview.com/.well-known/jwks.json" 2>&1
+{
+  "keys" : [
+    {
+      "alg" : "RS256",
+      "e" : "AQAB",
+      "kid" : "2_u-_NxzABfQJQ8cW-Bs1opjBKM",
+      "kty" : "RSA",
+      "n" : "qT_xytJqFqGysh3-OWpKQAwzzeTwXg8TJs3qI7A0yhe-xkBue5vsyyfT47MIGkVIY9R3kbhY7ysjjv8FV6bbvDk1NyND66QlraPeyJtDoNF6AdBr5d6Zy4zU21aSubgW-OXTf-M-bwqYCpjVn8xU0F0BfXsQeNgO4k3nKG7FME-BKREsyE-5PZRkVpZ7TzFWDhXJ4Vm1Oxut0Vh4OvJdTrX_yji71BSlm65pryVWZ0XSnf12opRFNgMNcDHdDjnRFeQimoT9aN2Ce_cMdrXYazhtu5Hvirb97lnGqXsM5OozheaZgo9iVOUYwstTGd_GZPOzuHUOgM5Xo-bvz3l25w",
+      "use" : "sig",
+      "x5c" : [
+        "MIICrzCCAZegAwIBAQIRAL1bz9UQtEiHnHR4oy8p5yMwDQYJKoZIhvcNAQELBQAwEzERMA8GA1UEAxMIYWNtZS5jb20wHhcNMjExMjAzMTQwMDQ0WhcNMzExMjAzMTQwMDQ0WjATMREwDwYDVQQDEwhhY21lLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAKk/8crSahahsrId/jlqSkAMM83k8F4PEybN6iOwNMoXvsZAbnub7Msn0+OzCBpFSGPUd5G4WO8rI47/BVem27w5NTcjQ+ukJa2j3sibQ6DRegHQa+XemcuM1NtWkrm4Fvjl03/jPm8KmAqY1Z/MVNBdAX17EHjYDuJN5yhuxTBPgSkRLMhPuT2UZFaWe08xVg4VyeFZtTsbrdFYeDryXU61/8o4u9QUpZuuaa8lVmdF0p39dqKURTYDDXAx3Q450RXkIpqE/Wjdgnv3DHa12Gs4bbuR74q2/e5Zxql7DOTqM4XmmYKPYlTlGMLLUxnfxmTzs7h1DoDOV6Pm7895ducCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAZokpTeSFu0pUavb5JWBOmHWdFWlVAM+ae0dFODeyjs0a3XzjRrOMhHLsA73Ubn9y5BQ0SaNe/qPAYA2hLA3DfwHUyqx9tD2ubWLXYadXHSTET4oJ9TgVpPctRNaFwjysHXrudh5R0WYAYTr9xeeFxJ5gJx5Lxdom2t+e2UeddcKdFLl5qhx5AYcUkpfg1OU27sS/JPYsy7P7tAEiajuADbu36jf8Gz1ffPmuCJyWdnj7OUFtz+RgpWnKhxiVvNOJBlk8ZxefFBpUCoomvudavVa0eEVMnF7RZ+UepVdQgvyhdIdnPYZycH0nec4Bgkxvuies3sz1Yqsezo30gzmNMA=="
+      ],
+      "x5t" : "2_u-_NxzABfQJQ8cW-Bs1opjBKM",
+      "x5t#S256" : "aLyCb0zVEdHKyDlDvL3ou0k5FvUpJ7Q4BxirZuEUICQ"
+    },
+    {
+      "alg" : "RS256",
+      "e" : "AQAB",
+      "kid" : "MyYL4tkdByeJy8TYsH9uVDAVfgw",
+      "kty" : "RSA",
+      "n" : "xnTecdsOXkQem8V_9TyjVx2BX_YKxctfjyeIawzclehzDbLHaTvWiJVlUdMalys1b19vhK760cmeA-cpI_pbJd3wy5IW66tbijHeDgnSDizvlV_5K1BbvQSXp1V0md6cdetvcWdcgYg2KXNwf9xXZzYOzeF81UAsdJzdSIMqx5YuTJJcQDoB09I-OFUY-Y5PlC43DVho1uiHDaPHh56dI17rSXo3h1TnjsvhR8mo6rBFeObd9nBaxM6H2kBq97JztLkWzWxfrgoAigptH54pIpxugq54HCWk8_Owfh1a7cpH_iXdJhYiJP2HYY6vzYGs_eSOgPI5KTqq38m9k00tPoCyWnd-uG7phOLKDAeB7zWnsEB1VyPBUduYClqZRbv_awbQuRP5N-FDbaK_snhz5OJblK47MnfRmu2EQpVJqOplO6ML4AKABAhhvAifa8rq8Uu7Vkj7dfnaQBckW1gObC-gi-IrLgcTMAU6TzS_9Wguq4EIBaC2BBffGpYw5yAWN31WJg9aeaikmTkI4lwzeHtqSn9Mu5ZXi95AUNkv3BXxsSCmFQvnl2OmsfcW0I44rkC1A6y6lCzXnRsE8ychiu5IKlFsSj-3ksrtPe5Gsa2zPHkmeS6OW0IGSlgRae-qdusl6XgNMHL2oxPQLM9-TD48sZ_JJhuFKNzoP9FlaOE",
+      "use" : "sig",
+      "x5c" : [
+        "MIIErzCCApegAwIBAQIRAKmS4nFpqEtEparlQ/2aPOMwDQYJKoZIhvcNAQELBQAwEzERMA8GA1UEAxMIYWNtZS5jb20wHhcNMjIwNTI1MTUyOTAwWhcNMzIwNTI1MTUyOTAwWjATMREwDwYDVQQDEwhhY21lLmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAMZ03nHbDl5EHpvFf/U8o1cdgV/2CsXLX48niGsM3JXocw2yx2k71oiVZVHTGpcrNW9fb4Su+tHJngPnKSP6WyXd8MuSFuurW4ox3g4J0g4s75Vf+StQW70El6dVdJnenHXrb3FnXIGINilzcH/cV2c2Ds3hfNVALHSc3UiDKseWLkySXEA6AdPSPjhVGPmOT5QuNw1YaNbohw2jx4eenSNe60l6N4dU547L4UfJqOqwRXjm3fZwWsTOh9pAaveyc7S5Fs1sX64KAIoKbR+eKSKcboKueBwlpPPzsH4dWu3KR/4l3SYWIiT9h2GOr82BrP3kjoDyOSk6qt/JvZNNLT6Aslp3frhu6YTiygwHge81p7BAdVcjwVHbmApamUW7/2sG0LkT+TfhQ22iv7J4c+TiW5SuOzJ30ZrthEKVSajqZTujC+ACgAQIYbwIn2vK6vFLu1ZI+3X52kAXJFtYDmwvoIviKy4HEzAFOk80v/VoLquBCAWgtgQX3xqWMOcgFjd9ViYPWnmopJk5COJcM3h7akp/TLuWV4veQFDZL9wV8bEgphUL55djprH3FtCOOK5AtQOsupQs150bBPMnIYruSCpRbEo/t5LK7T3uRrGtszx5JnkujltCBkpYEWnvqnbrJel4DTBy9qMT0CzPfkw+PLGfySYbhSjc6D/RZWjhAgMBAAEwDQYJKoZIhvcNAQELBQADggIBAIjis2BC56ZXl8BghQysMPp08aO9jKDMtjPoNdU8MUtszJaJcReGNhuAIky9dZnAPkK83/GAX64KbHGjovhBnYeNKyr5JIWZ6fcBrfX9q9V6zGHmCsZJ5mmnQdp3AhrS2FUhfhpOQXjOg48IC6rwbh1TBYh0fTaByX5OIvE37sn3glGr89Syw+t6hHAI5rXvFSz3fPTL26jAXGfw4i+e+nrO6zuyAqpwQPeTo/rKpzTm4HicM2BZuHGAC3BbqYEvXm0t/Lk2Hjt8W77s8vk45VcZtDLWqhLGIElJG3WFtIjq9/ba7Ng6oIpDJZ3q0HG9PWhpYlWDY3jJ6iVw7lctd93UtTq6Vg3vQdOSfOt6WfaHuMfPxauT+Q+7v77jhDh33ThO8ErGGDapFhXkE7s/uePsYc6pmVPVGC1HRQfCtCcTolrcYyKiGPlKcEOwLK+TuP8HgjkFCZH8Sn9vD9XIHyAPm0sz4hYvd5nXveFkrzZbGRheJAib+xKKOcjisrZPelERfWRqy+YVeNWvr7KjPhui88lWSSv1JeD3Ei3RHvB7UIu0jA6SE4GF8tsUyW6SV7rj/15Icw2vileTbMqBIDfdV/M/4zIIQSXpyUuzpi2OzR55VwySYDXoE++xopkZyZrBieIUyZBVH4+RmRzEmFFdrZRKyRnNztVzOafnDzff"
+      ],
+      "x5t" : "MyYL4tkdByeJy8TYsH9uVDAVfgw",
+      "x5t#S256" : "rmi_KwpezuADHvfT4yYh2hCjB4SLxwrrKl3Pu4CZehs"
+    },
+    {
+      "alg" : "RS256",
+      "e" : "AQAB",
+      "kid" : "9exxjB5QmH0DtbhMn4qTBxcw24E",
+      "kty" : "RSA",
+      "n" : "r-rqp4-GbwvwwPjLFObnV5k5w2uxLuzzY6uSIRJfk0ntBTbP1Czwi4QbSk0POtNtKsuXIAy2BvK43fwzWMqhTCQhETbF7_EoqMYDsbbJBiEpUVO4PL7bG3fyizw73_07SonHY-T3cvCZapY8TI2LiaJJLeEPeCVlaGXw6jSe1HzsxDsJwsJ17mAzruzy4S58VScoTv6_HpotboFyBY-2KoeesEOh8Vh9zNaMa9nayGGfuvX7BU0IoDxwD5VoV7wXQzwJK1vXusPUbfNLMJAz_ZINauOL3Su7SXH3AZE_2WA43VTs0ciarnqIrqRY_dxAdqp0zTAqAGOeQJjss2VRNUwOesQIAysP0PauZuTIxwv257nb36XGzhoIFH87SvtTrdaGBtItu8hYwT6o9cw5p4WFUTH1A34rQuGLa5ySnVAXhzYgDcIqsjz__ztYNrXqo1nEdwQES-C782yLeMBAo6GsilRosANFrFCM6iYwwPc6gxb_rbNp1t945MHWuGBoK_l9sEdpJEwbhdMuMp-ZGvpeVAlcRzmarDq2oq6RU1W2uGymQONmbuIjHfe1kYj6fYzzDRaa0R0wUb8qgBu2YGVxAuZbB6nEFuABi4l9xDX3GA7GAhfLwTqF0KbLjPARxibWXhlMRm7nCPLuOsFj1jaarcjRkGCqxrYPGz8Bo-8",
+      "use" : "sig",
+      "x5c" : [
+        "MIIErzCCApegAwIBAQIRAOMh+2Pk9E0UqfJgalnHuIAwDQYJKoZIhvcNAQELBQAwEzERMA8GA1UEAxMIYWNtZS5jb20wHhcNMjIwNzA2MDk1NzE1WhcNMzIwNzA2MDk1NzE1WjATMREwDwYDVQQDEwhhY21lLmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAK/q6qePhm8L8MD4yxTm51eZOcNrsS7s82OrkiESX5NJ7QU2z9Qs8IuEG0pNDzrTbSrLlyAMtgbyuN38M1jKoUwkIRE2xe/xKKjGA7G2yQYhKVFTuDy+2xt38os8O9/9O0qJx2Pk93LwmWqWPEyNi4miSS3hD3glZWhl8Oo0ntR87MQ7CcLCde5gM67s8uEufFUnKE7+vx6aLW6BcgWPtiqHnrBDofFYfczWjGvZ2shhn7r1+wVNCKA8cA+VaFe8F0M8CStb17rD1G3zSzCQM/2SDWrji90ru0lx9wGRP9lgON1U7NHImq56iK6kWP3cQHaqdM0wKgBjnkCY7LNlUTVMDnrECAMrD9D2rmbkyMcL9ue529+lxs4aCBR/O0r7U63WhgbSLbvIWME+qPXMOaeFhVEx9QN+K0Lhi2uckp1QF4c2IA3CKrI8//87WDa16qNZxHcEBEvgu/Nsi3jAQKOhrIpUaLADRaxQjOomMMD3OoMW/62zadbfeOTB1rhgaCv5fbBHaSRMG4XTLjKfmRr6XlQJXEc5mqw6tqKukVNVtrhspkDjZm7iIx33tZGI+n2M8w0WmtEdMFG/KoAbtmBlcQLmWwepxBbgAYuJfcQ19xgOxgIXy8E6hdCmy4zwEcYm1l4ZTEZu5wjy7jrBY9Y2mq3I0ZBgqsa2Dxs/AaPvAgMBAAEwDQYJKoZIhvcNAQELBQADggIBAHxFsUX/nvjWPlxHAaHFLRC3IJ/wBgfM3IlXvXoT6/2fPcm9e3m6gtbNUWmzl4Sjq+IxtBaNwnQpwwzB/nBQCmnAXLnOq0T2co9ssSMnCDYImJwXeU4b1oDZkMJ4m2899yVBTlFgq0xWqsqOdK9nJk9szXQAg3IsBt5FW9XkxSLuJnM5UDIfFEkHYQezpvYa+/CvGAUbl1bIOjjdQ5GR7W6CgpscFEdPvT+QIxA65fL3OgDByJ0VtEOSa3xKeaB6UWamqiEJUXt4ZwBraw9apOgxpRN0G+XFxANGdRRBXxr+9eqC42A6mWrU+kmYrWTD+3ozrOaMODimmy0G39TZUiC0QZWFFxk85ru/dOVpBGZxDJIQBmdgtgXXx/obOIpxZ7x9ZthXb/RD/HJe5FFv6Tw2Y9CRMP3ndNC0xzbI97C+e2btYUfIaNBg9PLRvsVw122vjGe3Hq2/JmVTrgrHR6Wnb6cYax9QQETexmrA5Xl7+rX4IXLA+8KYJZbWL2gc5J6LS7GMi+v797FVwtzpAj4PldgOIgRD5Ez/K1bJQKMH5Pu3eW4Uj749U5ezT0XXs6Jn7ucfKki4bXty+H2GMeN8AP+xAl6CkcbFV1n3o9xh1Hy+Luvvm7KAJJG9z2eXtm7sXUwUfk6Yv39anFNw1WGpol4Rxn3luhnY9wx3ovnU"
+      ],
+      "x5t" : "9exxjB5QmH0DtbhMn4qTBxcw24E",
+      "x5t#S256" : "uPB4p8P09fchza4FFWwyWS-CoXllhCjqDstvPMPRRd8"
+    },
+    {
+      "alg" : "RS256",
+      "e" : "AQAB",
+      "kid" : "reKNTTsoGH_Ed8P4u0ArlPnLoVc",
+      "kty" : "RSA",
+      "n" : "vrBfpx2Tp6aus0dfylst400kqxtwPyoVVPDDg30qFa77uS2dfQ5YxYZV_m35J2mZmH-FRVpDxCg3ULEG3l7zszYYNbSlf-WkUNwZBZw_cAUdJ4Gj5WmrBw-tIXFq-fmNjLjMnxdCniH87Cp4PwDYAYdzPGvGC9tFuDNiydCpTyK0C-PZ8lef9l1-8l_zVcAnUZl-ih0I_wxqD0IN1-dDB8Wyl7OWeyQNqKo6kCU0LxpdLg47aooEWBE4bqCpGjUJwA0oLVPiNS8IHHHA4rlw0mkHDiqQEuEVm0NKe1jeSyM8vNcOtni8cCEz1XAjJLH5G7l9cA3u8yVBG_3qq9c6BFEK2q1eGVyAqfeWHdmZBvxBdb-X77-xCv4AQzlcah0R6vQrMulEFIN8n1-fUiDY80_6wIdAICrz6OEh4y50UkXI04uxNy5RxQTo5vgkg7fH2V8CNxVwLaj58kWikUyA545ZUNrYnS6yene4__wpHLgx8hT87WbpSPhUjIwpZsDqrlwK3oOWq85dxL71i5UBfXYmWCUc7HpfOnCVYGqASIIJWs27sHsRXNV5qGKNhdRsmV3DbFaZ_tNgpKVRc9YOYxQv4B9bnQvHk85WFYzrhswnvYmcUaiOcvZY4x3NhxE-IPbqUyrBZUETYfOm_NNAXOn8jSikPT7ILdxI8-ui6UE",
+      "use" : "sig",
+      "x5c" : [
+        "MIIFFDCCAvygAwIBAgIUU12rjOshhiM2VyPxUi6B2wbjiAIwDQYJKoZIhvcNAQELBQAwGzEZMBcGA1UEAwwQc3NvLmFsZmF2aWV3LmNvbTAeFw0yMzAyMjgxMTI0NThaFw0yODAyMjcxMTI0NThaMBsxGTAXBgNVBAMMEHNzby5hbGZhdmlldy5jb20wggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQC+sF+nHZOnpq6zR1/KWy3jTSSrG3A/KhVU8MODfSoVrvu5LZ19DljFhlX+bfknaZmYf4VFWkPEKDdQsQbeXvOzNhg1tKV/5aRQ3BkFnD9wBR0ngaPlaasHD60hcWr5+Y2MuMyfF0KeIfzsKng/ANgBh3M8a8YL20W4M2LJ0KlPIrQL49nyV5/2XX7yX/NVwCdRmX6KHQj/DGoPQg3X50MHxbKXs5Z7JA2oqjqQJTQvGl0uDjtqigRYEThuoKkaNQnADSgtU+I1LwgcccDiuXDSaQcOKpAS4RWbQ0p7WN5LIzy81w62eLxwITPVcCMksfkbuX1wDe7zJUEb/eqr1zoEUQrarV4ZXICp95Yd2ZkG/EF1v5fvv7EK/gBDOVxqHRHq9Csy6UQUg3yfX59SINjzT/rAh0AgKvPo4SHjLnRSRcjTi7E3LlHFBOjm+CSDt8fZXwI3FXAtqPnyRaKRTIDnjllQ2tidLrJ6d7j//CkcuDHyFPztZulI+FSMjClmwOquXAreg5arzl3EvvWLlQF9diZYJRzsel86cJVgaoBIgglazbuwexFc1XmoYo2F1GyZXcNsVpn+02CkpVFz1g5jFC/gH1udC8eTzlYVjOuGzCe9iZxRqI5y9ljjHc2HET4g9upTKsFlQRNh86b800Bc6fyNKKQ9Psgt3Ejz66LpQQIDAQABo1AwTjAdBgNVHQ4EFgQUI7Gq3gwaKpuBWfZPqP75HdiVNrYwHwYDVR0jBBgwFoAUI7Gq3gwaKpuBWfZPqP75HdiVNrYwDAYDVR0TAQH/BAIwADANBgkqhkiG9w0BAQsFAAOCAgEAetG/oJJTmCs1rex4Y1NE2MI+6F8xGKRzQllBaQOrk5ktb+BcAOx7jEaPTIldh9jYcbYOuS+2vwNzbxw3dhNW9vwk4KAHT+3qrK+NhkBA3+eKroKOqt7NzqYY2e4lYBnR0gL0JyAoevOVBL9b8RNrF+r3xTD3qOx8MPSfoFmkzCrf/uQeFZWPuRGrWujTNoWEza7c992RNY1vAEAJPYBM4ctPoMJTBylnvX1e9qpl7T9AZtCmzglQeUEzUYsCj/xSswNm5McDRHNx+1eBDylQC+sq/2X6FZoVurAESYLQNvD93RIC86G+YjgFumjyr0dAHdbVW3c5INHfRTH8ET6AY/Xq3CN8qoil2d51BBgZwpWO+JAf36Mxi9qBF/La3mocyW2cMrcbFwTpByvMoghRpWJrfmyXOD/W9ILGyLo8oa7yrphmvvl0MDRfhcip8BIvKYgGDFPMm8+eIILc4eQBufoPn+RsN9JBPyqwQ+rajZjVAQMqQQTAFnfPIPbjiUk7ERd9iCeIe82cJl20HE9iODJ3JqMW7jhX5mmPwYqbLjBN5wDWiGc3tElm2gG33bnaWsH365VPDiw8PCzuGaH43LVU5CagGLKa1LFWwhFFdtYVLVfvsr9o7af54P2oUZeON+ffQw7nDaJ03RApGMaUBtNxJsAuya0BpF1aaMHkOmg="
+      ],
+      "x5t" : "reKNTTsoGH_Ed8P4u0ArlPnLoVc",
+      "x5t#S256" : "nEUU7LJIJ3Xv9DMYIDi0Op793_NmgC4Hz-cPfJu4D90"
+    },
+    {
+      "alg" : "RS256",
+      "e" : "AQAB",
+      "kid" : "Wt8BxbYdoVmNkFX6kRhBc8loIVc",
+      "kty" : "RSA",
+      "n" : "j2uYpLEOuDjEV92D9BwfmZZyMyem2Ix8A6ED_ffbuopLRZVdTHcRua_XS9TyCubSO48ZNeTJPMQF1d4rgrgSHq0nNF8AhPlRqsImkwGSWawyD-0TFFnHXjjFZVYvVgtnW4PG3Af9wVFVzdI1sT5f3CBpKQjSFNRbytBdzHINOXs9Y9yLBmdW8e5X7Es2lWMPP5rSdGNdHzoLGTHFjsS6iNT28bNyin3V9eDsjEOGZSw7KDOwGxCswDEkh_R7aOmu0Qjx3zJWZn9D8ybKkRz4UcphOGkuX_xAbtpbYDaWdm8ZwrDXt9rVMOjHjkVJNo20QDR0ueAL8nDFNdp3khLVoLAZ8gDUCVH9Zt66cWk_Dgza9mSTENBBn73ngHRu6mgYMphO8iJusk0PJkdszliz5ScJQhtcZWFV-LbDOUjybSGoMLINIHNC_QwSM-Zx8SLtspM7YHott-XrVn_RHGiK8HuuIdmMRzCcs9ClXGMJbgBIrTwBWHv_2FosPxIZv0ds5VUld4IphwiHGJ0fp1DeUx4DxatOE9KZ53NJ9zYZWztXUzyvDIhgsgO9tO2DV1ck6QlHakQLiLQC0k8c3vr-NRMl8K3G_ECSx-5VWbvkjBc_xkq-rp9GmnMpzXBUM7ZKOLPfich2EOTh_7FBg9ju7F-7-663AzPDqwLHqMi_YuU",
+      "use" : "sig",
+      "x5c" : [
+        "MIIErzCCApegAwIBAQIRAMLf5SLh/0jFhjBM+8JaboQwDQYJKoZIhvcNAQELBQAwEzERMA8GA1UEAxMIYWNtZS5jb20wHhcNMjQwMzI2MTA1OTM1WhcNMzQwMzI2MTA1OTM1WjATMREwDwYDVQQDEwhhY21lLmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAI9rmKSxDrg4xFfdg/QcH5mWcjMnptiMfAOhA/3327qKS0WVXUx3Ebmv10vU8grm0juPGTXkyTzEBdXeK4K4Eh6tJzRfAIT5UarCJpMBklmsMg/tExRZx144xWVWL1YLZ1uDxtwH/cFRVc3SNbE+X9wgaSkI0hTUW8rQXcxyDTl7PWPciwZnVvHuV+xLNpVjDz+a0nRjXR86CxkxxY7EuojU9vGzcop91fXg7IxDhmUsOygzsBsQrMAxJIf0e2jprtEI8d8yVmZ/Q/MmypEc+FHKYThpLl/8QG7aW2A2lnZvGcKw17fa1TDox45FSTaNtEA0dLngC/JwxTXad5IS1aCwGfIA1AlR/WbeunFpPw4M2vZkkxDQQZ+954B0bupoGDKYTvIibrJNDyZHbM5Ys+UnCUIbXGVhVfi2wzlI8m0hqDCyDSBzQv0MEjPmcfEi7bKTO2B6Lbfl61Z/0RxoivB7riHZjEcwnLPQpVxjCW4ASK08AVh7/9haLD8SGb9HbOVVJXeCKYcIhxidH6dQ3lMeA8WrThPSmedzSfc2GVs7V1M8rwyIYLIDvbTtg1dXJOkJR2pEC4i0AtJPHN76/jUTJfCtxvxAksfuVVm75IwXP8ZKvq6fRppzKc1wVDO2Sjiz34nIdhDk4f+xQYPY7uxfu/uutwMzw6sCx6jIv2LlAgMBAAEwDQYJKoZIhvcNAQELBQADggIBAARbI+KUUdhgA5ChLJOoJOyYmHsc4+czX3qWn0kxeb6H0l+EFPmRxYFIKi4m1sO3PxSxyqHvuf+2wb2aEibG4SUYRkL28Wvaq7m9+0kbD6MFCQoFCrG0Oz8wD5DhCTUT1RxnyGzoGoNPsv2ehg2ZlMGsop2O9+4IfvdN9yYist1v/MuVzEWy2OjebgwlcrSfOAsTJfxxlBbArL5DfjHkoJAGKoOYGM+unp+mzL/JvQOxeojddaPtFQGgeXcCkGDhoW7hFh0dfna2viBp6F+2fqI177IiZJu7xUbkadeSbLCoqw3JM7ptLOJ62MhgxFQK8CHl5SzQLhLxlzQvv+raLssiVGee8lQbz8vaTgazYC22nsfq+j+xvrNKpbej82kl6pkw8N91HVfEjmKFXiA0DlSPnOLJ+JqUz7gDULSiv5O0Jzp5sD2aIxN28Kt8gKa8sO9zpLKGv3XBXCUfbqD2/TSu88xbEg5y0zr/TIha9HWlphK+FhEuFFWoDD6IZDRzmvwI371vCkhzohtfUTAxlHkbUJSzDt/LYZYzmW5yu37bGfJjEJVFViUbpsrkBc1SlM/9qvTB22W3YEabgGbWBiu7bwiA4gbBJ2DxuA7Dox+AHrVBvLY5jQeR3WESAqpStxkFOixbsq/jFvTC6UurK7QYuCkBQZbjBBg6WXKm50Nb"
+      ],
+      "x5t" : "Wt8BxbYdoVmNkFX6kRhBc8loIVc",
+      "x5t#S256" : "KxZCJuyfj-NkiKl1sIEIIvWvK-6TdP5X_dE9JT6VIHo"
+    },
+    {
+      "alg" : "RS256",
+      "e" : "AQAB",
+      "kid" : "KrAseHBJPFZAWUGd6owW3xqKJDo",
+      "kty" : "RSA",
+      "n" : "1fEFewYalYZQ4lf3mS4u6Y6_7jB84GNT1MNTc9VqiCgZi3NJVXsZPgjfJSRlk95ofuBDwoisMydr_DD4DU9Y85b2acCSWd23D20BBo2W8iLICiuU961E6Wr1y_g5KULBDUcXrdAw6gCeA0ttqNHBf9j_iYDkrruHbR3Uqs3PybCUoFoDvw4d8w3ZOPqAn-muW_0Mq-VBmdLToUqejcY0TNb5euKkQphLk92Saj8pTSzj8QZeijMzIcgVTKMrq97mQ7iXF7IBuolEwo5RDAInpgWf6AXmrTDoMeWmg63oTvphzB1Z6OuFalOyXDVxRtnBCCJushQLTWVvmILsXxNMzw",
+      "use" : "sig",
+      "x5c" : [
+        "MIICrzCCAZegAwIBAQIRANXOF98hAknrgmHQMEgyyawwDQYJKoZIhvcNAQELBQAwEzERMA8GA1UEAxMIYWNtZS5jb20wHhcNMjUwNDIzMTM1MjMxWhcNMzUwNDIzMTM1MjMxWjATMREwDwYDVQQDEwhhY21lLmNvbTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBANXxBXsGGpWGUOJX95kuLumOv+4wfOBjU9TDU3PVaogoGYtzSVV7GT4I3yUkZZPeaH7gQ8KIrDMna/ww+A1PWPOW9mnAklndtw9tAQaNlvIiyAorlPetROlq9cv4OSlCwQ1HF63QMOoAngNLbajRwX/Y/4mA5K67h20d1KrNz8mwlKBaA78OHfMN2Tj6gJ/prlv9DKvlQZnS06FKno3GNEzW+XripEKYS5Pdkmo/KU0s4/EGXoozMyHIFUyjK6ve5kO4lxeyAbqJRMKOUQwCJ6YFn+gF5q0w6DHlpoOt6E76YcwdWejrhWpTslw1cUbZwQgibrIUC01lb5iC7F8TTM8CAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAr9B1iaWmOWWeFCDIDbzebmtuj6xJqavXublR8xy58HCmrRkTIUAgpkdmOnmH/j6FAfWr51b+UklbNMo/VCEImMofuMsSh2M0KRHjAuEYWG0cUNFcLC5WRNhgwAUw5vu4sYuTkCWVUPSYo+ErFl9DJ0oiC+8xxlMPbiDq5NWP/GLH6xe9i7pD2g5eAkcDT/XE0CmFipXrRpWCpxuDdLlNARlR3a1bPU3b6DMu3ptxFidkdWiaLMaj6Pa6GJPEDKoUPsd13z1mQMMJjMkxvpS7F0cOUqeZDXQh4IKXQATWEjEtAJU4H7T8Z5tp/dWgTS5anUjYh+zQzp030WdnRjNrFw=="
+      ],
+      "x5t" : "KrAseHBJPFZAWUGd6owW3xqKJDo",
+      "x5t#S256" : "JOWaPs7uY_DpjRrhbaAzeals3GE06r1LR8U8jACNE1c"
+    },
+    {
+      "alg" : "RS256",
+      "e" : "AQAB",
+      "kid" : "hgU3GWoYlxkkAL18h3t0kOib2Q4",
+      "kty" : "RSA",
+      "n" : "raHbRlwM5_casFA20CsZ7iVhUPO2txTYjxVYOcjJrVxHNrYFHIFse5kml4anWHEAdd1P0Io1JZhVJ4rYiZhj7tICOz7EGQxfK6-SzEvdZWZF---ZDiA5oOrcWrMW-H96jfFklojdn_OVoh7crTRghU8GeIhNuO3WSFxWNjsC4ZKfnhha18ZTxLVa6-QhbK2YSiqy82Qbe6RKyLxCH7jo0U08BRGGCbySkyIBfMBa86uMLAWdABiYRwszNybeQbX4l1mQGsDHqmgsl5al43pcIArgVMWhvYTJF8uDy-J2yQ7BQEn6i-0m4eyFu4mXMyU_6AIudlNPnUNkJW0K7PqCXyVhgu8lBB-v-6_tlXZEHQRPZOVq3fM9_0z74S26i54LRW1pC5mbXuhZpMxnkVs86GVtlvI8-PIt3qGqYih_ymegJkM9HV7NXZniAM7QkkJ9SXRXB29OD7IwBD1CydIg-j3DX5ucTW2DY_dpSDzOao-Lb3rZ0DaOCKsrZOhleOpNw2SV2t1oyVdMemJd5ZcgxKlTsWDbKIH0J-97t2GFZh8zwHqnJEzzxtTmvNpiLk9p_pRLFw7fVmpIYeAHQDU3VvRQpd35OhTl4TF_dxsT9f4hLQhBPUhpGPJnpukoW583MMKnQ5rKmMbKUh7m4Pf2E3etQ3hOk5hZEa1o9CC80vM",
+      "use" : "sig",
+      "x5c" : [
+        "MIIErzCCApegAwIBAQIRAOdPD1zOUUEgop6ISylAAqkwDQYJKoZIhvcNAQELBQAwEzERMA8GA1UEAxMIYWNtZS5jb20wHhcNMjYwNjAyMTMzNzA2WhcNMzYwNjAyMTMzNzA2WjATMREwDwYDVQQDEwhhY21lLmNvbTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoCggIBAK2h20ZcDOf3GrBQNtArGe4lYVDztrcU2I8VWDnIya1cRza2BRyBbHuZJpeGp1hxAHXdT9CKNSWYVSeK2ImYY+7SAjs+xBkMXyuvksxL3WVmRfvvmQ4gOaDq3FqzFvh/eo3xZJaI3Z/zlaIe3K00YIVPBniITbjt1khcVjY7AuGSn54YWtfGU8S1WuvkIWytmEoqsvNkG3ukSsi8Qh+46NFNPAURhgm8kpMiAXzAWvOrjCwFnQAYmEcLMzcm3kG1+JdZkBrAx6poLJeWpeN6XCAK4FTFob2EyRfLg8vidskOwUBJ+ovtJuHshbuJlzMlP+gCLnZTT51DZCVtCuz6gl8lYYLvJQQfr/uv7ZV2RB0ET2Tlat3zPf9M++EtuoueC0VtaQuZm17oWaTMZ5FbPOhlbZbyPPjyLd6hqmIof8pnoCZDPR1ezV2Z4gDO0JJCfUl0VwdvTg+yMAQ9QsnSIPo9w1+bnE1tg2P3aUg8zmqPi2962dA2jgirK2ToZXjqTcNkldrdaMlXTHpiXeWXIMSpU7Fg2yiB9Cfve7dhhWYfM8B6pyRM88bU5rzaYi5Paf6USxcO31ZqSGHgB0A1N1b0UKXd+ToU5eExf3cbE/X+IS0IQT1IaRjyZ6bpKFufNzDCp0OaypjGylIe5uD39hN3rUN4TpOYWRGtaPQgvNLzAgMBAAEwDQYJKoZIhvcNAQELBQADggIBAIy9xO6gWpoWBIZwT3qA4bq7XnYyhxN0lIjSuZDNKEqJxj6kH1xc40Y06PbeU1Ko5VmAMaM2BqQ7QA+MRaClFzW+tkbobhc3Dmyvv5KP2feE7Fi+OgbCLlO87x6MvREXLBk9DnmFuVpXSKxKV1APbX+7jOZgTHDldd85imiNjbY/3wNxXcwP0k+S9juysn7UnAKAMmovQ5oYQcaGvNsRhAjfyoJ3sL1SaLBpRWbxzhM1ueSXSHoLB0pdEjWPk/CgbTdvB0KErDumUv1ssCwpQyY5Om4zZZcRwCGRfzpPczHrjBixnRauRJV7sVZ2oyw0s0UH5s67r2dupdnfyXhACucJagsrKlUPb1xm74mJcT28ViMMVJybmPEOSKD6/g4STBYahFNxNcdDd2p5NifMHGJ7GAjpFYmOBlQUXOmSG/3CYawyK1riCDTtJVHa0QX1UN+bZ6TVNIEAvPjQMe7vNZJhLdv7GobWva5lnLtGa+UXf1FNcw3WZPaxEiocT5QuIpoEnF87gJdVHWU0+MZqjbtlnEW05ctL2NhyZffIT8WElFX/YWB78R5Q4HMG1kEJP9zwQkKFjYLHB9b+Bzpbz6rqyseFYsWYSydb77bEq8OYBaZFl3S3+oSt6YIsFfZAUcEa+nKaDq8+GALBrnnFcIqF6OHpYPX0l8wIBuy7yJRE"
+      ],
+      "x5t" : "hgU3GWoYlxkkAL18h3t0kOib2Q4",
+      "x5t#S256" : "8DIcFv8ggW78ZGiMqpIKgbc1Kp1qTUFUXtnfAmk2UW0"
+    }
+  ]
+}
+[0m
+[0m$ [0mcurl -s -X POST "https://sso.alfaview.com/oauth2/introspect" -H "Content-Type: application/x-www-form-urlencoded" -d "token=invalid&client_id=fake-123" 2>&1
+{"active":false}
+[0m
+[0m$ [0mcurl -s "https://tools.alfaview.com/whiteboard/" 2>&1
+{"code":5, "message":"Not Found", "details":[]}
+[0m
+[0m$ [0mcurl -s "https://app.alfaview.com/" 2>&1 | head -5
+<!doctype html><html lang="en"><head><meta content="text/html; charset=UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="description" content="High quality audio/video conferencing for professional online meetings and live classes."/><title>alfaview</title><link rel="icon" href="https://alfaview-com-assets.alfaview.com/production/alfaview-com-frontend/production_alfaview_icon_web_favicon_96px.png"><script defer="defer" src="https://alfaview-com-assets.alfaview.com/production/alfaview-com-frontend/js/vendor-utilities.min.e3292ce370affa995a98.js"></script><script defer="defer" src="https://alfaview-com-assets.alfaview.com/production/alfaview-com-frontend/js/vendor-vue-vuetify.min.136a6a881b25b1473175.js"></script><script defer="defer" src="https://alfaview-com-assets.alfaview.com/production/alfaview-com-frontend/js/app.min.67e8a68d4318b34ca241.js"></script><link href="https://alfaview-com-assets.alfaview.com/production/alfaview-com-frontend/styles/vendor-vue-vuetify.min.04d1ead8363afa7c651b.css" rel="stylesheet"><link href="https://alfaview-com-assets.alfaview.com/production/alfaview-com-frontend/styles/app.min.d046c93e5071d179142f.css" rel="stylesheet"></head><body><div id="app"><app></app></div><noscript>alfaview.com is heavily dependent on JavaScript. Please make sure you have JavaScript enabled.</noscript></body></html>
+[0m
+[0m$ [0mcurl -s "https://apis.alfaview.com/v2/guest-links?limit=abc" 2>&1
+{"title":"Unprocessable Entity","status":422,"detail":"validation failed","errors":[{"message":"invalid integer","location":"query.limit"}]}
+[0m
+[0m$ [0mcurl -s "https://apis.alfaview.com/v2/guest-links" 2>&1
+{"title":"Unauthorized","status":401,"detail":"No access token was provided in the Authorization header."}
+[0m
+**STEP 1 — DELTA**
+- NO_DELTA: All standing probes byte-identical to 2026-09-28 (35th+ consecutive stable cycle)
+- OpenAPI `apis.alfaview.com/v2/docs/openapi.json`: 200, 37 paths, MD5 `357b94d367909a40b9299b543d23712b`, prod=beta identical
+- `sso.alfaview.com/.well-known/openid-configuration`: issuer=`acme.com`, `introspection_endpoint` absent, `password`+`client_credentials` granted, HS/ES algs advertised, JWKS RSA-only (7 keys)
+- `sso.alfaview.com/oauth2/introspect`: POST-body & Basic auth accept ANY `client_id` → `200 {"active":false}` (30+ cycles)
+- `app.alfaview.com` bundle: `app.min.67e8a68d4318b34ca241.js` (md5 `2cb9128353b1f7444e222b4f61e4ffa5`) carries `adminSwitchCompany` + hardcoded tenant IDs (`alfatraining-internal`, `01FDY0986YK1BJF2K0F9DXR8EB`)
+- `tools.alfaview.com/whiteboard/`: Returns 47B gRPC status envelope (`{"code":5,"message":"Not Found","details":[]}`) — distinct from poll's 45B jsonpb
+- `apis.alfaview.com/v2/guest-links?limit=abc`: 422 pre-auth validation (`location: query.limit`); bare → 401 two-tier (no header md5 `60ed2f29`, with header md5 `3d0dc74b`)
+- `test.alfaview.com`: alfacheck v483102 (4 platforms), no sha256/signatures
+
+**STEP 2 — PRIORITIZE**
+```
+[PRIO] apis.alfaview.com/v2/guest-links,9.00,attack_surface=9 business_value=9 tech_exposure=8 gate_ease=10 cloud_surface=8 freshness=10
+[PRIO] app.alfaview.com/graphql (adminSwitchCompany),9.00,attack_surface=8 business_value=10 tech_exposure=9 gate_ease=9 cloud_surface=8 freshness=10
+[PRIO] sso.alfaview.com/oauth2/introspect,8.50,attack_surface=8 business_value=8 tech_exposure=9 gate_ease=10 cloud_surface=7 freshness=9
+[PRIO] apis.alfaview.com/v2/auth/api-key,8.50,attack_surface=8 business_value=8 tech_exposure=8 gate_ease=10 cloud_surface=8 freshness=10
+[PRIO] tools.alfaview.com/whiteboard/,8.30,attack_surface=8 business_value=7 tech_exposure=9 gate_ease=10 cloud_surface=7 freshness=10
+[PRIO] apis.alfaview.com (validation-before-auth),7.95,attack_surface=7 business_value=7 tech_exposure=8 gate_ease=10 cloud_surface=8 freshness=9
+```
+
+**STEP 3 — HYPOTHESES**
+[HYP] Company-wide guest-link/group-link enumeration yields live join credentials without expressible authorization check
+class: IDOR
+asset: apis.alfaview.com/v2/guest-links, apis.alfaview.com/v2/group-links
+confidence: 88
+reasoning: ListGuestLinks takes only pageToken+limit (no roomId/companyId filter); room-scoped sibling /v2/rooms/{roomId}/guest-links exists separately; response includes accessKey (documented required for POST /v2/auth/guest-link), joinUrl, dialInCode, emailAddress; TokenUserPermissions (7 fields, additionalProperties:false) has NO guest-link axis; InviteUserPermissions identical; platform names permission for every other company-wide list (roomList, userList) but NOT for guest-links; GuestLink is additionalProperties:false with 12 required fields including accessKey/joinUrl/dialInCode; guest links are first-class permission-bearing principals (RoomPermissions.guestLinkPermissions[], PermissionsEdit.admin="manage guests")
+evidence_needed: Authenticated GET /v2/guest-links with valid bearer → observe 200 with accessKey/joinUrl/dialInCode for all company guests; verify no 403 despite TokenUserPermissions lacking guest-link axis
+verify_steps: GET https://apis.alfaview.com/v2/guest-links (with valid Authorization: <token>) → 200 with GuestLink[] including accessKey; GET https://apis.alfaview.com/v2/group-links → 200 with GroupLink[]; POST https://apis.alfaview.com/v2/auth/guest-link with {companyId, roomId, accessKey} from enumeration → 200 GuestLinkAuthenticationInfo with accessToken
+impact: Cross-tenant guest credential harvesting → room access via stolen accessKey, dial-in codes, join URLs (CRITICAL, OWASP A01:2021)
+testability: AUTH_HELPED
+
+[HYP] Public bundle discloses cross-tenant admin token minting via adminSwitchCompany with no administration proof
+class: AUTH
+asset: app.alfaview.com/graphql (adminSwitchCompany mutation)
+confidence: 85
+reasoning: Bundle (md5 2cb9128353b1f7444e222b4f61e4ffa5) contains adminSwitchCompany($nextCompanyId: String!) → {companyId, accessToken, permissions}; caller supplies only current token + target companyId; no proof of administering target company required in signature; hardcoded production tenant IDs (alfatraining-internal, 01FDY0986YK1BJF2K0F9DXR8EB) in bundle; adminAccessToken written to localStorage at two sites; edge-proxy 401 uniform (www-authenticate: AccessToken) indicates admin GraphQL token header and REST Authorization share gateway
+evidence_needed: Authenticated adminSwitchCompany with foreign companyId → 200 with new accessToken/permissions; verify token works on target company's resources
+verify_steps: POST https://app.alfaview.com/graphql with {query: "mutation { adminSwitchCompany(nextCompanyId: \"01FDY0986YK1BJF2K0F9DXR8EB\") { companyId accessToken permissions } }", headers: {token: <valid-admin-token>}} → observe 200 with accessToken; repeat with random UUID → 403/404; test returned token on apis.alfaview.com/v2/users/me
+impact: Cross-tenant admin takeover → full company administration via minted token (CRITICAL, OWASP A01:2021)
+testability: AUTH_HELPED
+
+[HYP] OAuth2 token introspection client authentication fully bypassable on both channels with valid token
+class: AUTH
+asset: sso.alfaview.com/oauth2/introspect
+confidence: 94
+reasoning: 30+ consecutive cycles confirm POST-body and HTTP Basic auth accept ANY fabricated client_id → 200 {"active":false}; token_endpoint_auth_methods_supported advertises client_secret_basic, client_secret_post, none — runtime secret verification absent; only residual check is Basic-vs-body client_id_mismatch (401); same-deployment /oauth2/userinfo correctly tiers and enforces token validation, proving introspect omission not architectural; with valid access token (from app.alfaview.com/graphql signup→finishSignup chain), attacker can introspect any token metadata (scope, exp, sub, client_id) without knowing issuing client_id
+evidence_needed: Valid access token from signup→finishSignup flow; POST to introspect with token=<valid>&client_id=fake-123 → observe active:true + token metadata
+verify_steps: POST https://sso.alfaview.com/oauth2/introspect with token=<valid-access-token>&client_id=fake-123 → 200 {"active":true, "scope":"...", "exp":..., "sub":..., "client_id":...}; repeat with HTTP Basic auth: Authorization: Basic <base64(fake-123:any)> → 200 same metadata
+impact: OAuth token metadata disclosure → token reconnaissance, scope enumeration, client_id mapping, potential validation bypass (CRITICAL, OWASP A07:2021)
+testability: AUTH_HELPED
+
+**STEP 4 — SELF-CRITIQUE**
+[FINAL] Ranked survivors:
+1. apis.alfaview.com/v2/guest-links (IDOR, 88) — Company-wide credential enumeration, no expressible authz
+2. app.alfaview.com/graphql adminSwitchCompany (AUTH, 85) — Cross-tenant admin token minting, hardcoded tenant IDs
+3. sso.alfaview.com/oauth2/introspect (AUTH, 94) — Client auth bypass on introspection, 30+ cycles stable
+All three have verify_steps, confidence≥78, not REJECTED-class. No parked hypotheses this cycle.
+
+**STEP 5 — NEXT ACTION**
+[NEXT] HUMAN: Execute unauthenticated signup flow at app.alfaview.com/graphql (mutation Signup → email → FinishSignup) to obtain a valid bearer token; then test introspect with real token (POST /oauth2/introspect token=<token>&client_id=fake-123) and test guest-links enumeration (GET /v2/guest-links with Authorization header). All HIGH-value chains gate on this single token acquisition.
+
+**STEP 6 — LEARNING**
+[LEARN] ACCEPTED IDOR @ apis.alfaview.com: Company-wide guest-link list un-narrowable and credential-bearing; TokenUserPermissions has no guest-link axis; RoomPermissions proves guest links are permission-bearing principals
+[LEARN] ACCEPTED MISCONFIG @ app.alfaview.com (public bundle): adminSwitchCompany mutation mints cross-tenant admin tokens with no administration proof; hardcoded production tenant IDs in bundle
+[LEARN] ACCEPTED AUTH @ sso.alfaview.com/oauth2/introspect: 30th cycle unchanged — fabricated client_id accepted on POST-body and Basic; token_endpoint_auth_methods advertises client_secret_basic/post/none with no runtime verification; introspection_endpoint absent from discovery while endpoint live
+[LEARN] ACCEPTED MISCONFIG @ tools.alfaview.com/whiteboard/: Second unmapped RPC backend proven by controlled differential — 47B gRPC envelope vs poll's 45B; distinct marshaller; no auth challenge; zero client references
+[LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com: Validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI components.securitySchemes={}, security=null
+[LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com/v2/users/invitation{,s}: OpenAPI declares POST only; live server advertises Allow: DELETE,POST on /v2/users/invitation and DELETE-only on undocumented /v2/users/invitations; both Go router (19B text/plain), both 405 before 401
+[LEARN] REJECTED AUTH @ sso.alfaview.com/oauth2/userinfo: JOSE algorithm confusion tested (alg=none, HS256 with RSA pubkey, HS256 random, RS256 self-signed) — all byte-identical access_token_failed_processing; no third tier
+[LEARN] REJECTED OATH @ sso.alfaview.com/oauth2/logout: post_logout_redirect_uri and redirect_uri both ignored; every variant 302 → /
+[LEARN] REJECTED AUTH @ apis.alfaview.com/v2/auth/{guest,group}-link: NO accessKey existence oracle — well-formed synthetic triple returns 422/88B ACTION_INVALID byte-identical to traversal key; taxonomy exactly two tiers (schema 422, business 422)
+[LEARN] REJECTED MISCONFIG @ apis.alfaview.com: 403-declaration asymmetry not behaviorally load-bearing — /v2/permission-groups returns 401 while declaring no 401; whole authenticated surface returns uniform 401
+[LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com: Pre-auth query-parameter binder is unauthenticated parameter-enumeration oracle (9 of 26 GET ops); append wrong-typed value → 422 with location: query.<param>; unrecognized → 401
+
+**STEP 7 — RISK**
+[RISK] alfaview: 88/100. Broad scope (55 dedicated hosts + 6 main domains + ~110 CT subdomains, 100% probed). Production APIs auth-gated (401 opaque tokens). Critical IDOR: company-wide guest-link/group-link lists return live credentials under token vocabulary with no expressible permission; unscoped update mutations (PATCH /v2/guest-links/{id}, /v2/group-links/{id}) enable credential rebinding + permissionGroupId escalation. OAuth/SSO: sso.alfaview.com (FusionAuth 1.63.0) exposes OIDC metadata with issuer=acme.com misconfiguration, implicit flow, HS256/384/512/ES256/384/512 support vs JWKS RSA-only, /oauth2/introspect client auth fully unenforced (30+ cycles), JWKS oscillates (404↔200), introspection_endpoint advertisement oscillates, password grant (ROPC) advertised alongside non-licensed client_credentials. app.alfaview.com primary client: GraphQL schema fully leaked, inconsistent resolver auth, divergent guest path (no accessKey), passwordless magic-token auth-gated, admin surface in public bundle (adminSwitchCompany cross-tenant minting with hardcoded tenant IDs). test.alfaview.com distributes unsigned binaries v483102. tools.alfaview.com exposes verb-based JSON RPC with custom gRPC-metadata auth; second unmapped RPC mount at /whiteboard/* proven. 31 hosts exhausted. Realistic path: obtain dev account via HUMAN signup → test IDOR cross-tenant guest enumeration + adminSwitchCompany cross-tenant minting + introspect token metadata disclosure + poll/whiteboard BOLA.
