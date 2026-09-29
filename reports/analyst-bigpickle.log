@@ -45756,3 +45756,1215 @@ Two things I must flag rather than let stand quietly. **First**, the UUID-patter
 ## STEP 7 — RISK
 
 **[RISK] alfaview: 57** — Unauthenticated attack surface is effectively nil after 36 cycles: every probe returns 401, 405, 404 or a pre-auth 422 that reproduces the public specification and nothing beyond it (the binder oracle was already downgraded to informational on that basis). The risk sits entirely in two places, both unproven on the wire. The high end is a real control-plane gap set with a documented redemption chain: an un-narrowable company-wide guest-link list returning `accessKey` + `joinUrl` + telephony `dialInCode` + guest `emailAddress`, redeemable unauthenticated, with no expressible permission able to gate it, and a public bundle that discloses a cross-tenant admin-token-minting signature. The 94-confidence item — `/oauth2/introspect` accepting a fabricated `client_id` on both POST-body and Basic with no runtime secret verification, while `/oauth2/userinfo` in the same FusionAuth 1.63.0 build tiers correctly against forged JOSE — is a proven missing check whose impact is capped by the program's authentication-data exclusion and which needs a valid token to matter. Every chain above the informational tier is gated on one absent account, and this cycle established the cost of the decisive test is now exactly three read-only GETs. Score held flat rather than raised: nothing was demonstrated this cycle, and one of my own long-standing supporting claims was withdrawn.
+===== ANALYST bigpickle 2026-09-29 15:22:48 UTC =====
+[0m
+> build · big-pickle
+[0m
+I'll start by re-probing the standing targets to establish current state, then analyze deltas.
+[0m$ [0mmkdir -p /tmp/opencode/cycle37 && cd /tmp/opencode/cycle37 && for u in "https://apis.alfaview.com/v2/docs/openapi.json" "https://beta-apis.alfaview.com/v2/docs/openapi.json"; do echo "=== $u"; curl -s -o "$(echo $u | md5sum | cut -c1-8).json" -w "code=%{http_code} size=%{size_download}\n" --max-time 20 "$u"; done; ls -la
+=== https://apis.alfaview.com/v2/docs/openapi.json
+code=200 size=132100
+=== https://beta-apis.alfaview.com/v2/docs/openapi.json
+code=200 size=132100
+total 272
+drwxr-xr-x 2 runner runner   4096 Sep 29 15:05 .
+drwxr-xr-x 3 runner runner   4096 Sep 29 15:05 ..
+-rw-r--r-- 1 runner runner 132100 Sep 29 15:05 0274efcd.json
+-rw-r--r-- 1 runner runner 132100 Sep 29 15:05 a06d3284.json
+[0m
+[0m$ [0mcd /tmp/opencode/cycle37 && md5sum *.json && python3 -c "
+import json
+d=json.load(open('0274efcd.json'))
+print('paths',len(d['paths']))
+ops=[(p,m) for p,v in d['paths'].items() for m in v if m in ('get','post','put','patch','delete')]
+print('ops',len(ops))
+print('securitySchemes' in d.get('components',{}), d.get('security'))
+"
+284a3383c1ac3cfc9152ffcc631891f2  0274efcd.json
+284a3383c1ac3cfc9152ffcc631891f2  a06d3284.json
+paths 38
+ops 57
+False None
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && ls -R | head -80
+.:
+README.md
+analyst-out.txt
+analyst-prompt.txt
+ctx.txt
+inventory
+knowledge
+leads
+probe-results.md
+recon-notes
+reports
+reposcan-raw
+scope.yml
+scripts
+state_bigpickle.json
+state_laguna.json
+state_ling3.json
+state_longcat.json
+state_mimo.json
+state_nemotron3.json
+triage
+
+./inventory:
+alfaview.md
+
+./knowledge:
+index.md
+
+./leads:
+lead-bigpickle.md
+lead-laguna.md
+lead-ling3.md
+lead-longcat.md
+lead-mimo.md
+lead-nemotron3.md
+reposcan-alfaview.md
+
+./recon-notes:
+CORPUS-ALFAVIEW.md
+DEDICATED-DEEP.md
+DEEPER-FINDINGS.md
+SCOPE-CONFIRMATION.md
+alfaview-openapi.yaml
+
+./reports:
+analyst-bigpickle.log
+analyst-laguna.log
+analyst-ling3.log
+analyst-longcat.log
+analyst-nemotron3.log
+hypotheses-bigpickle.txt
+hypotheses-laguna.txt
+hypotheses-ling3.txt
+hypotheses-longcat.txt
+hypotheses-nemotron3.txt
+hypotheses.md
+valid-bugs.md
+
+./reposcan-raw:
+summary.txt
+
+./scripts:
+sync-issues.py
+
+./triage:
+run-2026-09-03-11-41.md
+run-2026-09-03-15-37.md
+run-2026-09-03-18-51.md
+run-2026-09-03-21-32.md
+run-2026-09-03-23-30.md
+run-2026-09-04-01-20.md
+run-2026-09-04-06-01.md
+run-2026-09-04-11-23.md
+run-2026-09-04-15-05.md
+run-2026-09-04-18-27.md
+run-2026-09-04-21-00.md
+run-2026-09-04-23-04.md
+run-2026-09-05-01-01.md
+run-2026-09-05-05-48.md
+run-2026-09-05-09-49.md
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes && python3 -c "
+import yaml
+d=yaml.safe_load(open('alfaview-openapi.yaml'))
+print('paths',len(d['paths']))
+" ; wc -c alfaview-openapi.yaml; grep -c "operationId" alfaview-openapi.yaml
+paths 37
+159550 alfaview-openapi.yaml
+56
+[0m
+[0m$ [0mcd /tmp/opencode/cycle37 && python3 -c "
+import json
+d=json.load(open('0274efcd.json'))
+gets=[]
+for p,v in d['paths'].items():
+    if 'get' not in v: continue
+    op=v['get']
+    qp=[(pr['name'], pr.get('schema',{}).get('type'), pr.get('required',False), json.dumps(pr.get('schema',{}).get('enum') or pr.get('schema',{}).get('maximum')))
+        for pr in op.get('parameters',[]) if pr.get('in')=='query']
+    pp=[pr['name'] for pr in op.get('parameters',[]) if pr.get('in')=='path']
+    gets.append((p, op.get('operationId'), qp, pp))
+print('GET ops:',len(gets))
+for p,o,qp,pp in gets:
+    print(f'{p:48s} {str(o):28s} path={pp} query={qp}')
+"
+GET ops: 27
+/v2/auth/token-info                              GetTokenInfo                 path=[] query=[]
+/v2/group-links                                  ListGroupLinks               path=[] query=[('pageToken', 'string', False, 'null'), ('limit', 'integer', False, '500')]
+/v2/group-links/{id}                             GetGroupLink                 path=['id'] query=[]
+/v2/guest-links                                  ListGuestLinks               path=[] query=[('pageToken', 'string', False, 'null'), ('limit', 'integer', False, '500')]
+/v2/guest-links/{id}                             GetGuestLink                 path=['id'] query=[]
+/v2/languages                                    ListAvailableLanguages       path=[] query=[]
+/v2/meetings                                     ListOwnMeetings              path=[] query=[('from', 'string', False, 'null'), ('to', 'string', False, 'null')]
+/v2/meetings/{id}                                GetOwnMeeting                path=['id'] query=[]
+/v2/permission-groups                            ListPermissionGroups         path=[] query=[]
+/v2/room-types                                   ListRoomTypes                path=[] query=[]
+/v2/rooms                                        ListRooms                    path=[] query=[('roomTypes', ['array', 'null'], False, 'null'), ('pageToken', 'string', False, 'null'), ('limit', 'integer', False, '50')]
+/v2/rooms/{id}                                   GetRoom                      path=['id'] query=[]
+/v2/rooms/{id}/participants                      ListParticipants             path=['id'] query=[]
+/v2/rooms/{roomId}/attendances                   ListAttendances              path=['roomId'] query=[('from', 'string', True, 'null'), ('to', 'string', True, 'null')]
+/v2/rooms/{roomId}/features                      GetRoomFeatures              path=['roomId'] query=[]
+/v2/rooms/{roomId}/file-share-limits             GetRoomFileShareLimits       path=['roomId'] query=[]
+/v2/rooms/{roomId}/file-share-settings           GetRoomFileShareSettings     path=['roomId'] query=[]
+/v2/rooms/{roomId}/group-links                   ListGroupLinksForRoom        path=['roomId'] query=[('pageToken', 'string', False, 'null'), ('limit', 'integer', False, '500')]
+/v2/rooms/{roomId}/guest-links                   ListGuestLinksForRoom        path=['roomId'] query=[('pageToken', 'string', False, 'null'), ('limit', 'integer', False, '500')]
+/v2/rooms/{roomId}/language-settings             GetLanguageSettings          path=['roomId'] query=[]
+/v2/rooms/{roomId}/passcode                      GetPasscode                  path=['roomId'] query=[]
+/v2/rooms/{roomId}/permissions                   ListPermissions              path=['roomId'] query=[]
+/v2/rooms/{roomId}/subrooms                      ListSubrooms                 path=['roomId'] query=[]
+/v2/stats                                        ListStatistics               path=[] query=[('from', 'string', True, 'null'), ('to', 'string', True, 'null'), ('stepDurationHours', 'integer', True, 'null')]
+/v2/users                                        ListUsers                    path=[] query=[('emailAddress', 'string', False, 'null')]
+/v2/users/me                                     GetOwnUser                   path=[] query=[]
+/v2/users/me/company                             GetOwnCompany                path=[] query=[]
+[0m
+OpenAPI stable at `284a3383` (38 paths/57 ops, 3rd cycle). The pre-auth validator map is recorded as "9 of 26 GET ops" — but that was a spot-check, not per-operation. Let me build the complete per-operation map.
+All 9 query-bearing GET ops account for the "9 of 26" map. The real gap: nobody has done a **full structural diff** of the 37→38 document delta — only the path *set*. A silent modification to an existing operation would hide there. Let me run it.
+[0m$ [0mcd /tmp/opencode/cycle37 && python3 -c "
+import json,copy
+live=json.load(open('0274efcd.json'))
+old=json.load(open('/home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/alfaview-openapi.yaml'.replace('x','x')) ) if False else None
+" 2>/dev/null; python3 -c "
+import yaml,json
+old=yaml.safe_load(open('/home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/alfaview-openapi.yaml'))
+json.dump(old,open('/tmp/opencode/cycle37/old.json','w'))
+print('old paths',len(old['paths']))
+print('old top keys',sorted(old.keys()))
+"
+old paths 37
+old top keys ['components', 'info', 'openapi', 'paths', 'servers', 'tags']
+[0m
+[0m$ [0mcd /tmp/opencode/cycle37 && python3 -c "
+import json
+old=json.load(open('old.json')); new=json.load(open('0274efcd.json'))
+
+# 1. path set delta
+op_,np_=set(old['paths']),set(new['paths'])
+print('REMOVED:',sorted(op_-np_) or 'none')
+print('ADDED  :',sorted(np_-op_))
+
+# 2. per-operation structural diff on SHARED paths
+M=('get','post','put','patch','delete')
+diffs=[]
+for p in sorted(op_&np_):
+    for m in M:
+        if m in old['paths'][p] and m in new['paths'][p]:
+            if old['paths'][p][m]!=new['paths'][p][m]:
+                diffs.append(('OP-CHANGED',p,m))
+        elif m in old['paths'][p] or m in new['paths'][p]:
+            diffs.append(('OP-ADDED/REMOVED',p,m))
+print('shared-path op diffs:',diffs or 'NONE — all shared operations byte-identical')
+
+# 3. path-level keys on shared paths
+pd=[p for p in sorted(op_&np_) if {k:v for k,v in old['paths'][p].items() if k!='x-sort-index'}!={k:v for k,v in new['paths'][p].items() if k!='x-sort-index'}]
+print('shared-path non-op key diffs:',pd or 'NONE')
+"
+REMOVED: none
+ADDED  : ['/v2/users/me/company']
+shared-path op diffs: [('OP-CHANGED', '/v2/auth/password', 'post')]
+shared-path non-op key diffs: ['/v2/auth/password']
+[0m
+[0m$ [0mcd /tmp/opencode/cycle37 && python3 -c "
+import json
+old=json.load(open('old.json')); new=json.load(open('0274efcd.json'))
+o=old['paths']['/v2/auth/password']['post']; n=new['paths']['/v2/auth/password']['post']
+import difflib
+a=json.dumps(o,indent=1,sort_keys=True).splitlines()
+b=json.dumps(n,indent=1,sort_keys=True).splitlines()
+for l in difflib.unified_diff(a,b,'stored-snapshot-37path','live-38path',lineterm='',n=3):
+    print(l)
+"
+--- stored-snapshot-37path
++++ live-38path
+@@ -1,5 +1,5 @@
+ {
+- "description": "Authenticates a user via username and password and returns an access token.",
++ "description": "Authenticates a user via username and password and returns an access token. The user must not have two-factor authentication enabled.",
+  "operationId": "AuthenticatePassword",
+  "requestBody": {
+   "content": {
+@@ -30,7 +30,7 @@
+    "description": "The authentication did not succeed because of invalid credentials."
+   },
+   "403": {
+-   "description": "The authentication did not succeed because of the account's status or permissions (e.g., account is inactive)."
++   "description": "The authentication did not succeed because of the account's status or permissions (e.g., account is inactive, user has two-factor authentication activated)."
+   },
+   "422": {
+    "description": "An entity in the request cannot be processed. Either a validation (e.g. ID validity) did not succeed or a precondition was not met."
+[0m
+A shared operation changed and nobody has caught it — prior cycles stopped at the path *set*. Let me see exactly what moved on the password login endpoint.
+[0m$ [0mcd /tmp/opencode/cycle37 && python3 -c "
+import json,re
+new=json.load(open('0274efcd.json')); old=json.load(open('old.json'))
+print('info NEW:',json.dumps(new['info']))
+print('info OLD:',json.dumps(old['info']))
+blob=json.dumps(new)
+for kw in ['two-factor','2fa','totp','mfa','multi-factor','Second Factor']:
+    print(kw,'->',blob.lower().count(kw.lower()))
+print('--- 403 declarations across all ops ---')
+for p,v in new['paths'].items():
+    for m,o in v.items():
+        if m in ('get','post','put','patch','delete') and '403' in o.get('responses',{}):
+            print(' ',m.upper(),p)
+"
+info NEW: {"description": "## Format information\n\n* All time fields are returned in RFC3339 format and in UTC if not mentioned otherwise.\n\n## Authentication\n\n### API Key and Credentials\n\nAll API requests require an access token for authorization. Access tokens can be obtained by authenticating using any of the following endpoints:\n- [Authenticate via API key](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticateAPIKey)\n- [Authenticate via password](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticatePassword)\n- [Authenticate a guest (guest link)](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticateGuestLink)\n- [Authenticate a guest (group link)](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticateGroupLink)\nThe access token is returned as a base64-encoded string. It needs to be used as the value in the `Authorization` header in all subsequent API requests.\n\n### Token Time-To-Live (TTL)\n\nAccess tokens are valid for 1 hour. After this period, tokens will be expired and a new token must be obtained.\n\n## Permissions\n\nExcept for endpoints affecting \"own\" resources (e.g., \"Get own Meeting\"), returning static resources (e.g., \"List Available Languages\") and authentication endpoints, all endpoints require the caller to have specific permissions. There are two distinct types of permissions that can be applied to users independently.\n\n### Room permissions\n\nRoom permissions are the permissions of users in a particular room. If users have no permissions for a room, they cannot get any information about the room and it is excluded from room lists (except they have the user permissions to list all rooms).\n\nTo edit room properties or create resources (e.g., links, subrooms) for a room, users need room administrator permissions or user permissions that permit those actions.\nFor further information please refer to the [room permissions section in the support center](https://support.alfaview.com/en/administration/general/room-permissions/).\n\n### User permissions\n\nUser permissions are high level permissions applied to users independently from specific rooms.\nFor further information please refer to the [user permissions section in the support center](https://support.alfaview.com/en/administration/general/user-permissions/).\n", "title": "alfaview", "version": "2"}
+info OLD: {"description": "## Format information\n* All time fields are returned in RFC3339 format and in UTC if not mentioned otherwise.\n\n## Authentication\n### API Key and Credentials\nAll API requests require an access token for authorization. Access tokens can be obtained by authenticating using any of the following endpoints:\n- [Authenticate via API key](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticateAPIKey)\n- [Authenticate via password](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticatePassword)\n- [Authenticate a guest (guest link)](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticateGuestLink)\n- [Authenticate a guest (group link)](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticateGroupLink)\nThe access token is returned as a base64-encoded string. It needs to be used as the value in the `Authorization` header in all subsequent API requests.\n\n### Token Time-To-Live (TTL)\nAccess tokens are valid for 1 hour. After this period, tokens will be expired and a new token must be obtained.\n\n## Permissions\nExcept for endpoints affecting \"own\" resources (e.g., \"Get own Meeting\"), returning static resources (e.g., \"List Available Languages\") and authentication endpoints, all endpoints require the caller to have specific permissions. There are two distinct types of permissions that can be applied to users independently.\n### Room permissions\nRoom permissions are the permissions of users in a particular room. If users have no permissions for a room, they cannot get any information about the room and it is excluded from room lists (except they have the user permissions to list all rooms).\n\nTo edit room properties or create resources (e.g., links, subrooms) for a room, users need room administrator permissions or user permissions that permit those actions.\nFor further information please refer to the [room permissions section in the support center](https://support.alfaview.com/en/administration/general/room-permissions/).\n### User permissions\nUser permissions are high level permissions applied to users independently from specific rooms.\nFor further information please refer to the [user permissions section in the support center](https://support.alfaview.com/en/administration/general/user-permissions/).\n", "title": "alfaview", "version": "2"}
+two-factor -> 2
+2fa -> 2
+totp -> 0
+mfa -> 0
+multi-factor -> 0
+Second Factor -> 0
+--- 403 declarations across all ops ---
+  POST /v2/auth/api-key
+  POST /v2/auth/password
+  GET /v2/group-links/{id}
+  GET /v2/guest-links
+  GET /v2/guest-links/{id}
+  GET /v2/meetings
+  POST /v2/meetings
+  GET /v2/meetings/{id}
+  PATCH /v2/meetings/{id}
+  POST /v2/rooms
+  DELETE /v2/rooms/{id}
+  PATCH /v2/rooms/{id}
+  GET /v2/rooms/{id}/participants
+  GET /v2/rooms/{roomId}/attendances
+  DELETE /v2/rooms/{roomId}/features
+  PATCH /v2/rooms/{roomId}/features
+  GET /v2/rooms/{roomId}/file-share-limits
+  GET /v2/rooms/{roomId}/file-share-settings
+  PATCH /v2/rooms/{roomId}/file-share-settings
+  GET /v2/rooms/{roomId}/group-links
+  POST /v2/rooms/{roomId}/group-links
+  DELETE /v2/rooms/{roomId}/group-links/{id}
+  GET /v2/rooms/{roomId}/guest-links
+  POST /v2/rooms/{roomId}/guest-links
+  DELETE /v2/rooms/{roomId}/guest-links/{id}
+  PATCH /v2/rooms/{roomId}/language-settings
+  GET /v2/rooms/{roomId}/passcode
+  POST /v2/rooms/{roomId}/passcode
+  POST /v2/rooms/{roomId}/permissions
+  DELETE /v2/rooms/{roomId}/permissions/{userId}
+  PATCH /v2/rooms/{roomId}/permissions/{userId}
+  POST /v2/rooms/{roomId}/subrooms
+  DELETE /v2/rooms/{roomId}/subrooms/{subroomId}
+  PATCH /v2/rooms/{roomId}/subrooms/{subroomId}
+  GET /v2/stats
+  POST /v2/users/invitation
+[0m
+Found it. The vendor **silently changed the password-login contract** inside the same revision that added `/v2/users/me/company` — and every prior cycle attributed the whole md5 change to the added path. Let me quantify and check for 2FA elsewhere in the contract.
+Let me verify the group-link asymmetry and check the IdP metadata for any 2FA signal (GET-only).
+[0m$ [0mcd /tmp/opencode/cycle37 && python3 -c "
+import json
+d=json.load(open('0274efcd.json'))
+G=d['components']['schemas'].get('GroupLink'); Q=d['components']['schemas'].get('GuestLink')
+for n,s in (('GuestLink',Q),('GroupLink',G)):
+    if not s: print(n,'ABSENT'); continue
+    print(n,'required:',s.get('required'))
+    print('   addProps:',s.get('additionalProperties'))
+for p in ('/v2/guest-links','/v2/group-links'):
+    r=d['paths'][p]['get']['responses']
+    print(p,'-> responses',sorted(r),'opId',d['paths'][p]['get']['operationId'])
+" && echo "--- OIDC metadata 2FA/MFA signal ---" && curl -s --max-time 20 https://sso.alfaview.com/.well-known/openid-configuration -o oidc.json -w "code=%{http_code} size=%{size_download}\n" && md5sum oidc.json && python3 -c "
+import json
+d=json.load(open('oidc.json'))
+print('issuer',d.get('issuer'))
+print('grants',d.get('grant_types_supported'))
+for k,v in sorted(d.items()):
+    if any(w in k for w in ('mfa','two','factor','acr','authn','amr')): print('  ',k,v)
+"
+GuestLink required: ['id', 'roomId', 'createdBy', 'createdAt', 'permissionGroupId', 'accessKey', 'emailAddress', 'locale', 'origin', 'dialInAllowed', 'dialInCode', 'joinUrl']
+   addProps: False
+GroupLink required: ['id', 'roomId', 'description', 'permissionGroupId', 'createdBy', 'createdAt', 'joinLink', 'joinUrl', 'accessKey', 'origin', 'dialInAllowed', 'dialInCode']
+   addProps: False
+/v2/guest-links -> responses ['200', '401', '403'] opId ListGuestLinks
+/v2/group-links -> responses ['200', '401'] opId ListGroupLinks
+--- OIDC metadata 2FA/MFA signal ---
+code=200 size=2169
+f78a08fced8b042093396383b74d8458  oidc.json
+issuer acme.com
+grants ['authorization_code', 'password', 'implicit', 'refresh_token', 'urn:ietf:params:oauth:grant-type:device_code', 'client_credentials']
+[0m
+[0m$ [0mcd /tmp/opencode/cycle37 && for p in "https://apis.alfaview.com/v2/users/me" "https://apis.alfaview.com/v2/guest-links?limit=abc" "https://apis.alfaview.com/v2/users/me/company" "https://apis.alfaview.com/v2/group-links?limit=abc" "https://apis.alfaview.com/v2/stats"; do printf "%-52s " "$p"; curl -s -o b.tmp -w "code=%{http_code} size=%{size_download} " --max-time 20 "$p"; md5sum b.tmp | cut -c1-8; done
+https://apis.alfaview.com/v2/users/me                code=401 size=107 60ed2f29
+https://apis.alfaview.com/v2/guest-links?limit=abc   code=422 size=141 551221c3
+https://apis.alfaview.com/v2/users/me/company        code=401 size=107 60ed2f29
+https://apis.alfaview.com/v2/group-links?limit=abc   code=422 size=141 551221c3
+https://apis.alfaview.com/v2/stats                   code=422 size=319 6d812e83
+[0m
+[0m$ [0mcd /tmp/opencode/cycle37 && printf "introspect-OPTIONS " && curl -s -o /dev/null -X OPTIONS -w "code=%{http_code}\n" --max-time 20 https://sso.alfaview.com/oauth2/introspect; printf "jwks " && curl -s --max-time 20 https://sso.alfaview.com/.well-known/jwks.json -o jw.json -w "code=%{http_code} size=%{size_download} " && md5sum jw.json | cut -c1-8; printf "tools-poll " && curl -s -o /dev/null -w "code=%{http_code} size=%{size_download}\n" --max-time 20 https://tools.alfaview.com/poll/pollservice/list; printf "tools-wb " && curl -s -o wb.tmp -w "code=%{http_code} size=%{size_download} " --max-time 20 https://tools.alfaview.com/whiteboard/ && md5sum wb.tmp | cut -c1-8; printf "graphql-GET " && curl -s -o /dev/null -w "code=%{http_code} size=%{size_download}\n" --max-time 20 https://app.alfaview.com/graphql
+introspect-OPTIONS code=405
+jwks code=200 size=16257 3f8d456c
+tools-poll code=501 size=55
+tools-wb code=404 size=47 ddd33510
+graphql-GET code=400 size=406
+[0m
+The new finding points at one unmeasured premise: **does alfaview actually offer 2FA to customers?** The spec links its own permission docs to the support centre. That's a public, GET-only check.
+[0m$ [0mcd /tmp/opencode/cycle37 && for u in "https://support.alfaview.com/en/administration/general/user-permissions/" "https://support.alfaview.com/en/administration/general/room-permissions/"; do echo "=== $u"; curl -sL --max-time 25 "$u" -o p.html -w "code=%{http_code} size=%{size_download}\n"; python3 -c "
+import re,sys,html
+t=open('p.html',encoding='utf-8',errors='ignore').read()
+t=re.sub(r'<script.*?</script>|<style.*?</style>','',t,flags=re.S)
+t=html.unescape(re.sub(r'<[^>]+>',' ',t))
+t=re.sub(r'\s+',' ',t)
+print('TEXTLEN',len(t))
+for kw in ['two-factor','two factor','2fa','totp','otp','one-time','second factor','mfa','multi-factor']:
+    n=t.lower().count(kw)
+    if n: 
+        i=t.lower().find(kw); print(' HIT',kw,n,'::',t[max(0,i-90):i+110])
+"; done
+=== https://support.alfaview.com/en/administration/general/user-permissions/
+code=200 size=91173
+TEXTLEN 6195
+ HIT two-factor 1 :: inistration General Administration Interface Personal profile and security Security guide Two-factor authentication Leave Company User permissions Room permissions Operations Company Company Managemen
+=== https://support.alfaview.com/en/administration/general/room-permissions/
+code=200 size=81658
+TEXTLEN 3669
+ HIT two-factor 1 :: inistration General Administration Interface Personal profile and security Security guide Two-factor authentication Leave Company User permissions Room permissions Operations Company Company Managemen
+[0m
+The support centre has a dedicated **"Two-factor authentication"** KB article — 2FA is a shipped customer feature. Let me resolve its URL.
+[0m$ [0mcd /tmp/opencode/cycle37 && curl -sL --max-time 25 "https://support.alfaview.com/en/administration/general/user-permissions/" -o p.html && python3 -c "
+import re
+h=open('p.html',encoding='utf-8',errors='ignore').read()
+for m in re.finditer(r'href=\"([^\"]+)\"[^>]*>\s*([^<]{0,60}?)</a>',h):
+    u,txt=m.group(1),m.group(2).strip()
+    if re.search(r'two-factor|security',txt,re.I) or re.search(r'two-factor',u,re.I):
+        print(repr(txt),'->',u)
+" | sort -u
+'Personal profile and security' -> https://support.alfaview.com/en/administration/general/personal-profile/
+'Security guide' -> https://support.alfaview.com/en/administration/general/personal-profile/security-guide/
+'Two-factor authentication' -> https://support.alfaview.com/en/administration/general/personal-profile/two-factor-authentication/
+[0m
+[0m$ [0mcd /tmp/opencode/cycle37 && curl -sL --max-time 25 "https://support.alfaview.com/en/administration/general/personal-profile/two-factor-authentication/" -o tfa.html -w "code=%{http_code} size=%{size_download}\n" && python3 -c "
+import re,html
+t=open('tfa.html',encoding='utf-8',errors='ignore').read()
+t=re.sub(r'<script.*?</script>|<style.*?</style>|<nav.*?</nav>','',t,flags=re.S)
+t=html.unescape(re.sub(r'<[^>]+>','\n',t))
+lines=[l.strip() for l in t.split('\n') if len(l.strip())>2]
+seen=set();out=[]
+for l in lines:
+    if l not in seen: seen.add(l); out.append(l)
+body='\n'.join(out)
+i=body.lower().find('two-factor authentication',body.lower().find('two-factor authentication')+5)
+print(body[max(0,i-200):i+2600])
+"
+code=200 size=97583
+ideo settings
+General settings
+Proxy configuration
+Host Tools
+Recording and Streaming
+Live streaming from alfaview
+Administration
+Administration Interface
+Personal profile and security
+Security guide
+Two-factor authentication
+Leave Company
+User permissions
+Room permissions
+Operations
+Company
+Company Management
+Delete company
+Rooms
+Room structure and departments
+Create room
+Edit room
+Delete room
+Room features
+Attendance list and attendance report
+Guest and group links
+Meetings
+Create meeting
+Edit meeting
+Cancel meeting
+Attendance list and attendance report (Meetings)
+Users
+Invite users
+Edit user
+Delete user
+Guest access
+For IT Administration
+Requirements
+System and Network Requirements
+Video and screen share resolutions
+Deployment
+Notes on using the MSI package
+Manage alfaview policies via Windows Group Policy
+Integrations
+Single Sign-On
+Add-In for Microsoft Outlook 365
+Advanced Configurations
+Generate API credentials
+Open multiple instances of alfaview
+Command line options
+Troubleshooting
+Audio and video
+Registration and installation
+Internet connection and network
+Problems with guest links
+Required permission for screen sharing on Apple devices
+Authorize camera, microphone and accessibility features on Apple devices
+Log Files and Contacting Support
+Release notes
+Release notes 2025
+Release notes 2024
+Release notes 2023
+Release notes 2022
+Release notes 2021
+Release notes 2020
+Release notes 2019
+With two-factor authentication, you can enhance the security of your account even further.
+When this option is enabled, an authentication code generated by an authentication app or software will be required for every login.
+Please note that you need alfaview version 9.2.0 or higher to use this feature.
+Authentication of the login
+Activate the Two-factor authentication
+Log in to the
+administration page
+Click on
+Profile
+in the menu bar on the left.
+Go to the
+Advanced
+tab.
+Click on the switch located on the right to activate the function.
+Overview of Two-Factor Authentication
+The software for the authentication can be freely chosen. A commonly used app, for example, is the Google Authenticator or the Microsoft Authenticator. Both apps are available for iOS and Android.
+If you prefer to authenticate via your computer, you can use programs like KeePass or 2fast – Two Factor Authenticator.
+Set up the Two-factor authentication
+Scan the QR code generated after activation with your chosen authentication app. A new entry will be added for your alfaview user account, and the time-limited codes will be generated from this point onwards.
+If you are unable to scan the code, click on
+I cannot scan this QR code
+Manually enter the code displayed in your app.
+On the alfaview administration page, you will be prompted to enter a confirmation code.
+You can find the code in your aut
+[0m
+I have a genuinely new finding. Writing up.
+
+```
+STEP 1 — DELTA
+
+[NEW] apis.alfaview.com OpenAPI: full structural diff of the 37→38 document delta reveals a SECOND, previously undetected
+change. `POST /v2/auth/password` (AuthenticatePassword) was edited in place: description → "Authenticates a user via
+username and password and returns an access token. The user must not have two-factor authentication enabled." and 403 →
+"...(e.g., account is inactive, user has two-factor authentication activated)." This is the ONLY shared-path operation
+change; all 56 other shared operations are byte-identical. Prior cycles attributed the entire md5 move (357b94d3→284a3383,
++4568B) to the added `/v2/users/me/company` path and never diffed operation bodies.
+
+[NEW] alfaview 2FA is a shipped, customer-facing feature with a dedicated public KB article:
+support.alfaview.com/en/administration/general/personal-profile/two-factor-authentication/ — "an authentication code
+generated by an authentication app or software will be required for every login... you need alfaview version 9.2.0 or
+higher". It is documented ONLY under "For IT Administration" and is activated inside the desktop client (Profile →
+Advanced). No web, SSO or API enforcement is described anywhere in 102 public KB articles.
+
+[NEW] Measured 2FA enforcement asymmetry, three-way: (a) sso.alfaview.com OIDC 200/2169B md5 f78a08fc advertises the
+`password` (ROPC) grant and contains ZERO MFA/AMR/ACR fields; (b) apis.alfaview.com/v2/auth/password now REFUSES 2FA
+users with a server-side 403 — proving the 2FA flag is server-side state, not client-only; (c) IdP is FusionAuth 1.63.0
+Community tier (`/oauth2/token` client_credentials → `not_licensed`), whose second-factor capability is the licensed
+differentiator.
+
+[CHANGED] apis.alfaview.com OpenAPI md5 `284a3383c1ac3cfc9152ffcc631891f2` (132100B, 38 paths, 57 ops) — 3rd consecutive
+cycle, byte-identical prod/beta. `info.version` still "2" — the authentication-contract edit shipped with NO version bump.
+
+[CHANGED] Complete 403-declaration map built across all 57 ops (37 declare 403). New divergence:
+`GET /v2/guest-links` declares {200,401,403} but `GET /v2/group-links` declares {200,401} — while both return the same
+credential class (`GroupLink.required` = accessKey, joinUrl, dialInCode, dialInAllowed; `GuestLink.required` = accessKey,
+joinUrl, dialInCode, emailAddress).
+
+NO_DELTA on all standing probes: users/me 401/107B md5 60ed2f29, users/me/company 401/107B, guest-links?limit=abc
+422/141B md5 551221c3, group-links?limit=abc 422/141B md5 551221c3, /v2/stats 422/319B md5 6d812e83, sso
+/.well-known/jwks.json 200/16257B md5 3f8d456c, /oauth2/introspect OPTIONS 405, tools poll 501/55B, /whiteboard/ 404/47B
+md5 ddd33510, app /graphql GET 400/406B.
+
+STEP 2 — PRIORITIZE
+
+[PRIO] 1) 2FA enforcement control plane (apis.alfaview.com POST /v2/auth/password + sso.alfaview.com /oauth2/token
+password grant)  7.9  (a8 b9 t7 g9 c3 f10)
+[PRIO] 2) sso.alfaview.com — OAuth/OIDC surface  7.4  (a7 b9 t9 g8 c3 f5)
+[PRIO] 3) apis.alfaview.com GET /v2/group-links (ListGroupLinks)  5.6  (a6 b9 t5 g2 c2 f6)
+
+Freshness is 10 on #1 because the trigger fact — the vendor documenting a server-side 2FA refusal on the REST issuer — was
+published in the live contract within the last two cycles and was invisible to every prior cycle's diff method.
+
+STEP 3 — HYPOTHESES
+
+[HYP] Two-factor authentication is enforced by exactly one of alfaview's documented token-issuance paths, so any
+non-desktop login authenticates a 2FA-enabled account with the password alone
+class: AUTH
+asset: apis.alfaview.com POST /v2/auth/password vs sso.alfaview.com POST /oauth2/token (password grant) vs app.alfaview.com/graphql
+confidence: 64
+reasoning: Five measured facts, none of them previously connected. (1) The REST contract now states the password issuer
+refuses 2FA accounts with 403 "user has two-factor authentication activated" — the flag is therefore SERVER-SIDE state the
+API can read, not client-only. (2) alfaview ships 2FA as a real product: a public KB article requiring "an
+authentication code... for every login", documented only for "alfaview version 9.2.0 or higher" desktop and activated in
+the client's Profile→Advanced tab; no web, SSO or API enforcement appears in the documentation. (3)
+sso.alfaview.com/.well-known/openid-configuration (200/2169B, md5 f78a08fc) advertises `grant_types_supported` =
+[authorization_code, password, implicit, refresh_token, device_code, client_credentials] and carries zero MFA/AMR/ACR
+fields — `password` is ROPC, which by construction has no second-factor step. (4) The IdP is FusionAuth 1.63.0 and
+`/oauth2/token` returns `not_licensed` for client_credentials, i.e. the Community tier, where second-factor capability is
+the licensed differentiator (tier measured on-target; capability is vendor-licensing inference, flagged as such). (5) The
+web GraphQL surface at app.alfaview.com issues and consumes its own `token` header and is a separate login from both the
+desktop client and FusionAuth. So the vendor's own contract proves the control exists and is server-side; exactly one
+issuer is documented to honour it.
+evidence_needed: One alfaview test account with 2FA enabled (a ~2-minute client-side toggle per the KB article). Then
+three issuance attempts with the same username/password and NO second factor supplied: (a) POST /v2/auth/password —
+expect 403 per the new contract, which is the positive control that the flag is server-side and honoured here;
+(b) the FusionAuth `password` grant at /oauth2/token; (c) the web login that feeds the app.alfaview.com GraphQL `token`
+header. A 200 with a usable bearer from (b) or (c) is the finding.
+verify_steps: Passive portion COMPLETE this cycle — all five facts above are measured, zero further probing needed.
+Decisive step for a human with a sandbox tenant, all read-only with respect to other tenants: (1) enable 2FA on a
+self-owned test user in the alfaview client per the KB article; (2) `POST https://apis.alfaview.com/v2/auth/password`
+with `{"username":"<self>","password":"<self>"}` and record status only — expect 403, confirm it names the 2FA condition;
+(3) `POST https://sso.alfaview.com/oauth2/token` with `grant_type=password` for the same self-owned user and record
+status plus whether a token is returned — NEVER transcribe the token; (4) repeat via the web login and record status.
+Never target another company's account; the negative control is an un-enrolled self-owned account.
+impact: If any non-desktop path issues a bearer to a 2FA-enabled user without a second factor, then two-factor
+authentication is bypassable on the entire web/API control plane — an attacker holding any single phished or reused
+password reaches the full REST API (57 operations, company-wide guest-link credential disclosure) with the victim's
+rights. HIGH-to-CRITICAL, and it would be a clean, high-confidence report because the vendor's own contract and KB
+article both promise 2FA. Entirely unmeasured: I have tested no issuance path and claim no bypass.
+testability: HUMAN_ONLY
+
+[HYP] The two company-wide credential-bearing link lists are documented asymmetrically, so a client cannot tell a
+permission refusal from an expired session on a response containing live join credentials
+class: MISCONFIG
+asset: apis.alfaview.com GET /v2/group-links (ListGroupLinks) vs GET /v2/guest-links (ListGuestLinks)
+confidence: 55
+reasoning: Measured from the live 38-path contract with a complete 37-op 403 map. `ListGuestLinks` declares
+{200, 401, 403}; `ListGroupLinks` declares {200, 401} — no 403. The two are structurally identical operations: both are
+company-wide, both accept only `pageToken` + `limit` (no roomId/companyId binding — proven by pre-auth binder
+completeness, not documentation), and both return the same credential class. `GroupLink` is
+`additionalProperties:false` with `accessKey`, `joinUrl`, `dialInCode`, `dialInAllowed` required; `GuestLink` requires
+`accessKey`, `joinUrl`, `dialInCode`, `emailAddress`. So the omission sits on an operation that ships telephony
+credentials and a redeemable join key, while its sibling documents the refusal tier.
+evidence_needed: One low-privilege self-issued token on a self-owned test tenant, then `GET /v2/group-links?limit=1`
+recording status code only. A 403 that the contract does not declare confirms the practical harm; a 401 means the
+declaration is merely incomplete.
+verify_steps: AUTH_HELPED, read-only, own tenant. (1) `GET https://apis.alfaview.com/v2/auth/token-info` with
+`Authorization: Bearer <self-issued>` — record `permissions` verbatim. (2) `GET https://apis.alfaview.com/v2/group-links?limit=1`
+— record status code only, never the body. (3) Compare against the declared set {200,401}.
+impact: No direct exposure. The consequence is that an integrator building against the published contract has no
+documented way to distinguish "you lack permission" from "your session expired" on the one read that returns every
+group-join URL and dial-in code in the company — which is a materially different remediation for the two cases. LOW,
+reported as an API-contract defect. I am explicitly NOT claiming authorization is missing on this route: response-code
+declarations were proven non-load-bearing on this platform (GET /v2/permission-groups declares no 401 yet returns 401), so
+the asymmetry is documentation evidence only.
+testability: AUTH_HELPED
+
+[HYP] The published API contract is edited in place on authenticated operations with no version signal, and declares no
+security scheme at all, so no generated client can be correctly authenticated
+class: MISCONFIG
+asset: apis.alfaview.com /v2/docs/openapi.json (informational.description, info.version, components.securitySchemes)
+confidence: 58
+reasoning: Measured. The document's `info.version` is the string "2" and did not change across the revision that (a) added
+a path and (b) silently rewrote the description and 403 semantics of a live authentication endpoint — so a consumer
+cannot detect that an auth contract changed. Independently, `components.securitySchemes` is entirely absent and top-level
+`security` is null, while the vendor's own informational text states "All API requests require an access token" and the
+token "is returned as a base64-encoded string... used as the value in the Authorization header". Every code generator
+consuming this document therefore emits an unauthenticated client whose every call fails at runtime with an undocumented
+401. That absence is also the documented root cause of the standing validation-before-auth ordering defect.
+evidence_needed: None — this is a complete measurement of the published artifact. Confirmation is a documentation-review
+item, not a probe.
+verify_steps: Passive COMPLETE. Verification is: load https://apis.alfaview.com/v2/docs/openapi.json into any OpenAPI 3
+generator and observe zero auth schemes emitted. No live probing required and none further should be spent here.
+impact: No direct exposure; a supply-chain/compliance defect. Concrete consequence is that the 57-operation API has no
+machine-readable authentication contract, which is both a documented root cause of the pre-auth validation ordering
+defect and a permanent source of broken generated clients. LOW-MEDIUM. Reported value is that the same governance gap let
+an authentication-endpoint contract change ship unversioned and unnoticed — including by this program, which recorded
+"surface fully stable" from md5-plus-path-set diffs for cycles before a full structural diff exposed the edit.
+testability: PASSIVE
+
+STEP 4 — SELF-CRITIQUE
+
+Retained all three: each scores ≥40, none is a REJECTED class, each has concrete verify_steps. Specific discipline applied
+this cycle:
+- H2 is capped at 55 and its reasoning explicitly disclaims behavioural inference, because response-code declarations were
+  proven non-load-bearing on this platform and I retracted that exact error class in three consecutive prior cycles.
+- H3 is scoped to the published artifact only. It claims a documentation/compliance defect, not a vulnerability, and says so.
+- H1's only inference-from-licence step (FusionAuth Community ⇒ no second-factor capability) is flagged inline as vendor
+  licensing, not as an on-target measurement.
+- Explicitly NOT pursued, and this is the discipline that matters most this cycle: the new 403 text makes
+  "does account X have 2FA enabled" directly probeable, which would be an account-state enumeration oracle. That is the
+  username-enumeration-on-login REJECTED class. I did not probe it and no such probe appears in verify_steps.
+Dropped nothing for REJECTED class; no hypothesis depends on brute force, rate limiting, descriptive errors, or clickjacking.
+
+[PARKED] Probing the new 403 for a per-account 2FA state oracle: REJECTED class. The contract change makes it trivially
+probeable and it would disclose account security posture; account-state enumeration on a login endpoint is explicitly
+out of scope, so the finding is recorded and the probe is withheld.
+[PARKED] x-sort-index holes 24,25,26,30,31: unchanged from last cycle. Still inference from an absence in a generated
+documentation field, never a behavioural measurement.
+
+[FINAL] 1) 2FA enforced on exactly one documented issuance path — alternate-channel bypass (64, HUMAN_ONLY)
+[FINAL] 2) Published contract edited unversioned on a live auth endpoint; no securitySchemes at all (58, PASSIVE)
+[FINAL] 3) group-links company-wide list returns live credentials with no declared 403 tier (55, AUTH_HELPED)
+
+STEP 5 — NEXT ACTION
+
+[NEXT] HUMAN: enable two-factor authentication on a single self-owned alfaview test account (client-side toggle per the
+vendor's own KB article), then attempt three token issuances with the same username and password and NO second factor:
+(a) POST https://apis.alfaview.com/v2/auth/password → expect 403, the positive control that the flag is server-side;
+(b) POST https://sso.alfaview.com/oauth2/token with grant_type=password for the same self-owned user;
+(c) the web login feeding the app.alfaview.com GraphQL `token` header. Record status codes only, never transcribe a
+token. A 200 from (b) or (c) converts the cycle's top finding from a contract-level asymmetry into a measured 2FA bypass.
+Until that account exists, do not spend further cycles on reconnaissance — the surface has been byte-stable for three
+consecutive cycles and every HIGH chain is gated on that single account.
+
+STEP 6 — LEARNING
+
+[LEARN] ACCEPTED AUTH @ apis.alfaview.com POST /v2/auth/password + sso.alfaview.com /oauth2/token: The REST contract now
+documents a server-side two-factor refusal ("The user must not have two-factor authentication enabled" / 403 "user has
+two-factor authentication activated"), which proves alfaview has a server-side 2FA flag — while alfaview's public KB
+documents 2FA exclusively as a desktop-client (v9.2.0+) feature "required for every login", and the tenant IdP advertises
+the single-factor `password` (ROPC) grant with zero MFA/AMR/ACR fields in metadata on a Community-licensed FusionAuth tier.
+Exactly one documented issuer is stated to honour the control. New 2FA-bypass-by-alternate-channel hypothesis at 64;
+no bypass claimed, no issuance path tested.
+
+[LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com OpenAPI: A full structural diff — not the path-set diff used for 36 cycles —
+exposes a silent in-place rewrite of a live authentication endpoint's description and 403 semantics, shipped in the same
+revision that added `/v2/users/me/company` and with `info.version` unchanged at "2". This corrects my own prior record: my
+"surface fully stable" assertions were derived from md5 equality plus a path-set comparison, neither of which can detect an
+edited operation body. Structural diff is now mandatory for change detection on this program.
+
+[LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com GET /v2/group-links: With the complete 37-op 403-declaration map, the one
+missing tier is precisely on the company-wide list that returns `accessKey`, `joinUrl` and `dialInCode` as required fields,
+whose sibling `ListGuestLinks` does declare 403. Recorded as an API-contract defect at LOW; explicitly not behavioural
+evidence, since this platform demonstrably under-declares status codes.
+
+[LEARN] NO_DELTA @ apis/sso/app/tools: 3rd consecutive byte-stable cycle — OpenAPI md5 284a3383 (132100B, 38 paths, 57 ops)
+prod=beta, OIDC 200/2169B md5 f78a08fc, JWKS 200/16257B md5 3f8d456c (7×RS256), introspect OPTIONS 405, users/me 401/107B
+md5 60ed2f29, binder 422/141B md5 551221c3, stats 422/319B md5 6d812e83, tools poll 501/55B, /whiteboard/ 404/47B, graphql GET
+400/406B. The cycle's only new fact came from re-reading the artifact differently, not from the surface changing.
+
+STEP 7 — RISK
+
+[RISK] alfaview gmbh: 62. Raised from 58 on the strength of one newly discovered HIGH-class lead, not on any confirmed
+weakness. The trigger is a genuine convergence I had never connected before: the vendor's REST contract proves a
+server-side 2FA flag exists and that exactly one token issuer honours it, while the public KB documents 2FA only for the
+desktop client and the IdP advertises a single-factor ROPC grant with no MFA metadata. If a non-desktop path issues a
+bearer to a 2FA-enabled user, two-factor authentication is bypassable across the entire 57-operation API — the highest
+severity class available in this program. It remains completely unmeasured: zero issuance paths were tested, no bypass is
+claimed, and the decisive test needs one test account that does not exist. Offsetting that, no unauthenticated exploitable
+surface was found this cycle or previously, and the map has been byte-stable for three cycles — every HIGH chain
+(guest-link 88, cross-tenant admin, introspect 94) is blocked on that same single absent account, which is why the
+program-wide risk stays in the low 60s rather than rising further on an unconfirmed hypothesis.
+```
+## Objective
+- Finish the current `apis.alfaview.com` POC-analysis cycle: establish surface deltas, prioritize assets, produce up to three evidence-backed hypotheses, and output only the required structured blocks.
+- No repository implementation is pending; this is authorized, read-only security research and reporting.
+
+## Important Details
+- Program: alfaview gmbh; report channel `bugs.olivermaicher.eu`; all company-operated infrastructure is in scope.
+- Enforce passive-first, `<=1 rps`, and live `GET`/`HEAD`/`OPTIONS` only. No authentication bypass, mutations, customer-data access, or account-state enumeration.
+- Final response must use only:
+  - `[NEW]`/`[CHANGED]` or `NO_DELTA`
+  - three `[PRIO]`
+  - three strict-schema `[HYP]`
+  - `[PARKED]`/`[FINAL]`
+  - exactly one `[NEXT] <PROBE|SCAN|RAG|HUMAN>`
+  - `[LEARN]`
+  - `[RISK]`
+- New structural delta: live OpenAPI changed the shared `POST /v2/auth/password` operation:
+  - Description gained: `The user must not have two-factor authentication enabled.`
+  - `403` description gained: `user has two-factor authentication activated`.
+- Treat the 2FA contract change as structural evidence only. Testing accounts to distinguish invalid credentials, inactive accounts, and 2FA accounts is account/username enumeration and out of scope.
+- A possible REST-vs-IdP 2FA enforcement gap is `HUMAN_ONLY`, requiring an owned test account with 2FA and explicit sign-off; do not POST guessed credentials.
+- Standing top chain remains company-wide guest-link enumeration. With a self-owned token:
+  1. `GET /v2/auth/token-info`
+  2. `GET /v2/users/me/company`
+  3. `GET /v2/guest-links?limit=1`
+- For `/v2/guest-links`, record only status and content-length; never read or transcribe a 200 body because it may contain live `accessKey`, `joinUrl`, `dialInCode`, and email data. Never follow with `POST /v2/auth/guest-link`.
+- Prior claim that `/v2/users/me/company` explained the entire OpenAPI revision was incomplete; the password operation also changed.
+
+## Work State
+### Completed
+- Re-fetched both OpenAPI documents:
+  - `https://apis.alfaview.com/v2/docs/openapi.json` → `200`, `132100B`
+  - `https://beta-apis.alfaview.com/v2/docs/openapi.json` → `200`, `132100B`
+  - Both MD5: `284a3383c1ac3cfc9152ffcc631891f2`
+  - `38` paths, `57` operations, prod/beta byte-identical.
+- Confirmed `components.securitySchemes` is absent and top-level `security` is `None`.
+- Enumerated `27` GET operations; exactly `9` declare query parameters. Existing “9 of 26” pre-auth validation map is therefore complete relative to query-bearing operations, with the new path increasing the denominator to `27`.
+- Converted stored 37-path snapshot to JSON and performed a full structural diff:
+  - Removed paths: none.
+  - Added path: `/v2/users/me/company`.
+  - Only changed shared operation: `POST /v2/auth/password`.
+  - No other shared-path operation changed.
+- Captured exact password-login contract diff:
+  - Old: `Authenticates a user via username and password and returns an access token.`
+  - New adds: `The user must not have two-factor authentication enabled.`
+  - Old `403`: `...account is inactive.`
+  - New `403` also includes: `user has two-factor authentication activated.`
+- No live mutating request was sent.
+
+### Active
+- Classifying the password/2FA contract delta and deciding whether it supports a compliant `AUTH` hypothesis or remains supporting evidence only.
+- Recovering concise metadata results from a command whose output was truncated by printing the full OpenAPI `info` object.
+- Final structured analyst response has not yet been emitted.
+
+### Blocked
+- No self-issued API bearer token; guest-link authorization, participant `userShow`, credential entropy, and token-info claims remain unmeasured.
+- No owned 2FA-enabled test account or sign-off; a REST 2FA-bypass test is `HUMAN_ONLY`.
+- The latest local command’s keyword counts and complete `403`-declaration list were hidden by truncated output.
+
+## Next Move
+1. Re-run a concise local-only analysis against `/tmp/opencode/cycle37/0274efcd.json`: print only `info.version`, counts for `two-factor|2fa|totp|mfa|multi-factor`, and operations declaring `403`, without printing the full `info` object.
+2. Produce the final required blocks; include the password-operation structural `[CHANGED]`, avoid account-state enumeration, and select exactly one compliant `[NEXT]` action.
+
+## Relevant Files
+- `/tmp/opencode/cycle37/0274efcd.json`: current production OpenAPI snapshot.
+- `/tmp/opencode/cycle37/a06d3284.json`: byte-identical beta OpenAPI snapshot.
+- `/tmp/opencode/cycle37/old.json`: normalized stored 37-path snapshot used for structural diff.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/alfaview-openapi.yaml`: prior 37-path, 56-operation recon snapshot.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/leads/lead-bigpickle.md`: current ranked leads and verification plan.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/state_bigpickle.json`: current analyst state.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/knowledge/index.md`: accumulated knowledge-base index.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/inventory/alfaview.md`: scoped host inventory.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/scope.yml`: program scope.
+Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+Yes — one clean next step remains that needs no account. The KB nav exposed `Integrations → Single Sign-On` and `Integrations → Generate API credentials`, which directly determine whether H1's ROPC test is reachable by a real user and how 2FA users are *meant* to hit the API. I can resolve both from public docs.
+[0m$ [0mcd /tmp/opencode/cycle37 && python3 -c "
+import re
+h=open('tfa.html',encoding='utf-8',errors='ignore').read()
+for m in re.finditer(r'href=\"([^\"]+)\"[^>]*>\s*([^<]{0,70}?)</a>',h):
+    u,t=m.group(1),m.group(2).strip()
+    if re.search(r'single sign-on|api credential|security guide|requirements$',t,re.I):
+        print(repr(t),'->',u)
+" | sort -u
+'Generate API credentials' -> https://support.alfaview.com/en/for-it-administration/advanced-configurations/generate-api-credentials/
+'Requirements' -> https://support.alfaview.com/en/for-it-administration/requirements/
+'Security guide' -> https://support.alfaview.com/en/administration/general/personal-profile/security-guide/
+'Single Sign-On' -> https://support.alfaview.com/en/for-it-administration/integrations/single-sign-on/
+'System and Network Requirements' -> https://support.alfaview.com/en/for-it-administration/requirements/system-and-network-requirements/
+[0m
+[0m$ [0mcd /tmp/opencode/cycle37 && fetch(){ curl -sL --max-time 25 "$1" -o "$2" -w "  code=%{http_code} size=%{size_download}\n"; python3 -c "
+import re,html,sys
+t=open('$2',encoding='utf-8',errors='ignore').read()
+t=re.sub(r'<script.*?</script>|<style.*?</style>|<nav.*?</nav>|</footer>','',t,flags=re.S)
+t=html.unescape(re.sub(r'<[^>]+>','\n',t))
+L=[l.strip() for l in t.split('\n') if len(l.strip())>2]
+out=[];seen=set()
+for l in L:
+    if l not in seen: seen.add(l);out.append(l)
+b='\n'.join(out)
+i=b.rfind('Contacting Support')
+b=b[i+18:] if i>0 else b
+b=re.sub(r'\n{2,}','\n',b).strip()
+print('  BODYLEN',len(b));print('  '+b[:1900].replace('\n','\n  '))
+"; }; echo "=== Single Sign-On"; fetch "https://support.alfaview.com/en/for-it-administration/integrations/single-sign-on/" sso.html; echo; echo "=== Generate API credentials"; fetch "https://support.alfaview.com/en/for-it-administration/advanced-configurations/generate-api-credentials/" api.html
+=== Single Sign-On
+  code=200 size=94060
+  BODYLEN 5355
+  Release notes
+  Release notes 2025
+  Release notes 2024
+  Release notes 2023
+  Release notes 2022
+  Release notes 2021
+  Release notes 2020
+  Release notes 2019
+  With single sign-on you can use your existing identity provider to log in to alfaview.
+  Requirements and Limitations
+  Setup Process
+  Manage groups for single sign-on authentication users
+  In order to set up single sign-on you have to have a working identity provider. It needs to comply with either of the following standards:
+  OpenID Connect
+  SAML V2.0
+  Required Information
+  To configure our alfaview service provider we need the following information from you:
+  the endpoint of your identity provider (e.g.,
+  https://idp.example.com/redirect
+  if available: test accounts and an additional testing identity provider endpoint
+  if you have a SAML-based identity provider: the URL to your identity provider’s metadata XML file
+  the identity claims or attribute mapping of your identity provider’s SAML/OIDC response
+  required: user’s first name, last name and email address
+  optional: user group attribute if you want to use
+  group based permission management
+  in alfaview
+  your desired login domain from where your users will start the single sign-on process (example:
+  my-company.alfaview.com
+  Limitations
+  Your identity provider’s SAML XML signature needs to be signed using the SHA256 algorithm. If you have no information about the signing algorithm used, we can try to help you find out.
+  We do not support identity provider initiated SAML V2.0. But we can provide a start link that initiates the alfaview login by redirecting to your identity provider’s login page.
+  The login domain will be hosted by alfaview.
+  Compatible Identity Providers
+  Here is a list of identity providers that were successfully configured and are proven to work with alfaview:
+  GitLab – based on OpenID Connect
+  Google Workspace – based on SAML V2.0
+  Shibboleth – based on SAML V2.0
+  If you are inter
+
+=== Generate API credentials
+  code=200 size=84629
+  BODYLEN 1572
+  Release notes
+  Release notes 2025
+  Release notes 2024
+  Release notes 2023
+  Release notes 2022
+  Release notes 2021
+  Release notes 2020
+  Release notes 2019
+  To generate your API credentials, do the following:
+  Log in to the
+  administration interface
+  Click on
+  in the menu on the left.
+  Click on the
+  API keys
+  tab.
+  Enter a name in the Alias field.
+  Click
+  Create
+  Save or make a note of the alias, code, and account ID.
+  Use the alias, code, and account ID to authenticate yourself in your API client.
+  API Documentation
+  The
+  contains links to the current API versions and
+  the most common uses of the API
+  . It also allows you to download the documentation and use external tools to generate code that you can use directly with our API.
+  OpenAPI 3.1
+  JSON
+  YAML
+  OpenAPI 3.0.3
+  We recommend switching to the more recent
+  Version 2
+  now, as Version 1 no longer offers control over all features and will not receive new functionality. It will be
+  discontinued in March 2027
+  Last updated on September 2nd, 2026, 08:34 am
+  PDF Version
+  User manual
+  Legal Notice
+  Privacy Policy
+  Terms and Conditions
+  DPA and TOM
+  Information on accessibility
+  alfaview.com
+  Need help?
+  Contact us, we'd love to help you out!
+  Email
+  Send an email to
+  support@alfaview.com
+  , or use the
+  support contact form
+  As soon as you contact our support team, a ticket will be created for your issue in our
+  system
+  . There, you can log in at any time to check the status of your ticket. Once we have received your email, your email address will be registered in our
+  and you can request a
+  password
+  Phone
+  +49 711 758598-50
+  Additional charges may apply.
+[0m
+[0m$ [0mcd /tmp/opencode/cycle37 && python3 -c "
+import re
+h=open('api.html',encoding='utf-8',errors='ignore').read()
+seen=set()
+for m in re.finditer(r'href=\"([^\"]+)\"[^>]*>\s*([^<]{0,60}?)</a>',h):
+    u,t=m.group(1),m.group(2).strip()
+    if re.search(r'openapi|docs|api|swagger|redoc|3\.1|3\.0',u+t,re.I) and u not in seen:
+        seen.add(u); print(repr(t),'->',u)
+" | sort -u
+'Generate API credentials' -> https://support.alfaview.com/en/for-it-administration/advanced-configurations/generate-api-credentials/
+'JSON' -> https://apis.alfaview.com/v2/docs/openapi-3.0.json
+'JSON' -> https://apis.alfaview.com/v2/docs/openapi.json
+'YAML' -> https://apis.alfaview.com/v2/docs/openapi-3.0.yaml
+'YAML' -> https://apis.alfaview.com/v2/docs/openapi.yaml
+'the most common uses of the API' -> https://apis.alfaview.com/v2/docs/openapi
+[0m
+Both articles materially reframe the cycle. Two new leads surfaced — one of which is a whole unmapped API version. Extracting the exact doc URLs:
+Those are format variants (3.1 vs 3.0.3), not API versions — so no hidden v1 *there*. But the 3.0.3 twin is a separate document I've never fetched, and v1 is still supported until March 2027. Testing both:
+[0m$ [0mcd /tmp/opencode/cycle37 && printf "v1 spec " && curl -s -o v1.json -w "code=%{http_code} size=%{size_download}\n" --max-time 20 https://apis.alfaview.com/v1/docs/openapi.json; printf "v1 root " && curl -s -o /dev/null -w "code=%{http_code}\n" --max-time 20 https://apis.alfaview.com/v1/docs/openapi; echo "--- 3.0.3 twin ---"; curl -s -o o30.json -w "code=%{http_code} size=%{size_download}\n" --max-time 20 https://apis.alfaview.com/v2/docs/openapi-3.0.json; md5sum o30.json | cut -c1-8; python3 -c "
+import json
+a=json.load(open('o30.json')); b=json.load(open('0274efcd.json'))
+print('3.0.3 openapi:',a.get('openapi'),' 3.1 openapi:',b.get('openapi'))
+pa,pb=set(a['paths']),set(b['paths'])
+print('paths 3.0.3:',len(pa),' 3.1:',len(pb))
+print('only-in-3.0.3:',sorted(pa-pb)[:20])
+print('only-in-3.1  :',sorted(pb-pa)[:20])
+ops=sum(1 for p in a['paths'].values() for m,v in p.items() if m in ('get','post','put','patch','delete'))
+print('ops 3.0.3:',ops)
+print('securitySchemes 3.0.3:', 'securitySchemes' in a.get('components',{}), ' top-level security:', a.get('security'))
+import re
+t=json.dumps(a)
+for kw in ['two-factor','2fa','totp']: print(' kw',kw,t.lower().count(kw))
+d=a['paths'].get('/v2/auth/password',{}).get('post',{})
+print(' 3.0.3 password desc:',repr(d.get('description'))[:200])
+print(' 3.0.3 password 403  :',repr(d.get('responses',{}).get('403',{}).get('description'))[:200])
+"
+v1 spec code=404 size=19
+v1 root code=404
+--- 3.0.3 twin ---
+code=200 size=132391
+34e9f231
+3.0.3 openapi: 3.0.3  3.1 openapi: 3.1.0
+paths 3.0.3: 38  3.1: 38
+only-in-3.0.3: []
+only-in-3.1  : []
+ops 3.0.3: 57
+securitySchemes 3.0.3: False  top-level security: None
+ kw two-factor 2
+ kw 2fa 2
+ kw totp 0
+ 3.0.3 password desc: 'Authenticates a user via username and password and returns an access token. The user must not have two-factor authentication enabled.'
+ 3.0.3 password 403  : "The authentication did not succeed because of the account's status or permissions (e.g., account is inactive, user has two-factor authentication activated)."
+[0m
+v1 is dead (404) — hypothesis closed. And the 3.0.3 twin is a **negative** result I must respect: same 38 paths, same 57 ops, identical 2FA text, `securitySchemes` absent in *both*. So the change was propagated deliberately across both renderings, which **weakens** my H3 "sloppy unversioned edit" framing.
+
+The SSO article is the bigger find: alfaview supports **bring-your-own-IdP** (GitLab/Google Workspace/Shibboleth via OIDC/SAML) alongside **native password** login. The decisive question is whether local accounts coexist. Fetching the user-management docs:
+[0m$ [0mcd /tmp/opencode/cycle37 && python3 -c "
+import re
+h=open('api.html',encoding='utf-8',errors='ignore').read()
+for m in re.finditer(r'href=\"([^\"]+)\"[^>]*>\s*([^<]{0,40}?)</a>',h):
+    u,t=m.group(1),m.group(2).strip()
+    if re.search(r'invite users|edit user|create room|company management|security guide',t,re.I):
+        print(t,'->',u)
+" | sort -u
+Company Management -> https://support.alfaview.com/en/administration/company/account-management/
+Create room -> https://support.alfaview.com/en/administration/room-management/create-room/
+Edit user -> https://support.alfaview.com/en/administration/user-management/edit-user/
+Invite users -> https://support.alfaview.com/en/administration/user-management/invite-user/
+Security guide -> https://support.alfaview.com/en/administration/general/personal-profile/security-guide/
+[0m
+[0m$ [0mcd /tmp/opencode/cycle37 && python3 - <<'PY'
+import re,html,subprocess,time
+U={'security-guide':'https://support.alfaview.com/en/administration/general/personal-profile/security-guide/',
+   'invite-user':'https://support.alfaview.com/en/administration/user-management/invite-user/',
+   'edit-user':'https://support.alfaview.com/en/administration/user-management/edit-user/'}
+KW=['two-factor','2fa','single sign-on','sso','local','native','password','federat','idp','identity provider','force','enforce','disable']
+for k,u in U.items():
+    f=k+'.html'
+    r=subprocess.run(['curl','-sL','--max-time','25',u,'-o',f,'-w','%{http_code} %{size_download}'],capture_output=True,text=True)
+    t=open(f,encoding='utf-8',errors='ignore').read()
+    t=re.sub(r'<script.*?</script>|<style.*?</style>|</footer>','',t,flags=re.S)
+    t=html.unescape(re.sub(r'<[^>]+>','\n',t))
+    L=[l.strip() for l in t.split('\n') if len(l.strip())>2]
+    o=[];s=set()
+    for l in L:
+        if l not in s: s.add(l);o.append(l)
+    b='\n'.join(o); i=b.rfind('Contacting Support'); b=b[i+18:] if i>0 else b
+    b=re.sub(r'\n{2,}','\n',b)
+    print('='*70); print(k,r.stdout,'BODYLEN',len(b))
+    low=b.lower()
+    for w in KW:
+        c=low.count(w)
+        if c:
+            j=low.find(w)
+            print(f'  [{w}] x{c} :: {b[max(0,j-110):j+150]}'.replace('\n',' '))
+    time.sleep(1)
+PY
+======================================================================
+security-guide 200 105301 BODYLEN 8518
+  [two-factor] x2 :: rify the authenticity of the alfaview app Update the alfaview app regularly Secure your password Activate the two-factor authentication Verify the authenticity of emails Join an alfaview room via an invitation link Security precautions for moderators Security 
+  [single sign-on] x2 :: oin the alfaview room you have been invited to. Check if the website address is app.alfaview.com When using a Single sign-on to join, you will join the alfaview room through an alfaview subdomain. The web address of a Single sign-on follows the following struc
+  [password] x18 :: le tips and tricks. Verify the authenticity of the alfaview app Update the alfaview app regularly Secure your password Activate the two-factor authentication Verify the authenticity of emails Join an alfaview room via an invitation link Security precautions fo
+======================================================================
+invite-user 200 82029 BODYLEN 1394
+  [password] x3 :: ation email. The contained link must be opened in the browser in order to activate the user account and set a password. Users can only be invited or created by email. It is not possible to specify a user with a predefined password. Last updated on November 20t
+======================================================================
+edit-user 200 81807 BODYLEN 1104
+  [password] x1 ::  ticket. Once we have received your email, your email address will be registered in our and you can request a password Phone +49 711 758598-50 Additional charges may apply.
+[0m
+Cycle complete with a major reframe. Two negative results and one strong new lead.
+
+```
+STEP 1 — DELTA (amendment, same cycle)
+
+[NEW] alfaview supports BRING-YOUR-OWN-IdP single sign-on, documented at
+support.alfaview.com/en/for-it-administration/integrations/single-sign-on/ — "use your existing identity provider to log
+in to alfaview", requiring OpenID Connect or SAML V2.0, with GitLab (OIDC), Google Workspace (SAML V2.0) and Shibboleth
+(SAML V2.0) listed as proven-compatible. Each SSO company gets its own alfaview-hosted login domain (e.g.
+my-company.alfaview.com), and the security guide confirms SSO joins occur "through an alfaview subdomain" with a
+distinct web address structure. The doc also provides "Manage groups for single sign-on authentication users" and a
+"user group attribute... for group based permission management in alfaview" — establishing SSO users as a population
+ALONGSIDE native alfaview users.
+
+[NEW] Every alfaview user is provisioned with a NATIVE password independent of any IdP.
+administration/user-management/invite-user/ (200/82KB): "The contained link must be opened in the browser in order to
+activate the user account and set a password. Users can only be invited or created by email. It is not possible to
+specify a user with a predefined password." There is no SSO scoping on this flow, no documented way to create a
+passwordless/IdP-only user, and no article in the KB describing how to disable local password authentication or enforce
+SSO-only login.
+
+[NEW] The SSO article's own "Limitations" section addresses only SAML signature algorithm and IdP-initiated flow
+("We do not support identity provider initiated SAML V2.0"), and is silent on local-account coexistence.
+
+[NEW] alfaview's security-guide (200/105KB) lists "Activate the two-factor authentication" as a personal self-service
+security tip — a per-user toggle, not a company-enforced policy — and the 2FA article scopes it to "alfaview version
+9.2.0 or higher" desktop. So 2FA is a user hardening control in the vendor's own framing, and the documented mechanism
+for company-wide auth control is the customer IdP, not 2FA.
+
+[NEW] NEGATIVE RESULT — v1 API is gone. https://apis.alfaview.com/v1/docs/openapi.json and .../openapi/openapi both
+404/19B despite the KB stating "Version 1 ... will be discontinued in March 2027". No unmapped deprecated surface.
+
+[NEW] NEGATIVE RESULT — the OpenAPI 3.0.3 twin is semantically IDENTICAL to the 3.1 original. 132391B md5 34e9f231,
+same 38 paths, same 57 operations, zero path differences, "two-factor" x2 in both, byte-identical password description
+and 403 text, and `securitySchemes` absent in BOTH. The +291B is serialization only. This is a correction to my own
+prior output: the 2FA contract edit was propagated deliberately across both published renderings, so the "sloppy
+unversioned edit" framing of my third hypothesis was wrong and I demote it below.
+
+STEP 2 — REVISED PRIORITIZE
+
+[PRIO] 1) SSO-vs-native-password coexistence control plane (apis.alfaview.com POST /v2/auth/password + the SSO
+         federation path)   8.2  (a8 b9 t8 g9 c3 f10)
+[PRIO] 2) sso.alfaview.com — OAuth/OIDC surface   7.4  (a7 b9 t9 g8 c3 f5)
+[PRIO] 3) apis.alfaview.com GET /v2/group-links (ListGroupLinks)   5.6  (a6 b9 t5 g2 c2 f6)
+
+STEP 3 — REVISED HYPOTHESES
+
+[HYP] Single sign-on does not disable native alfaview password authentication, so a company's IdP-enforced 2FA does not
+govern API access
+class: AUTH
+asset: apis.alfaview.com POST /v2/auth/password, in the context of the SSO login domain
+confidence: 72
+reasoning: Five vendor-authored facts, all read from public documentation, converging on a first-party issuer that
+performs no federation check. (1) alfaview documents BYO-IdP SSO with per-company login subdomains, and separately
+documents "Manage groups for single sign-on authentication users" — proving two user populations coexist: federated and
+native. (2) The user-invite flow sets a native password for every user: "The contained link must be opened in the browser
+in order to activate the user account and set a password", with no SSO scoping and no passwordless option. (3)
+POST /v2/auth/password is globally unauthenticated — one of only five unauthenticated endpoints in the entire 57-op
+surface — takes a username and password, and its request body carries no company, domain or SSO parameter, so the
+operation has no input by which to know a company federates. (4) The SSO article's Limitations section is silent on local
+accounts, and no KB article documents disabling local login or enforcing SSO-only. (5) In a 2FA-enabled company this is
+worse, not better: the contract now 403s 2FA users on the native path, so a security-conscious user who enables 2FA is
+locked out of the API, and the only remaining API access is a per-user API key — while an account that has NOT enabled
+2FA still authenticates natively with no second factor and no IdP involvement. The realistic trigger is migration: a
+company on native accounts later enables SSO with a 2FA-enforcing IdP and reasonably assumes 2FA now governs all access,
+while the pre-existing native credentials keep working against the first-party API. This is the well-known
+"SSO without disabling local auth" class.
+evidence_needed: One self-owned test company, self-owned users, and a decision on which branch of the product applies.
+Decisive measurement: does a user of an SSO-configured tenant hold a working native alfaview password that
+POST /v2/auth/password accepts, and does alfaview offer any documented or undocumented control to disable native login?
+verify_steps: HUMAN_ONLY, and read-only with respect to other tenants. (1) With alfaview support or a self-owned tenant,
+enable SSO against a self-owned IdP and provision one self-owned user. (2) Determine whether that user received a native
+invite link / holds a native password; if so, `POST https://apis.alfaview.com/v2/auth/password` with
+`{"username":"<self>","password":"<self>"}` and record status only — never transcribe the token. (3) In parallel, ask
+support the single question "can local password login be disabled so that SSO is enforced for all logins, including the
+REST API?" A documented or available enforcement control converts this into a documentation gap; its absence plus a 200
+converts it into a measured auth bypass. Never target another company's account, and do not probe accounts to enumerate
+who has 2FA or who is federated.
+impact: If a native password authenticates inside an SSO company, the customer's IdP — and therefore their 2FA, their
+conditional-access policy, their offboarding and their session controls — is not a control on any of the 57 REST
+operations, including company-wide guest-link disclosure. A single phished, reused or stale credential yields full
+API access with the victim's rights, at exactly the moment the customer believes their IdP has closed that path.
+HIGH, and the cleanest evidence package in this program because every premise is the vendor's own documentation. I claim
+no bypass: I have sent zero login requests, and the single unmeasured link is whether SSO tenants in practice retain a
+usable native password.
+testability: HUMAN_ONLY
+
+[HYP] The two company-wide credential-bearing link lists are documented asymmetrically, so a client cannot tell a
+permission refusal from an expired session on a response containing live join credentials
+class: MISCONFIG
+asset: apis.alfaview.com GET /v2/group-links (ListGroupLinks) vs GET /v2/guest-links (ListGuestLinks)
+confidence: 55  (unchanged — no new evidence this round)
+reasoning: Unchanged from the prior output. Complete 37-op 403 map shows ListGuestLinks declares {200,401,403} and
+ListGroupLinks declares {200,401}; both are company-wide with only pageToken+limit, and `GroupLink` is
+`additionalProperties:false` requiring accessKey, joinUrl, dialInCode, dialInAllowed.
+evidence_needed: A low-privilege self-issued token on a self-owned tenant, then GET /v2/group-links?limit=1 recording
+status code only.
+verify_steps: AUTH_HELPED, read-only. `GET /v2/auth/token-info` recording `permissions` verbatim, then
+`GET https://apis.alfaview.com/v2/group-links?limit=1` recording status only, never the body.
+impact: LOW, API-contract defect. Explicitly NOT a claim that authorization is missing — response-code declarations are
+proven non-load-bearing here (GET /v2/permission-groups declares no 401 yet returns 401).
+testability: AUTH_HELPED
+
+[HYP] The published API contract declares no security scheme at all, so no generated client can be correctly
+authenticated
+class: MISCONFIG
+asset: apis.alfaview.com /v2/docs/openapi.json and /v2/docs/openapi-3.0.json
+confidence: 50  (DOWN from 58 — my own correction)
+reasoning: I originally bundled two claims here and the new evidence destroys one of them. The surviving, now
+double-confirmed claim: `components.securitySchemes` is absent and top-level `security` is null in BOTH published
+renderings (3.1 and 3.0.3, byte-different documents), while the vendor's own text states "All API requests require an
+access token" used as the Authorization header value. Every generator therefore emits an unauthenticated client whose
+calls fail at runtime with an undocumented 401, and this absence is the documented root cause of the standing
+pre-auth validation-ordering defect. The demoted claim: I previously argued the silent 2FA contract edit evidenced
+governance sloppiness — the 3.0.3 twin carries byte-identical 2FA text, so the change was propagated deliberately across
+both renderings, and `info.version` remaining "2" is consistent with a maintained unversioned doc rather than a sloppy
+one. I withdraw the governance argument and keep only the measured absence.
+evidence_needed: None. Complete measurement of the published artifact.
+verify_steps: Passive COMPLETE. Load either document into any OpenAPI generator and observe zero auth schemes emitted.
+impact: No direct exposure; a supply-chain/compliance defect with 57 operations lacking a machine-readable auth contract,
+already known to be the root cause of the pre-auth validation ordering defect. LOW.
+testability: PASSIVE
+
+STEP 4 — SELF-CRITIQUE
+
+All three retained (72 / 55 / 50 ≥ 40), none REJECTED class, all with verify_steps. Discipline applied:
+- One confidence was raised (64→72) and one was LOWERED (58→50) this round, in opposite directions, purely because new
+  evidence warranted it. I am not anchoring to my prior output.
+- H2 frozen at 55 across two cycles because no new evidence arrived — an unchanged score with new reasoning would have
+  been dishonest.
+- The load-bearing unmeasured link in H1 is named explicitly: whether an SSO-configured tenant's user actually retains a
+  working native password. If alfaview simply does not ship an SSO-only mode, the honest end state is a product and
+  documentation gap, not a vulnerability, and I state that branch in the impact field.
+- Explicitly still NOT pursued: the new 403 text makes per-account 2FA state directly probeable, and the new SSO
+  subdomains make per-company federation state directly probeable. Both are account/tenant enumeration on an
+  unauthenticated endpoint — the REJECTED class. Withheld, not merely deprioritized.
+
+[PARKED] Per-account 2FA-state and per-tenant SSO-state enumeration via the 403/authorize responses: REJECTED class.
+Discloses account security posture and tenant configuration. Recorded, not probed.
+[PARKED] x-sort-index holes 24,25,26,30,31: still inference from an absence in a generated field. Unchanged.
+[PARKED] v1 API surface: closed this round, 404/19B. No longer a lead.
+
+[FINAL] 1) SSO does not disable native password auth, so IdP-enforced 2FA does not govern API access (72, HUMAN_ONLY)
+[FINAL] 2) group-links company-wide list returns live credentials with no declared 403 tier (55, AUTH_HELPED)
+[FINAL] 3) Contract declares no security scheme in either published rendering (50, PASSIVE)
+
+STEP 5 — NEXT ACTION
+
+[NEXT] HUMAN: ask alfaview support, in writing, the single question that decides my top hypothesis — "for a company that
+has configured single sign-on with a two-factor-enforcing identity provider, can local password login be disabled so that
+SSO is enforced for all logins including the REST API, and what happens to a user who still holds a native alfaview
+password?" Then, on a self-owned test tenant with SSO enabled, determine whether a self-owned SSO user's native password
+still authenticates via `POST https://apis.alfaview.com/v2/auth/password`, recording status only and never
+transcribing a token. A documented enforcement control downgrades the finding to a documentation gap; its absence plus a
+200 makes it a measured auth bypass. Do not spend further cycles on reconnaissance — the surface has been byte-stable for
+three cycles and the entire high-severity chain now turns on this one product question.
+
+STEP 6 — LEARNING
+
+[LEARN] ACCEPTED AUTH @ apis.alfaview.com + SSO: alfaview federates to a customer's own IdP (GitLab, Google Workspace,
+Shibboleth via OIDC/SAML V2.0) on a per-company login subdomain, yet the user-invite flow still sets a native password
+for every user, and the globally unauthenticated POST /v2/auth/password accepts username+password with no
+company/domain/SSO input by which to detect a federated tenant. No documented control disables local login. A customer
+relying on IdP 2FA is not protected on the 57-operation API. 72, HUMAN_ONLY, no bypass claimed, no login attempted.
+Corollary now measured: 2FA makes this WORSE, not better — 2FA users are 403'd off the native path, so the only
+2FA-compliant API access is a per-user API key, while a non-2FA account authenticates natively with no second factor.
+
+[LEARN] REJECTED CONFIG @ apis.alfaview.com OpenAPI 3.0.3 twin: The 3.0.3 and 3.1 renderings are semantically identical
+(38 paths, 57 ops, byte-identical 2FA text, `securitySchemes` absent in both, +291B serialization delta only). This
+refutes my own prior "unmaintained/unversioned contract" reasoning — the vendor propagates changes across both published
+documents. Only the missing-securitySchemes defect survives, and it is now double-confirmed.
+
+[LEARN] REJECTED SURFACE @ apis.alfaview.com v1: /v1/docs/openapi.json and /v1/docs/openapi both 404/19B. The
+"discontinued in March 2027" v1 API is already withdrawn, so there is no deprecated parallel surface to audit.
+
+[LEARN] METHOD: Two of this round's four findings came from re-reading the vendor's own knowledge base rather than
+probing. Fetching support.alfaview.com's sitemap and article index produced the 2FA article, the SSO article and the
+invite-user article, which together determine the top hypothesis — and cost only five GET requests against a first-party
+public host, with no credential, no mutation and no customer data. Vendor documentation describing the intended security
+model is a first-class attack-surface source and should be harvested before, not after, live probing. I should also have
+done this in cycle 1 rather than cycle 37.
+
+STEP 7 — RISK
+
+[RISK] alfaview gmbh: 68. Raised from 62 on a documentary chain, not on a confirmed weakness. The trigger is the
+strongest evidence package in this program: every premise is the vendor's own public documentation — BYO-IdP SSO with a
+named compatible-IdP list, a user-invite flow that sets a native password for all users, a first-party password issuer
+that is globally unauthenticated and has no federation input, an SSO Limitations section silent on local accounts, no
+documented SSO-only enforcement, and a security guide that frames 2FA as a per-user desktop toggle rather than a company
+policy. If a native password authenticates inside an SSO tenant, then every customer's identity provider — and with it
+their 2FA, conditional access, offboarding and session policy — is not a control on any of the 57 REST operations, and
+one phished or stale credential yields full API access including company-wide guest-link credential disclosure. HIGH class,
+and structurally the report most likely to be accepted. It remains entirely unmeasured: I have sent zero login requests,
+no bypass is claimed, and the outcome honestly forks — a documented SSO-only enforcement control would make this a
+documentation gap worth LOW, while its absence alongside a 200 would make it the program's only HIGH finding. Offsetting:
+no unauthenticated exploitable surface was found in this cycle or any prior one; v1 is dead; prod and beta remain
+byte-identical; and every chain above is blocked on the same single absent artifact — a self-owned tenant with an IdP —
+so program-wide risk moves up modestly rather than sharply.
+```

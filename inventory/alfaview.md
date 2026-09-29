@@ -1183,3 +1183,18 @@ www.alfaview.com
 ## 2026-09-29 08:35:12 UTC
 - NEW /v2/users/me/company (GetOwnCompany) identified as the 38th OpenAPI path — sole 200-response supplier of companyId across 57 operations; enables guest-link chain execution by authorized tester
 - CHANGED OpenAPI spec md5 rotated to 284a3383c1ac3cfc9152ffcc631891f2 (132100B, 38 paths, 57 ops) — byte-identical on beta-apis.alfaview.com
+
+## 2026-09-29 15:22:48 UTC
+- NEW apis.alfaview.com OpenAPI: full structural diff of the 37→38 document delta reveals a SECOND, previously undetected
+- NEW alfaview 2FA is a shipped, customer-facing feature with a dedicated public KB article:
+- NEW Measured 2FA enforcement asymmetry, three-way: (a) sso.alfaview.com OIDC 200/2169B md5 f78a08fc advertises the
+- CHANGED apis.alfaview.com OpenAPI md5 `284a3383c1ac3cfc9152ffcc631891f2` (132100B, 38 paths, 57 ops) — 3rd consecutive
+- CHANGED Complete 403-declaration map built across all 57 ops (37 declare 403). New divergence:
+- NEW alfaview supports BRING-YOUR-OWN-IdP single sign-on, documented at
+- NEW Every alfaview user is provisioned with a NATIVE password independent of any IdP.
+- NEW The SSO article's own "Limitations" section addresses only SAML signature algorithm and IdP-initiated flow
+- NEW alfaview's security-guide (200/105KB) lists "Activate the two-factor authentication" as a personal self-service
+- NEW NEGATIVE RESULT — v1 API is gone. https://apis.alfaview.com/v1/docs/openapi.json and .../openapi/openapi both
+- NEW NEGATIVE RESULT — the OpenAPI 3.0.3 twin is semantically IDENTICAL to the 3.1 original. 132391B md5 34e9f231,
+- NEW OpenAPI spec at apis.alfaview.com/v2/docs/openapi.json rotated to MD5 284a3383c1ac3cfc9152ffcc631891f2 (132100B, 38 paths, 57 ops) — byte-identical on beta-apis.alfaview.com
+- NEW /v2/users/me/company (GetOwnCompany) identified as the 38th path — sole 200-response supplier of companyId across 57 operations; enables guest-link chain execution by authorized tester

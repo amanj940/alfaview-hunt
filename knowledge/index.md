@@ -905,3 +905,11 @@
 - 2026-09-29 REJECTED AUTH @ apis.alfaview.com/v2/auth/{guest,group}-link: NO accessKey existence oracle — well-formed synthetic triple returns 422/88B ACTION_INVALID byte-identical to traversal key; taxonomy exactly two tiers (schema 422, business 422)
 - 2026-09-29 REJECTED MISCONFIG @ apis.alfaview.com: 403-declaration asymmetry not behaviorally load-bearing — /v2/permission-groups returns 401 while declaring no 401; whole authenticated surface returns uniform 401
 - 2026-09-29 ACCEPTED MISCONFIG @ apis.alfaview.com: Pre-auth query-parameter binder is unauthenticated parameter-enumeration oracle (9 of 26 GET ops); append wrong-typed value → 422 with location: query.<param>; unrecognized → 401
+- 2026-09-29 ACCEPTED AUTH @ apis.alfaview.com POST /v2/auth/password + sso.alfaview.com /oauth2/token: The REST contract now
+- 2026-09-29 ACCEPTED MISCONFIG @ apis.alfaview.com OpenAPI: A full structural diff — not the path-set diff used for 36 cycles —
+- 2026-09-29 ACCEPTED MISCONFIG @ apis.alfaview.com GET /v2/group-links: With the complete 37-op 403-declaration map, the one
+- 2026-09-29 NO_DELTA @ apis/sso/app/tools: 3rd consecutive byte-stable cycle — OpenAPI md5 284a3383 (132100B, 38 paths, 57 ops)
+- 2026-09-29 ACCEPTED AUTH @ apis.alfaview.com + SSO: alfaview federates to a customer's own IdP (GitLab, Google Workspace,
+- 2026-09-29 REJECTED CONFIG @ apis.alfaview.com OpenAPI 3.0.3 twin: The 3.0.3 and 3.1 renderings are semantically identical
+- 2026-09-29 REJECTED SURFACE @ apis.alfaview.com v1: /v1/docs/openapi.json and /v1/docs/openapi both 404/19B. The
+- 2026-09-29 METHOD: Two of this round's four findings came from re-reading the vendor's own knowledge base rather than

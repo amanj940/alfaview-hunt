@@ -1,12 +1,10 @@
-## 2026-09-29 08:34:07 UTC [target] (model nemotron3)
-[NEW] /v2/users/me/company (GetOwnCompany) identified as the 38th OpenAPI path — sole 200-response supplier of companyId across 57 operations; enables guest-link chain execution by authorized tester
-[CHANGED] OpenAPI spec md5 rotated to 284a3383c1ac3cfc9152ffcc631891f2 (132100B, 38 paths, 57 ops) — byte-identical on beta-apis.alfaview.com
-[PRIO] apis.alfaview.com/v2/guest-links,9.00,attack_surface=9 business_value=9 tech_exposure=8 gate_ease=10 cloud_surface=8 freshness=10
-[PRIO] app.alfaview.com/graphql (adminSwitchCompany),9.00,attack_surface=8 business_value=10 tech_exposure=9 gate_ease=9 cloud_surface=8 freshness=10
-[PRIO] sso.alfaview.com/oauth2/introspect,8.50,attack_surface=8 business_value=8 tech_exposure=9 gate_ease=10 cloud_surface=7 freshness=9
-[PRIO] apis.alfaview.com/v2/auth/api-key,8.50,attack_surface=8 business_value=8 tech_exposure=8 gate_ease=10 cloud_surface=8 freshness=10
-[PRIO] tools.alfaview.com/whiteboard/,8.30,attack_surface=8 business_value=7 tech_exposure=9 gate_ease=10 cloud_surface=7 freshness=10
-[PRIO] apis.alfaview.com (validation-before-auth),7.95,attack_surface=7 business_value=7 tech_exposure=8 gate_ease=10 cloud_surface=8 freshness=9
+## 2026-09-29 15:06:44 UTC [target] (model nemotron3)
+[NEW] OpenAPI spec at apis.alfaview.com/v2/docs/openapi.json rotated to MD5 284a3383c1ac3cfc9152ffcc631891f2 (132100B, 38 paths, 57 ops) — byte-identical on beta-apis.alfaview.com
+[NEW] /v2/users/me/company (GetOwnCompany) identified as the 38th path — sole 200-response supplier of companyId across 57 operations; enables guest-link chain execution by authorized tester
+[PRIO] apis.alfaview.com/v2/guest-links,7.65,attack_surface=9 business_value=9 tech_exposure=8 gate_ease=1 cloud_surface=8 freshness=10
+[PRIO] app.alfaview.com/graphql (adminSwitchCompany),7.80,attack_surface=8 business_value=10 tech_exposure=9 gate_ease=1 cloud_surface=8 freshness=10
+[PRIO] sso.alfaview.com/oauth2/introspect,7.10,attack_surface=8 business_value=8 tech_exposure=9 gate_ease=1 cloud_surface=7 freshness=9
+[PRIO] apis.alfaview.com/v2/auth/api-key,7.15,attack_surface=8 business_value=8 tech_exposure=8 gate_ease=1 cloud_surface=8 freshness=10
 [HYP] Company-wide guest-link/group-link enumeration yields live join credentials without expressible authorization check
 class: IDOR
 asset: apis.alfaview.com/v2/guest-links, apis.alfaview.com/v2/group-links

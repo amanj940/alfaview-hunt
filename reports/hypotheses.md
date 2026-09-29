@@ -3968,3 +3968,28 @@
 - LEARN: REJECTED AUTH @ apis.alfaview.com/v2/auth/{guest,group}-link: NO accessKey existence oracle — well-formed synthetic triple returns 422/88B ACTION_INVALID byte-i
 - LEARN: REJECTED MISCONFIG @ apis.alfaview.com: 403-declaration asymmetry not behaviorally load-bearing — /v2/permission-groups returns 401 while declaring no 401; whol
 - LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: Pre-auth query-parameter binder is unauthenticated parameter-enumeration oracle (9 of 26 GET ops); append wrong-typed va
+
+## RANKED HYPOTHESES 2026-09-29 15:22:48 UTC
+- [88] apis.alfaview.com/v2/guest-links,: Company-wide guest-link/group-link enumeration yields live join credentials without expressible authorization check (from art/lead_nemotron3.txt)
+- [64] apis.alfaview.com: Two-factor authentication is enforced by exactly one of alfaview's documented token-issuance paths, so any (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): HUMAN: enable two-factor authentication on a single self-owned alfaview test account (client-side toggle per the
+- NEXT(hypotheses-nemotron3.txt): HUMAN: Execute unauthenticated signup flow at app.alfaview.com/graphql (mutation Signup → email → FinishSignup) to obtain a valid bearer token; then test intros
+- LEARN: ACCEPTED AUTH @ apis.alfaview.com POST /v2/auth/password + sso.alfaview.com /oauth2/token: The REST contract now
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com OpenAPI: A full structural diff — not the path-set diff used for 36 cycles —
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com GET /v2/group-links: With the complete 37-op 403-declaration map, the one
+- LEARN: NO_DELTA @ apis/sso/app/tools: 3rd consecutive byte-stable cycle — OpenAPI md5 284a3383 (132100B, 38 paths, 57 ops)
+- LEARN: ACCEPTED AUTH @ apis.alfaview.com + SSO: alfaview federates to a customer's own IdP (GitLab, Google Workspace,
+- LEARN: REJECTED CONFIG @ apis.alfaview.com OpenAPI 3.0.3 twin: The 3.0.3 and 3.1 renderings are semantically identical
+- LEARN: REJECTED SURFACE @ apis.alfaview.com v1: /v1/docs/openapi.json and /v1/docs/openapi both 404/19B. The
+- LEARN: METHOD: Two of this round's four findings came from re-reading the vendor's own knowledge base rather than
+- LEARN: ACCEPTED IDOR @ apis.alfaview.com: Company-wide guest-link list un-narrowable and credential-bearing; TokenUserPermissions has no guest-link axis; RoomPermissio
+- LEARN: ACCEPTED MISCONFIG @ app.alfaview.com (public bundle): adminSwitchCompany mutation mints cross-tenant admin tokens with no administration proof; hardcoded produ
+- LEARN: ACCEPTED AUTH @ sso.alfaview.com/oauth2/introspect: 30th cycle unchanged — fabricated client_id accepted on POST-body and Basic; token_endpoint_auth_methods adv
+- LEARN: ACCEPTED MISCONFIG @ tools.alfaview.com/whiteboard/: Second unmapped RPC backend proven by controlled differential — 47B gRPC envelope vs poll's 45B; distinct m
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: Validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI compon
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com/v2/users/invitation{,s}: OpenAPI declares POST only; live server advertises Allow: DELETE,POST on /v2/users/invitation an
+- LEARN: REJECTED AUTH @ sso.alfaview.com/oauth2/userinfo: JOSE algorithm confusion tested (alg=none, HS256 with RSA pubkey, HS256 random, RS256 self-signed) — all byte-
+- LEARN: REJECTED OATH @ sso.alfaview.com/oauth2/logout: post_logout_redirect_uri and redirect_uri both ignored; every variant 302 → /
+- LEARN: REJECTED AUTH @ apis.alfaview.com/v2/auth/{guest,group}-link: NO accessKey existence oracle — well-formed synthetic triple returns 422/88B ACTION_INVALID byte-i
+- LEARN: REJECTED MISCONFIG @ apis.alfaview.com: 403-declaration asymmetry not behaviorally load-bearing — /v2/permission-groups returns 401 while declaring no 401; whol
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: Pre-auth query-parameter binder is unauthenticated parameter-enumeration oracle (9 of 26 GET ops); append wrong-typed va
