@@ -53489,3 +53489,1792 @@ testability: AUTH_HELPED
 
 ## STEP 7 — RISK
 [RISK] alfaview gmbh: 61. Down 1 from 62: two standing spec-debt hypotheses closed (unscoped create, hidden quotas) and the audit surface proved auth-bound, so no unauthenticated exposure was added. The 94 introspect and 88 guest-link chains remain valid but strictly token-gated — risk is carried, not increased.
+===== ANALYST bigpickle 2026-09-30 08:48:27 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mls -la; echo "---GIT---"; git log --oneline -5 2>/dev/null | head -20
+total 940
+drwxr-xr-x 12 runner runner   4096 Sep 30 08:40 .
+drwxr-xr-x  3 runner runner   4096 Sep 30 08:40 ..
+drwxr-xr-x  7 runner runner   4096 Sep 30 08:40 .git
+drwxr-xr-x  3 runner runner   4096 Sep 30 08:40 .github
+-rw-r--r--  1 runner runner   1883 Sep 30 08:40 README.md
+-rw-r--r--  1 runner runner     32 Sep 30 08:40 analyst-out.txt
+-rw-r--r--  1 runner runner 394971 Sep 30 08:40 analyst-prompt.txt
+-rw-r--r--  1 runner runner 391061 Sep 30 08:40 ctx.txt
+drwxr-xr-x  2 runner runner   4096 Sep 30 08:40 inventory
+drwxr-xr-x  2 runner runner   4096 Sep 30 08:40 knowledge
+drwxr-xr-x  2 runner runner   4096 Sep 30 08:40 leads
+-rw-r--r--  1 runner runner  74907 Sep 30 08:40 probe-results.md
+drwxr-xr-x  2 runner runner   4096 Sep 30 08:40 recon-notes
+drwxr-xr-x  2 runner runner   4096 Sep 30 08:40 reports
+drwxr-xr-x  2 runner runner   4096 Sep 30 08:40 reposcan-raw
+-rw-r--r--  1 runner runner   3323 Sep 30 08:40 scope.yml
+drwxr-xr-x  2 runner runner   4096 Sep 30 08:40 scripts
+-rw-r--r--  1 runner runner     33 Sep 30 08:40 state_bigpickle.json
+-rw-r--r--  1 runner runner     33 Sep 30 08:40 state_laguna.json
+-rw-r--r--  1 runner runner     33 Sep 30 08:40 state_ling3.json
+-rw-r--r--  1 runner runner     33 Sep 30 08:40 state_longcat.json
+-rw-r--r--  1 runner runner     33 Sep 30 08:40 state_mimo.json
+-rw-r--r--  1 runner runner     33 Sep 30 08:40 state_nemotron3.json
+drwxr-xr-x  2 runner runner  12288 Sep 30 08:40 triage
+---GIT---
+3230523 reposcan 2026-09-30-08-04
+[0m
+[0m✱ [0mGlob "**/*openapi*"[90m 1 match[0m
+[0m
+[0m$ [0mls -la recon-notes/ leads/ knowledge/ reports/ scripts/ 2>/dev/null; echo "---STATE---"; cat state_bigpickle.json; echo; cat scope.yml | head -60
+knowledge/:
+total 236
+drwxr-xr-x  2 runner runner   4096 Sep 30 08:40 .
+drwxr-xr-x 12 runner runner   4096 Sep 30 08:40 ..
+-rw-r--r--  1 runner runner 229912 Sep 30 08:40 index.md
+
+leads/:
+total 3020
+drwxr-xr-x  2 runner runner    4096 Sep 30 08:40 .
+drwxr-xr-x 12 runner runner    4096 Sep 30 08:40 ..
+-rw-r--r--  1 runner runner 1155524 Sep 30 08:40 lead-bigpickle.md
+-rw-r--r--  1 runner runner    9129 Sep 30 08:40 lead-laguna.md
+-rw-r--r--  1 runner runner    8950 Sep 30 08:40 lead-ling3.md
+-rw-r--r--  1 runner runner    9308 Sep 30 08:40 lead-longcat.md
+-rw-r--r--  1 runner runner      18 Sep 30 08:40 lead-mimo.md
+-rw-r--r--  1 runner runner 1851877 Sep 30 08:40 lead-nemotron3.md
+-rw-r--r--  1 runner runner   28352 Sep 30 08:40 reposcan-alfaview.md
+
+recon-notes/:
+total 192
+drwxr-xr-x  2 runner runner   4096 Sep 30 08:40 .
+drwxr-xr-x 12 runner runner   4096 Sep 30 08:40 ..
+-rw-r--r--  1 runner runner   4789 Sep 30 08:40 CORPUS-ALFAVIEW.md
+-rw-r--r--  1 runner runner   3624 Sep 30 08:40 DEDICATED-DEEP.md
+-rw-r--r--  1 runner runner   7833 Sep 30 08:40 DEEPER-FINDINGS.md
+-rw-r--r--  1 runner runner   6061 Sep 30 08:40 SCOPE-CONFIRMATION.md
+-rw-r--r--  1 runner runner 159550 Sep 30 08:40 alfaview-openapi.yaml
+
+reports/:
+total 8836
+drwxr-xr-x  2 runner runner    4096 Sep 30 08:40 .
+drwxr-xr-x 12 runner runner    4096 Sep 30 08:40 ..
+-rw-r--r--  1 runner runner 4174209 Sep 30 08:40 analyst-bigpickle.log
+-rw-r--r--  1 runner runner   38843 Sep 30 08:40 analyst-laguna.log
+-rw-r--r--  1 runner runner   38664 Sep 30 08:40 analyst-ling3.log
+-rw-r--r--  1 runner runner   39022 Sep 30 08:40 analyst-longcat.log
+-rw-r--r--  1 runner runner 4098041 Sep 30 08:40 analyst-nemotron3.log
+-rw-r--r--  1 runner runner    3836 Sep 30 08:40 hypotheses-bigpickle.txt
+-rw-r--r--  1 runner runner      51 Sep 30 08:40 hypotheses-laguna.txt
+-rw-r--r--  1 runner runner      50 Sep 30 08:40 hypotheses-ling3.txt
+-rw-r--r--  1 runner runner      52 Sep 30 08:40 hypotheses-longcat.txt
+-rw-r--r--  1 runner runner   11957 Sep 30 08:40 hypotheses-nemotron3.txt
+-rw-r--r--  1 runner runner  597601 Sep 30 08:40 hypotheses.md
+-rw-r--r--  1 runner runner    9922 Sep 30 08:40 valid-bugs.md
+
+scripts/:
+total 28
+drwxr-xr-x  2 runner runner  4096 Sep 30 08:40 .
+drwxr-xr-x 12 runner runner  4096 Sep 30 08:40 ..
+-rw-r--r--  1 runner runner 16987 Sep 30 08:40 sync-issues.py
+---STATE---
+{"phase": "POC", "target": "api"}
+programs:
+  alfaview:
+    name: alfaview gmbh Bug Bounty
+    disclosure_policy: via bugs.olivermaicher.eu (Oliver Maicher private program) - report + PoC + contact + payment
+    assets:
+      - name: "All company-owned infrastructure, alfaview web and desktop applications, mobile applications, APIs, backend systems, support systems, customer portals, websites, and domains operated by alfaview gmbh, including alfaview.com and company-operated subdomains"
+        priority: In
+    out_of_scope:
+- "Network level Denial of Service attacks"
+      - "Application Denial of Service by locking user accounts"
+      - "Descriptive error messages or headers (e.g. Stack Traces, banner grabbing)"
+      - "Disclosure of known public files or directories (e.g. robots.txt)"
+      - "Outdated software / library versions"
+      - "OPTIONS / TRACE HTTP method enabled"
+      - "CSRF on logout"
+      - "CSRF on forms that are available to anonymous users"
+      - "Cookies that lack HTTP Only or Secure settings for non-sensitive data"
+      - "Self-XSS and issues exploitable only through Self-XSS"
+      - "Reports resulting from automated scanning utilities without additional details or a POC demonstrating a specific exploit"
+      - "Attacks requiring physical access to a user's device"
+      - "Attacks dependent upon social engineering of employees or vendors"
+      - "Username enumeration based on login or forgot password pages"
+      - "Enforcement policies for brute force, rate limiting, or account lockout"
+      - "SSL/TLS best practices"
+      - "SSL attacks such as BEAST, BREACH, Renegotiation attack"
+      - "Clickjacking, without additional details demonstrating a specific exploit"
+      - "Mail configuration issues including SPF, DKIM, DMARC settings"
+      - "Use of a known-vulnerable library without a description of an exploit specific to our implementation"
+      - "Password and account recovery policies"
+      - "Presence of autocomplete functionality in form fields"
+      - "Publicly accessible login panels"
+      - "Lack of email address verification during account registration or account invitation"
+      - "Lack of email address verification password restore"
+      - "Session control during email/password changes"
+      - "Social engineering, physical attacks, and DoS/DDoS testing (per program notes)"
+      - "Exposure of customer/employee/financial/authentication data during testing (per program notes)"
+    github_orgs:
+      - none-configured
+
+rules:
+  passive_first: false          # deep-hunt agent: active probes allowed when scoped
+  max_requests_per_second: 1    # never hammer live infra
+  no_doom: true                 # no DoS/DDoS, no account-lockout attacks
+  account_creation: restricted  # only on test/sandbox assets, never live customer data
+  no_data_modification: true    # no writes/deletes on live customer data
+  no_pre_disclosure: true       # never disclose before program response
+  poc_required: true            # scanner output alone is REJECTED
+  redact_secrets_in_commits: true
+
+models:
+  - { id: opencode/big-pickle, name: bigpickle }
+  - { id: opencode/nemotron-3-ultra-free, name: nemotron3 }
+  - { id: opencode/longcat-2.0-free, name: longcat }
+  - { id: opencode/ling-3.0-flash-free, name: ling3 }
+  - { id: opencode/laguna-s-2.1-free, name: laguna }
+[0m
+[0m$ [0mcd recon-notes; md5sum alfaview-openapi.yaml; wc -c alfaview-openapi.yaml; python3 -c "
+import yaml,sys
+d=yaml.safe_load(open('alfaview-openapi.yaml'))
+print('openapi',d.get('openapi'))
+paths=d.get('paths',{})
+print('paths',len(paths))
+ops=[]
+for p,v in paths.items():
+    for m in v:
+        if m.lower() in ('get','post','put','patch','delete'):
+            ops.append((m.upper(),p))
+print('ops',len(ops))
+"
+082e2ba8fa493f8634ecd87328ebf1fa  alfaview-openapi.yaml
+159550 alfaview-openapi.yaml
+openapi 3.1.0
+paths 37
+ops 56
+[0m
+[0m$ [0mcd reports; head -80 valid-bugs.md
+# Validated findings (running count 0)
+
+- 11 lead(s) marked VALID at 2026-09-05 16:10:05 UTC
+  - **Verdict: VALID**
+  - | Q4 Provable non-invasively? | PARTIAL | Needs valid companyId+roomId pair + 10+ rapid requests to test rate limiting |
+  - | Q7 Reasonable triager accept? | YES | If rate limiting confirmed absent, this is a valid auth bypass; accessKey entropy matters |
+  - **Verdict: HOLD** — Blocked on obtaining valid companyId+roomId pair. Once obtained, re-triage after rate-limit probe.
+  - | Q4 Provable non-invasively? | NO | Needs valid client_id + registered redirect_uri to test bypass. Web bundle carries no client_id. Desktop installer is only source (S3 buckets 403). |
+  - **Verdict: VALID (low severity)** — Fully provable passively, genuine misconfiguration, but low direct impact.
+  - | Q4 Provable non-invasively? | PARTIAL | OIDC/JWKS metadata is public (passive proof of misconfiguration). Actual exploit needs a valid token sample to test alg confusion. |
+  - **Verdict: HOLD** — Needs valid token to test. Misconfiguration is provable passively but exploit requires AUTH_HELPED step.
+  - | 1 | Cross-tenant IDOR (REST UUID paths) | **VALID** | 7.5 HIGH | Ready to test with free account |
+  - | 4 | FusionAuth issuer=acme.com drift | **VALID** | 5.3 MED | Low severity, fully passive |
+  - | 6 | JWT alg confusion (HS256+RSA JWKS) | **HOLD** | 9.8 CRIT | Needs valid token sample |
+
+- 2 lead(s) marked VALID at 2026-09-05 18:21:43 UTC
+  - | 1 | Cross-tenant IDOR (REST UUID paths) | **VALID** |
+  - | 4 | FusionAuth issuer=acme.com drift | **VALID** |
+
+- 8 lead(s) marked VALID at 2026-09-07 14:28:07 UTC
+  - | Q2 | Attacker reachable? | **YES** — requires valid company-scoped token (two free-tenant signup path mapped) |
+  - | Q7 | Reasonable triager accept? | **YES** — clear misconfiguration with concrete evidence; however, exploitability requires valid token to test alg-confusion on consumer |
+  - **Verdict: VALID** (misconfig finding); alg-confusion exploit remains HOLD (needs token)
+  - **Verdict: VALID**
+  - | Q7 | Reasonable triager accept? | **MARGINAL** — supply chain argument is valid but requires storage compromise assumption |
+  - **Verdict: VALID** (weak but valid)
+  - | Q2 | Attacker reachable? | **YES** — with valid token |
+  - **Verdict: VALID** (informational/low) — inconsistent resolver auth is a valid finding, but no data leaked in observed responses.
+
+- 4 lead(s) marked VALID at 2026-09-09 00:20:51 UTC
+  - **Verdict: HOLD** — issuer=acme.com might be intentional for a specific integration. Need to confirm it's not a dev/test artifact. The implicit flow + HS256 in supported algs (while JWKS is RSA-only) 
+  - | Q3 Impact? | **Yes** — `guestAuthenticate(userId,companyId,roomId)` and `guestJoin(userId,companyId,roomId,displayName)` mutations are processed without accessKey, while the REST guest-link flow req
+  - **Verdict: VALID**
+  - | 2 | GraphQL guest mutations without accessKey | **VALID** | 7.5 | **REPORT** |
+
+- 6 lead(s) marked VALID at 2026-09-10 09:49:26 UTC
+  - **Verdict: VALID**
+  - **Verdict: VALID**
+  - | Q4 Provable | NO — requires valid companyId+roomId seed to test rate limiting |
+  - | 1 | FusionAuth issuer=acme.com drift | **VALID** | None — passive proof complete |
+  - | 2 | Unauthenticated binary distribution (test.alfaview.com) | **VALID** | None — passive proof complete |
+  - | 7 | JWT algorithm confusion (HS256/RSA) | **HOLD** | Needs valid token sample |
+
+- 8 lead(s) marked VALID at 2026-09-11 00:32:19 UTC
+  - | Q6 Always-rejected? | **No** — broken client auth on OAuth endpoints is a valid class |
+  - **Verdict: VALID**
+  - | Q6 Always-rejected? | **No** — JWT algorithm confusion is a valid finding class |
+  - | Q4 Provable? | **Yes** — mutation returns `BAD_USER_INPUT` (with zero UUIDs) or `FORBIDDEN` (with valid UUIDs), not `UNAUTHENTICATED`; confirms the mutation is reachable and processes input |
+  - | Q6 Always-rejected? | **No** — authentication bypass / inconsistent auth is a valid class |
+  - **Verdict: VALID**
+  - | 1 | OAuth2 Introspect broken client auth | **VALID** | 5.3 | Reportable as-is |
+  - | 3 | GraphQL guest mutations accessKey-less | **VALID** | 8.1 | Highest priority; needs two-account PoC |
+
+- 8 lead(s) marked VALID at 2026-09-11 17:42:01 UTC
+  - | Q4 Provable non-invasively? | **NO** - Blocked by `invalid_client` gate; need valid registered client_id from desktop installer |
+  - | Q7 Reasonable triager? | **NO** (as-is) - `BAD_USER_INPUT` confirms mutation is processed but we cannot confirm it returns an accessToken without a valid guest triple |
+  - **Verdict: VALID**
+  - | Q4 Provable non-invasively? | **PARTIALLY** - Discovery/JWKS are public (passive), but confirming token validation flaw requires valid token + test forge |
+  - | Q7 Reasonable triager? | **NO (as-is)** - Cannot confirm the validation actually fails without a valid token to forge against. The misconfiguration is observable but the exploitability is not proven
+  - | 3 | GraphQL guest-authz gap | **HOLD** | Needs valid guest triple |
+  - | 4 | OIDC issuer=acme.com drift | **VALID** | None — passively provable |
+  - | 5 | JWT alg confusion | **HOLD** | Needs valid token for forge test |
+
+- 7 lead(s) marked VALID at 2026-09-13 04:55:02 UTC
+  - | Q4 Provable non-invasively? | NO — requires valid `companyId` + `roomId` seed to test rate limiting; brute-force rate-limit status unknown |
+  - | Q6 On rejected list? | NO — "Enforcement policies for brute force, rate limiting, or account lockout" is on the rejected list, but that's for *testing* brute force, not for *reporting* missing rate 
+  - | Q4 Provable non-invasively? | NO — requires valid `client_id` to test redirect_uri handling; OIDC discovery shows no `registration_endpoint` |
+  - | Q4 Provable non-invasively? | PARTIAL — mutation is reachable (BAD_USER_INPUT response confirms processing), field-oracle reveals `expiry` field, UUID args hit FORBIDDEN (authorization). But cannot 
+  - **Verdict: VALID (with caveat)**
+  - | 3 | OAuth redirect_uri Bypass | **HOLD** | Needs valid client_id |
+  - | 6 | GraphQL guestAuthenticate/guestJoin Missing accessKey | **VALID** | Report — concrete evidence, novel divergence from REST |
+
+- 2 lead(s) marked VALID at 2026-09-13 14:02:07 UTC
+  - | 3 | OAuth redirect_uri Bypass | **HOLD** | Needs valid client_id |
+  - | 6 | GraphQL guestAuthenticate/guestJoin Missing accessKey | **VALID** | Report — concrete evidence, novel divergence from REST |
+
+- 9 lead(s) marked VALID at 2026-09-16 23:00:08 UTC
+  - | Q4 Provable | NO | Cannot prove without authenticated testing (needs valid API key) |
+  - **Verdict: HOLD** — Cannot validate without authenticated testing. Requires valid API key to confirm cross-tenant enforcement failure.
+  - **Verdict: HOLD** — Need valid companyId+roomId seed to test rate limiting.
+[0m
+[0m$ [0mcd recon-notes; python3 - <<'PY'
+import yaml,re,json,collections
+d=yaml.safe_load(open('alfaview-openapi.yaml'))
+schemas=d.get('components',{}).get('schemas',{})
+raw=open('alfaview-openapi.yaml').read()
+
+# 1. method distribution
+mc=collections.Counter()
+for p,v in d['paths'].items():
+    for m in v:
+        if m in ('get','post','put','patch','delete','head','options'): mc[m]+=1
+print("METHODS:",dict(mc), "total", sum(mc.values()))
+
+# 2. referenced schema names = any $ref '#/components/schemas/NAME'
+refs=collections.Counter(re.findall(r"#/components/schemas/([A-Za-z0-9_]+)", raw))
+# exclude the definitions themselves (key: NAME:) from being counted
+orphans=[s for s in schemas if refs.get(s,0)==0]
+print("SCHEMAS total",len(schemas),"ORPHANS",len(orphans))
+print(json.dumps(sorted(orphans),indent=0))
+
+# 3. other component kinds
+for kind in ('parameters','responses','requestBodies','headers','securitySchemes','examples','links','callbacks'):
+    cs=d.get('components',{}).get(kind,{})
+    if not cs: 
+        print(kind,"-> none/absent"); continue
+    orp=[k for k in cs if ("#/components/%s/%s"%(kind,k)) not in raw.replace("#/components/%s/"%kind,"#/components/%s/"%kind)]
+    # proper: count occurrences of the full pointer minus the 1 declaration
+    orp=[]
+    for k in cs:
+        ptr="#/components/%s/%s"%(kind,k)
+        n=raw.count(ptr)
+        if n<=1: orp.append(k)
+    print(kind,"total",len(cs),"ORPHAN(<=1 ref)",orp)
+
+print("TOP-LEVEL security:", d.get('security','ABSENT'))
+print("securitySchemes:", d.get('components',{}).get('securitySchemes','ABSENT'))
+PY
+METHODS: {'post': 13, 'get': 26, 'patch': 10, 'delete': 7} total 56
+SCHEMAS total 64 ORPHANS 1
+[
+"ErrorModel"
+]
+parameters -> none/absent
+responses -> none/absent
+requestBodies -> none/absent
+headers -> none/absent
+securitySchemes -> none/absent
+examples -> none/absent
+links -> none/absent
+callbacks -> none/absent
+TOP-LEVEL security: ABSENT
+securitySchemes: ABSENT
+[0m
+[0m$ [0mcd recon-notes; grep -c "Event:" alfaview-openapi.yaml; grep -n "^  \(Event\|Actor\|Target\|PaginatedBodyListEvent\|AuditLog\):" alfaview-openapi.yaml; echo "--- head ---"; head -12 alfaview-openapi.yaml; echo "--- tags present ---"; python3 -c "
+import yaml,collections
+d=yaml.safe_load(open('alfaview-openapi.yaml'))
+c=collections.Counter()
+for p,v in d['paths'].items():
+    for m,o in v.items():
+        if m in ('get','post','patch','delete'):
+            for t in o.get('tags',['<none>']): c[t]+=1
+print(dict(c))"
+0
+--- head ---
+components:
+  schemas:
+    APICredentials:
+      additionalProperties: false
+      properties:
+        clientId:
+          description: The alias of the API key.
+          type: string
+        companyId:
+          description: The company ID.
+          type: string
+        key:
+--- tags present ---
+{'Authentication': 5, 'Guests': 14, 'Rooms': 26, 'Meetings': 5, 'Permissions': 5, 'Reports': 2, 'Files': 3, 'Users': 5}
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -m 25 -o av-openapi-live.json -w "HTTP:%{http_code} BYTES:%{size_download}\n" https://apis.alfaview.com/v2/docs/openapi.json && md5sum av-openapi-live.json && python3 -c "
+import json;d=json.load(open('av-openapi-live.json'));print('openapi',d.get('openapi'));print('paths',len(d['paths']));print('ops',sum(1 for p,v in d['paths'].items() for m in v if m in ('get','post','patch','delete','put')))"
+HTTP:200 BYTES:132100
+284a3383c1ac3cfc9152ffcc631891f2  av-openapi-live.json
+openapi 3.1.0
+paths 38
+ops 57
+[0m
+[0m$ [0mcd /tmp/opencode; python3 - <<'PY'
+import json,re,collections
+raw=open('av-openapi-live.json').read()
+d=json.loads(raw)
+sch=d['components']['schemas']
+print("schemas:",len(sch))
+refs=collections.Counter(re.findall(r"#/components/schemas/([A-Za-z0-9_]+)",raw))
+orph=[s for s in sch if refs.get(s,0)==0]
+print("ORPHANS:",orph)
+print()
+# every schema and its refs -> dependency graph closure to find orphan *clusters*
+def deps(name,seen=None):
+    seen=seen or set()
+    m=re.search(r'"'+name+r'"\s*:\s*\{', raw)
+    # crude: find the schema block
+    return seen
+# instead: which schemas are reachable from any declared operation response/request?
+declared=set()
+for p,v in d['paths'].items():
+    for m,o in v.items():
+        if m in ('get','post','patch','delete','put'):
+            s=json.dumps(o)
+            declared|=set(re.findall(r"#/components/schemas/([A-Za-z0-9_]+)",s))
+print("schemas referenced by ≥1 declared op:",len(declared))
+print("ORPHANS not referenced by any op:",sorted(set(sch)-declared))
+print()
+# description-scraping for endpoint references across ALL schema descriptions
+pat=re.compile(r"(/v[12]/[A-Za-z0-9/{}._-]+)|\bendpoint\b",re.I)
+hits=[]
+def walk(o,path=""):
+    if isinstance(o,dict):
+        for k,v in o.items():
+            if k=='description' and isinstance(v,str) and pat.search(v):
+                hits.append((path,v.strip()))
+            walk(v,path+"/"+str(k))
+    elif isinstance(o,list):
+        for i,v in enumerate(o): walk(v,path+"/%d"%i)
+for name,s in sch.items():
+    for p,d_ in s.get('properties',{}).items():
+        walk(d_,"%s.%s"%(name,p))
+seen=set()
+for p,d_ in sorted(hits):
+    key=(p,d_)
+    if key in seen: continue
+    seen.add(key)
+    print("DESC-HIT",p,"::",d_[:260])
+PY
+schemas: 69
+ORPHANS: ['ErrorModel', 'PaginatedBodyListEvent']
+
+schemas referenced by ≥1 declared op: 49
+ORPHANS not referenced by any op: ['Actor', 'Attendance', 'ErrorDetail', 'ErrorModel', 'Event', 'GroupLinkCreate', 'GuestLinkCreate', 'InviteUserPermissions', 'PaginatedBodyListEvent', 'Participant', 'Permissions', 'RoomQuotas', 'RoomQuotasEdit', 'Stats', 'SubroomCreateListItem', 'SubroomEditListItem', 'Target', 'TokenUserPermissions', 'Translation', 'UserInformation']
+
+DESC-HIT Event.metadata :: The metadata attributes of the audit event. To get the available keys, refer to the 'List Searchable metadata attributes' endpoint.
+DESC-HIT LanguageSettings.targetTranscriptionLanguages :: The languages that the translation feature is translating the spoken words to. The translation into all of these languages is happening permanently as long as the feature is enabled, even if no participant has selected that language. To get the available trans
+DESC-HIT LanguageSettingsEdit.targetTranscriptionLanguages :: The languages that the spoken words are translated into. The translation into all of these languages is happening continuously as long as the feature is enabled, even if no participant has selected that language. To get the available transcription languages, r
+[0m
+[0m$ [0mcd /tmp/opencode; python3 - <<'PY'
+import json,re
+raw=open('av-openapi-live.json').read()
+d=json.loads(raw); sch=d['components']['schemas']
+# locate referrers by index proximity: use raw text, find each '#/components/schemas/NAME' index and nearest preceding top-level schema key
+def refidx(name):
+    return [m.start() for m in re.finditer(re.escape("#/components/schemas/"+name)+r'"',raw)]
+import collections
+for target in ['Actor','Event','Target','PaginatedBodyListEvent','RoomQuotas','RoomQuotasEdit','GroupLinkCreate','GuestLinkCreate','Stats','Translation','UserInformation','Participant','Attendance','Permissions','TokenUserPermissions','InviteUserPermissions','ErrorModel','ErrorDetail','SubroomCreateListItem','SubroomEditListItem']:
+    idxs=refidx(target)
+    owners=[]
+    for i in idxs:
+        pre=raw[:i]
+        ks=list(re.finditer(r'^    ([A-Za-z0-9_]+):$',pre,re.M))
+        if ks: owners.append(ks[-1].group(1))
+    c=collections.Counter(owners)
+    print("%-26s refs=%-3d owners=%s"%(target,len(idxs),dict(c)))
+PY
+Actor                      refs=1   owners={}
+Event                      refs=1   owners={}
+Target                     refs=1   owners={}
+PaginatedBodyListEvent     refs=0   owners={}
+RoomQuotas                 refs=1   owners={}
+RoomQuotasEdit             refs=2   owners={}
+GroupLinkCreate            refs=2   owners={}
+GuestLinkCreate            refs=2   owners={}
+Stats                      refs=2   owners={}
+Translation                refs=1   owners={}
+UserInformation            refs=1   owners={}
+Participant                refs=1   owners={}
+Attendance                 refs=1   owners={}
+Permissions                refs=5   owners={}
+TokenUserPermissions       refs=1   owners={}
+InviteUserPermissions      refs=1   owners={}
+ErrorModel                 refs=0   owners={}
+ErrorDetail                refs=1   owners={}
+SubroomCreateListItem      refs=1   owners={}
+SubroomEditListItem        refs=1   owners={}
+[0m
+[0m$ [0mcd /tmp/opencode; python3 - <<'PY'
+import json,re
+raw=open('av-openapi-live.json').read()
+def ctx(name,w=420):
+    for m in re.finditer(re.escape("#/components/schemas/"+name)+r'"',raw):
+        i=m.start()
+        print("=== %s @%d ==="%(name,i))
+        print(raw[max(0,i-w):i+90].replace('\n',' ')[-520:])
+        print()
+for n in ['Actor','Target','RoomQuotas','RoomQuotasEdit','GroupLinkCreate','GuestLinkCreate','Stats','Translation','UserInformation','TokenUserPermissions']:
+    ctx(n)
+PY
+=== Actor @6330 ===
+"format":"uri","type":"string"}},"type":"object"},"Event":{"additionalProperties":false,"properties":{"action":{"description":"The audited action in the format 'domain.object.action'. Empty if 'checksumValid' is false.","examples":["room.room.create"],"type":"string"},"actionType":{"description":"Signals whether the action was reading or a writing operation.","enum":["read","write"],"type":"string"},"actor":{"$ref":"#/components/schemas/Actor","description":"The user or internal event that triggered the a
+
+=== Target @7803 ===
+ happened.","examples":["2026-09-01T10:00:00Z"],"format":"date-time","type":"string"},"outcome":{"description":"The result of the audited action.","enum":["success","failure","denied"],"type":"string"},"parentEventId":{"description":"The ID of the audit event that caused this one.","examples":["00000000-0000-0000-0000-000000000000"],"type":"string"},"targets":{"description":"The affected resources.","items":{"$ref":"#/components/schemas/Target"},"type":["array","null"]}},"required":["id","occurredAt","act
+
+=== RoomQuotas @36281 ===
+"examples":["00000000-0000-0000-0000-000000000000"],"type":"string"},"managed":{"description":"If true, the room cannot be edited or removed by a user.","type":"boolean"},"parentId":{"description":"The parent room ID.","examples":["00000000-0000-0000-0000-000000000000"],"type":"string"},"passcodeRequired":{"description":"If true, a passcode is required to enter the room.","type":["boolean","null"]},"quotas":{"$ref":"#/components/schemas/RoomQuotas","description":"The quota information."},"sort":{"descript
+
+=== RoomQuotasEdit @38511 ===
+fault' is assumed."},"parentId":{"description":"The parent room ID.","examples":["00000000-0000-0000-0000-000000000000"],"type":["string","null"]},"passcodeRequired":{"description":"If true, a passcode is required to enter the room.","type":["boolean","null"]},"permissions":{"description":"The user permissions.","items":{"$ref":"#/components/schemas/ParticipantPermissions"},"type":["array","null"]},"quotas":{"$ref":"#/components/schemas/RoomQuotasEdit","description":"The requested quotas. These are checke
+
+=== RoomQuotasEdit @50929 ===
+"The feature configuration. If no state is specified for a feature, 'default' is assumed."},"passcodeRequired":{"description":"If true, a passcode is required to enter the room.","type":["boolean","null"]},"permissions":{"description":"The user permissions. Permissions not present in this array will be deleted.","items":{"$ref":"#/components/schemas/ParticipantPermissions"},"type":["array","null"]},"quotas":{"$ref":"#/components/schemas/RoomQuotasEdit","description":"The quota information."},"subrooms":{"
+
+=== GroupLinkCreate @3627 ===
+ng"},"createdAt":{"description":"The time at which the company was created.","examples":["2026-09-01T10:00:00Z"],"format":"date-time","type":"string"},"displayName":{"description":"The display name.","type":"string"}},"required":["companyId","displayName","createdAt"],"type":"object"},"CreateGroupLinksRequestBody":{"additionalProperties":false,"properties":{"create":{"description":"The group links.","items":{"$ref":"#/components/schemas/GroupLinkCreate"},"minItems":1,"type":["array","null"]},"origin":{"de
+
+=== GroupLinkCreate @26912 ===
+","format":"int64","maximum":30,"minimum":0,"type":["integer","null"]},"end":{"description":"The end time.","examples":["2024-09-22T12:34:56Z"],"format":"date-time","type":"string"},"groupLinks":{"description":"The group links for the meeting. If not provided, four default group links (moderator, participant, guest, spectator) will be created. If an empty list is provided, no links will be created.","items":{"$ref":"#/components/schemas/GroupLinkCreate"},"type":["array","null"]},"guestLinks":{"description
+
+=== GuestLinkCreate @4055 ===
+ents/schemas/GroupLinkCreate"},"minItems":1,"type":["array","null"]},"origin":{"description":"Specifies the creator or reason for the creation of the group links (e.g., 'my external tool' or 'initial meeting delayed').","type":["string","null"]}},"required":["create"],"type":"object"},"CreateGuestLinksRequestBody":{"additionalProperties":false,"properties":{"create":{"description":"The guest links.","items":{"$ref":"#/components/schemas/GuestLinkCreate"},"minItems":1,"type":["array","null"]},"origin":{"de
+
+=== GuestLinkCreate @27056 ===
+"format":"date-time","type":"string"},"groupLinks":{"description":"The group links for the meeting. If not provided, four default group links (moderator, participant, guest, spectator) will be created. If an empty list is provided, no links will be created.","items":{"$ref":"#/components/schemas/GroupLinkCreate"},"type":["array","null"]},"guestLinks":{"description":"The guest links for the meeting.","items":{"$ref":"#/components/schemas/GuestLinkCreate"},"type":["array","null"]},"passcodeRequired":{"descr
+
+=== Stats @52909 ===
+n of users being connected to a room in seconds.","format":"int64","minimum":0,"type":"integer"}},"required":["activeCount","sessionCount","roomOnlineSeconds","usersOnlineSeconds"],"type":"object"},"StatsPeriod":{"additionalProperties":false,"properties":{"from":{"description":"The start time of the considered time period.","examples":["2024-09-22T11:00:00Z"],"format":"date-time","type":"string"},"meetings":{"$ref":"#/components/schemas/Stats","description":"Statistics for meetings."},"rooms":{"$ref":"#/c
+
+=== Stats @52996 ===
+integer"}},"required":["activeCount","sessionCount","roomOnlineSeconds","usersOnlineSeconds"],"type":"object"},"StatsPeriod":{"additionalProperties":false,"properties":{"from":{"description":"The start time of the considered time period.","examples":["2024-09-22T11:00:00Z"],"format":"date-time","type":"string"},"meetings":{"$ref":"#/components/schemas/Stats","description":"Statistics for meetings."},"rooms":{"$ref":"#/components/schemas/Stats","description":"Statistics for rooms."},"to":{"description":"Th
+
+=== Translation @23286 ===
+table for room administrators in the client.","enum":["simple_transcription","digital_interpreter"],"type":["string","null"]}},"type":"object"},"Languages":{"additionalProperties":false,"properties":{"transcription":{"description":"The available transcription languages.","items":{"type":"string"},"type":["array","null"]},"translation":{"description":"The available language pairings for translation.","items":{"$ref":"#/components/schemas/Translation"},"type":["array","null"]}},"type":"object"},"Meeting":{"
+
+=== UserInformation @59263 ===
+he locale settings (e.g., UI language) for the user.","enum":["de-DE","en-US"],"type":"string"},"title":{"description":"The title.","examples":["Dr."],"type":"string"}},"required":["emailAddress","firstName","lastName"],"type":"object"},"UserInvitation":{"additionalProperties":false,"properties":{"permissions":{"$ref":"#/components/schemas/InviteUserPermissions","description":"The user permissions."},"user":{"$ref":"#/components/schemas/UserInformation","description":"Data about the invited user."}},"requ
+
+=== TokenUserPermissions @55862 ===
+":{"description":"The type of resource the audited action was applied to.","examples":["room"],"type":"string"}},"required":["type","id"],"type":"object"},"TokenInfo":{"additionalProperties":false,"properties":{"active":{"description":"Denotes whether the token is still valid.","type":"boolean"},"expiresAt":{"description":"Time at which the token expires.","format":"date-time","type":"string"},"permissions":{"$ref":"#/components/schemas/TokenUserPermissions","description":"The user permissions of the toke
+[0m
+[0m$ [0mcd /tmp/opencode; python3 - <<'PY'
+import json,re
+d=json.load(open('av-openapi-live.json'))
+sch=d['components']['schemas']
+def j(o): return json.dumps(o)
+print("### request-body usage per operation (unscoped-write check)")
+for p,v in sorted(d['paths'].items()):
+    for m,o in v.items():
+        if m not in ('get','post','patch','delete','put'): continue
+        rb=o.get('requestBody',{}).get('content',{})
+        names=[]
+        for ct,cv in rb.items():
+            names+=re.findall(r"#/components/schemas/([A-Za-z0-9_]+)",j(cv))
+        if names:
+            print("%-6s %-52s %s"%(m.upper(),p,names))
+print()
+print("### declared response codes per op")
+for p,v in sorted(d['paths'].items()):
+    for m,o in v.items():
+        if m not in ('get','post','patch','delete','put'): continue
+        print("%-6s %-52s %s"%(m.upper(),p,sorted(o.get('responses',{}).keys())))
+PY
+### request-body usage per operation (unscoped-write check)
+POST   /v2/auth/api-key                                     ['APICredentials']
+POST   /v2/auth/group-link                                  ['AuthenticateGroupLinkRequestBody']
+POST   /v2/auth/guest-link                                  ['AuthenticateGuestLinkRequestBody']
+POST   /v2/auth/password                                    ['PasswordCredentials']
+PATCH  /v2/group-links/{id}                                 ['GroupLinkUpdate']
+PATCH  /v2/guest-links/{id}                                 ['GuestLinkUpdate']
+POST   /v2/meetings                                         ['MeetingCreate']
+PATCH  /v2/meetings/{id}                                    ['MeetingUpdate']
+POST   /v2/meetings/{id}/cancellation                       ['MeetingCancellation']
+POST   /v2/rooms                                            ['RoomCreate']
+PATCH  /v2/rooms/{id}                                       ['RoomUpdate']
+PATCH  /v2/rooms/{roomId}/features                          ['RoomFeaturesEdit']
+PATCH  /v2/rooms/{roomId}/file-share-settings               ['RoomSettingsUpdate']
+POST   /v2/rooms/{roomId}/group-links                       ['CreateGroupLinksRequestBody']
+POST   /v2/rooms/{roomId}/guest-links                       ['CreateGuestLinksRequestBody']
+PATCH  /v2/rooms/{roomId}/language-settings                 ['LanguageSettingsEdit']
+POST   /v2/rooms/{roomId}/permissions                       ['ParticipantPermissions']
+PATCH  /v2/rooms/{roomId}/permissions/{userId}              ['PermissionsEdit']
+POST   /v2/rooms/{roomId}/subrooms                          ['SubroomEdit']
+PATCH  /v2/rooms/{roomId}/subrooms/{subroomId}              ['SubroomEdit']
+PATCH  /v2/users                                            ['UserUpdate']
+POST   /v2/users/invitation                                 ['UserInvitation']
+
+### declared response codes per op
+POST   /v2/auth/api-key                                     ['200', '400', '401', '403', '422']
+POST   /v2/auth/group-link                                  ['200', '400', '401', '422']
+POST   /v2/auth/guest-link                                  ['200', '400', '401', '422']
+POST   /v2/auth/password                                    ['200', '400', '401', '403', '422']
+GET    /v2/auth/token-info                                  ['200', '422']
+GET    /v2/group-links                                      ['200', '401']
+GET    /v2/group-links/{id}                                 ['200', '401', '403', '404', '422']
+PATCH  /v2/group-links/{id}                                 ['204', '400', '401', '404', '422']
+GET    /v2/guest-links                                      ['200', '401', '403']
+GET    /v2/guest-links/{id}                                 ['200', '401', '403', '404', '422']
+PATCH  /v2/guest-links/{id}                                 ['204', '400', '401', '404', '422']
+GET    /v2/languages                                        ['200', '401']
+GET    /v2/meetings                                         ['200', '401', '403']
+POST   /v2/meetings                                         ['201', '400', '401', '403', '422']
+GET    /v2/meetings/{id}                                    ['200', '401', '403', '404', '422']
+PATCH  /v2/meetings/{id}                                    ['204', '400', '401', '403', '404', '422']
+POST   /v2/meetings/{id}/cancellation                       ['204', '400', '401', '404', '422']
+GET    /v2/permission-groups                                ['200', '400', '404']
+GET    /v2/room-types                                       ['200', '401']
+GET    /v2/rooms                                            ['200', '401', '422']
+POST   /v2/rooms                                            ['201', '400', '401', '403', '422']
+DELETE /v2/rooms/{id}                                       ['204', '401', '403', '422']
+GET    /v2/rooms/{id}                                       ['200', '401', '404', '422']
+PATCH  /v2/rooms/{id}                                       ['204', '400', '401', '403', '404', '422']
+GET    /v2/rooms/{id}/participants                          ['200', '401', '403', '404', '422']
+GET    /v2/rooms/{roomId}/attendances                       ['200', '401', '403', '422']
+DELETE /v2/rooms/{roomId}/features                          ['204', '401', '403', '404', '422']
+GET    /v2/rooms/{roomId}/features                          ['200', '401', '404', '422']
+PATCH  /v2/rooms/{roomId}/features                          ['204', '400', '401', '403', '404', '422']
+GET    /v2/rooms/{roomId}/file-share-limits                 ['200', '401', '403', '422']
+GET    /v2/rooms/{roomId}/file-share-settings               ['200', '401', '403', '422']
+PATCH  /v2/rooms/{roomId}/file-share-settings               ['204', '400', '401', '403', '422']
+GET    /v2/rooms/{roomId}/group-links                       ['200', '401', '403', '422']
+POST   /v2/rooms/{roomId}/group-links                       ['201', '400', '401', '403', '422']
+DELETE /v2/rooms/{roomId}/group-links/{id}                  ['204', '401', '403']
+GET    /v2/rooms/{roomId}/guest-links                       ['200', '401', '403', '422']
+POST   /v2/rooms/{roomId}/guest-links                       ['201', '400', '401', '403', '422']
+DELETE /v2/rooms/{roomId}/guest-links/{id}                  ['204', '401', '403']
+GET    /v2/rooms/{roomId}/language-settings                 ['200', '401', '404', '422']
+PATCH  /v2/rooms/{roomId}/language-settings                 ['204', '400', '401', '403', '404', '422']
+GET    /v2/rooms/{roomId}/passcode                          ['200', '401', '403', '404', '422']
+POST   /v2/rooms/{roomId}/passcode                          ['200', '401', '403', '404', '422']
+GET    /v2/rooms/{roomId}/permissions                       ['200', '401', '404', '422']
+POST   /v2/rooms/{roomId}/permissions                       ['204', '400', '401', '403', '404', '409', '422']
+DELETE /v2/rooms/{roomId}/permissions/{userId}              ['204', '401', '403', '404', '422']
+PATCH  /v2/rooms/{roomId}/permissions/{userId}              ['204', '400', '401', '403', '404', '422']
+GET    /v2/rooms/{roomId}/subrooms                          ['200', '401', '404', '422']
+POST   /v2/rooms/{roomId}/subrooms                          ['201', '400', '401', '403', '404', '422']
+DELETE /v2/rooms/{roomId}/subrooms/{subroomId}              ['204', '401', '403', '404', '422']
+PATCH  /v2/rooms/{roomId}/subrooms/{subroomId}              ['204', '400', '401', '403', '404', '422']
+GET    /v2/stats                                            ['200', '401', '403', '422']
+GET    /v2/users                                            ['200', '401', '422']
+PATCH  /v2/users                                            ['204', '400', '401', '422']
+POST   /v2/users/invitation                                 ['202', '400', '401', '403', '422']
+GET    /v2/users/me                                         ['200', '401']
+GET    /v2/users/me/company                                 ['200', '401', '422']
+DELETE /v2/users/{id}                                       ['204', '401', '422']
+[0m
+[0m$ [0mcd /tmp/opencode; python3 - <<'PY'
+import json
+d=json.load(open('av-openapi-live.json')); sch=d['components']['schemas']
+for n in ['Event','Actor','Target','PaginatedBodyListEvent','GroupLink','RoomQuotas','RoomQuotasEdit','ParticipantPermissions','PermissionsEdit','GuestLinkUpdate']:
+    s=sch.get(n)
+    if not s: print(n,"MISSING"); continue
+    print("=== %s  addProps=%s required=%s"%(n,s.get('additionalProperties'),s.get('required')))
+    for k,v in (s.get('properties') or {}).items():
+        t=v.get('type') or v.get('$ref','')
+        print("   %-22s %-16s %s"%(k,t,(v.get('description') or '')[:150]))
+    print()
+PY
+=== Event  addProps=False required=['id', 'occurredAt', 'actor', 'action', 'targets', 'actionType', 'outcome', 'checksum', 'checksumValid']
+   action                 string           The audited action in the format 'domain.object.action'. Empty if 'checksumValid' is false.
+   actionType             string           Signals whether the action was reading or a writing operation.
+   actor                  #/components/schemas/Actor The user or internal event that triggered the audited action.
+   checksum               string           The checksum that the audit log service stored with the event.
+   checksumValid          boolean          If false, the stored event does not match its checksum and its fields cannot be trusted.
+   correlationId          string           The ID that groups all audit events of the same request.
+   details                object           Details about the audited action, (e.g., 'before' and 'after' comparison).
+   id                     string           The audit event ID.
+   metadata               object           The metadata attributes of the audit event. To get the available keys, refer to the 'List Searchable metadata attributes' endpoint.
+   occurredAt             string           The time at which the audited action happened.
+   outcome                string           The result of the audited action.
+   parentEventId          string           The ID of the audit event that caused this one.
+   targets                ['array', 'null'] The affected resources.
+
+=== Actor  addProps=False required=['type']
+   systemName             string           The name of the acting service. Set if the actor type is 'system'.
+   type                   string           The type of actor.
+   userId                 string           The ID of the acting user. Set if the actor type is 'user', 'support' or 'async_task'.
+
+=== Target  addProps=False required=['type', 'id']
+   id                     string           The resource ID.
+   type                   string           The type of resource the audited action was applied to.
+
+=== PaginatedBodyListEvent  addProps=False required=['data']
+   data                   ['array', 'null'] The actual data for a paginated request.
+   nextPageToken          string           A token that can be used to obtain the next page of the requested data.
+
+=== GroupLink  addProps=False required=['id', 'roomId', 'description', 'permissionGroupId', 'createdBy', 'createdAt', 'joinLink', 'joinUrl', 'accessKey', 'origin', 'dialInAllowed', 'dialInCode']
+   accessKey              string           The access key.
+   createdAt              string           The creation timestamp.
+   createdBy              string           The creator user ID.
+   description            string           A description of the group link.
+   dialInAllowed          boolean          If true, the group link is allowed to be used via dial-in.
+   dialInCode             string           The dial-in authentication code for the group link.
+   id                     string           The group link ID.
+   joinLink               string           Deprecated. Use joinUrl instead.
+   joinUrl                string           The URL of the room join page. That page allows the user to set a display name and to choose whether to join the room with the native client or the we
+   origin                 string           String that specifies the creator or reason for the creation of the group link (e.g., 'my external tool' or 'initial meeting delayed').
+   permissionGroupId      string           The permission group ID.
+   roomId                 string           The room ID.
+   validFrom              string           The group link is valid from this point in time.
+   validUntil             string           The group link is valid until this point in time.
+
+=== RoomQuotas  addProps=False required=['activeParticipants', 'spectatorOnlyParticipants', 'maxVideoTilesPerPage']
+   activeParticipants     integer          The number of allowed active participants.
+   maxVideoTilesPerPage   integer          The number of allowed video tiles displayed per page. If this value mismatches the defined options in the alfaview client, the next lower value will b
+   spectatorOnlyParticipants integer          The number of allowed spectator-only participants.
+
+=== RoomQuotasEdit  addProps=False required=['activeParticipants', 'spectatorOnlyParticipants', 'maxVideoTilesPerPage']
+   activeParticipants     integer          The maximum number of active participants.
+   maxVideoTilesPerPage   integer          The maximum number of video tiles displayed per page. If this value mismatches the defined options in the alfaview client, the next lower value will b
+   spectatorOnlyParticipants integer          The maximum number of spectator-only participants.
+
+=== ParticipantPermissions  addProps=False required=['participantId', 'permissions']
+   participantId          string           The user ID / guest link ID / group link ID to which the permissions apply.
+   permissions            #/components/schemas/Permissions The assigned permissions.
+
+=== PermissionsEdit  addProps=False required=None
+   admin                  ['boolean', 'null'] Permission to act as an administrator. Administrators are allowed to edit or delete rooms, change room settings or features and manage guests in the r
+   chat                   ['boolean', 'null'] Permission to chat in the room.
+   join                   ['boolean', 'null'] Permission to join the room.
+   promote                ['boolean', 'null'] Permission to promote permissions for other users for the room.
+   screen                 ['boolean', 'null'] Permission to share the screen in the room.
+   upload                 ['boolean', 'null'] Permission to upload files in the room.
+   video                  ['boolean', 'null'] Permission to stream video input in the room.
+   vip                    ['boolean', 'null'] Permission to mark users as VIP in the room.
+   voice                  ['boolean', 'null'] Permission to speak in the room.
+
+=== GuestLinkUpdate  addProps=False required=['displayName', 'sendEmail']
+   dialInAllowed          boolean          If true, the guest link is allowed to be used via dial-in.
+   displayName            string           The name of the guest that is displayed in UIs.
+   emailAddress           string           The email address associated with the guest link.
+   locale                 string           The locale settings (e.g., UI language) for the guest link.
+   permissionGroupId      ['string', 'null'] The permission group ID.
+   sendEmail              boolean          If true, an information email with the updated guest link information will be sent to the associated email address.
+   timezone               ['string', 'null'] The time zone to use in the notification emails. Can be 'UTC', 'Local' or a TZ identifier from the IANA time zone database. If empty, the default is '
+   validFrom              string           The guest link is valid from this point in time.
+   validUntil             string           The guest link is valid until this point in time.
+[0m
+[0m$ [0mcd /tmp/opencode; python3 - <<'PY'
+import json
+d=json.load(open('av-openapi-live.json')); sch=d['components']['schemas']
+P=sch['Permissions']
+print("=== Permissions addProps=%s required=%s"%(P.get('additionalProperties'),P.get('required')))
+for k,v in P['properties'].items(): print("   %-12s %-14s %s"%(k,v.get('type'),(v.get('description') or '')[:120]))
+print()
+print("=== TokenUserPermissions addProps=%s required=%s"%(sch['TokenUserPermissions'].get('additionalProperties'),sch['TokenUserPermissions'].get('required')))
+for k,v in sch['TokenUserPermissions']['properties'].items(): print("   %-16s %s"%(k,(v.get('description') or '')[:190]))
+print()
+for path,meth in [('/v2/rooms/{roomId}/permissions','post'),('/v2/rooms/{roomId}/permissions/{userId}','patch'),
+                  ('/v2/rooms/{roomId}/permissions/{userId}','delete'),('/v2/rooms/{roomId}/permissions','get'),
+                  ('/v2/users/{id}','delete'),('/v2/group-links/{id}','patch'),('/v2/guest-links/{id}','patch')]:
+    o=d['paths'][path][meth]
+    print("--- %s %s  opId=%s"%(meth.upper(),path,o.get('operationId')))
+    print("    summary:",(o.get('summary') or '')[:160])
+    print("    descr  :",(o.get('description') or '')[:600].replace("\n"," "))
+    print("    params :",[(p.get('name'),p.get('in'),p.get('required')) for p in o.get('parameters',[])])
+    print("    sortIdx:",o.get('x-sort-index'))
+PY
+=== Permissions addProps=False required=['admin', 'voice', 'video', 'promote', 'join', 'screen', 'vip', 'chat', 'upload']
+   admin        boolean        If true, the associated user is an admin.
+   chat         boolean        Permission to chat.
+   join         boolean        Permission to join the room.
+   promote      boolean        Permission to promote permissions for other users.
+   screen       boolean        Permission to share the screen.
+   upload       boolean        Permission to upload files.
+   video        boolean        Permission to stream video input.
+   vip          boolean        Permission to mark users as VIP.
+   voice        boolean        Permission to speak.
+
+=== TokenUserPermissions addProps=False required=['manageCompany', 'userAdmin', 'userList', 'userShow', 'roomAdmin', 'roomList', 'roomCreate']
+   manageCompany    If true, the user can manage company settings.
+   roomAdmin        If true, the user can create, update and delete any room.
+   roomCreate       If true, the user can create rooms for their company.
+   roomList         If true, the user can list all rooms in their company.
+   userAdmin        If true, the user can create, update and delete other users, send password reset mails and resend sign-up mails for new users.
+   userList         If true, the user can list all users in their company.
+   userShow         If true, the user can see the user names of all users in rooms they can access.
+
+--- POST /v2/rooms/{roomId}/permissions  opId=CreatePermissions
+    summary: Create Room Permissions
+    descr  : Creates permissions for a user that are applied in a room.
+    params : [('Authorization', 'header', None), ('roomId', 'path', True)]
+    sortIdx: 15
+--- PATCH /v2/rooms/{roomId}/permissions/{userId}  opId=UpdatePermissions
+    summary: Update Room Permissions
+    descr  : Updates permissions of a user that are applied in a room.
+    params : [('Authorization', 'header', None), ('roomId', 'path', True), ('userId', 'path', True)]
+    sortIdx: 16
+--- DELETE /v2/rooms/{roomId}/permissions/{userId}  opId=DeletePermissions
+    summary: Delete Room Permissions
+    descr  : Deletes permissions of a user that are applied in a room.
+    params : [('Authorization', 'header', None), ('roomId', 'path', True), ('userId', 'path', True)]
+    sortIdx: 17
+--- GET /v2/rooms/{roomId}/permissions  opId=ListPermissions
+    summary: List Room Permissions
+    descr  : Lists permissions applied in a room.
+    params : [('Authorization', 'header', None), ('roomId', 'path', True)]
+    sortIdx: 14
+--- DELETE /v2/users/{id}  opId=DeleteUser
+    summary: Delete user
+    descr  : Deletes a user. If the user is logged in at the time of the deletion, it can take up to an hour until the user is fully unable to access any part of the system.
+    params : [('Authorization', 'header', None), ('id', 'path', True)]
+    sortIdx: 4
+--- PATCH /v2/group-links/{id}  opId=UpdateGroupLink
+    summary: Update Group Link
+    descr  : Updates a group link.
+    params : [('Authorization', 'header', None), ('id', 'path', True)]
+    sortIdx: 10
+--- PATCH /v2/guest-links/{id}  opId=UpdateGuestLink
+    summary: Update Guest Link
+    descr  : Updates a guest link.
+    params : [('Authorization', 'header', None), ('id', 'path', True)]
+    sortIdx: 4
+[0m
+[0m$ [0mcd /tmp/opencode; for u in "https://apis.alfaview.com/v2/rooms/not-a-uuid/permissions" "https://apis.alfaview.com/v2/audit-log"; do
+  printf "== %s\n" "$u"
+  curl -s -m 20 -o body.tmp -D head.tmp -w "HTTP:%{http_code} BYTES:%{size_download}\n" "$u"
+  grep -iE "^(allow|www-authenticate|content-type|server):" head.tmp | tr -d '\r'
+  md5sum body.tmp | cut -c1-12; head -c 240 body.tmp; echo; sleep 2
+done
+== https://apis.alfaview.com/v2/rooms/not-a-uuid/permissions
+HTTP:401 BYTES:107
+content-type: application/problem+json
+www-authenticate: AccessToken
+server: edge-proxy
+60ed2f29d492
+{"title":"Unauthorized","status":401,"detail":"No access token was provided in the Authorization header."}
+
+== https://apis.alfaview.com/v2/audit-log
+HTTP:422 BYTES:232
+content-type: application/problem+json
+server: edge-proxy
+b4adcd157348
+{"title":"Unprocessable Entity","status":422,"detail":"validation failed","errors":[{"message":"required query parameter is missing","location":"query.from"},{"message":"required query parameter is missing","location":"query.to"}]}
+[0m
+## Objective
+- Finish the current `alfaview gmbh` bug-bounty analyst cycle in `POC` phase (`target: api`) and emit the required structured STEP blocks.
+- Determine whether deeper analysis of the live OpenAPI contract reveals a new actionable finding beyond the standing token-gated hypotheses.
+
+## Important Details
+- Final analysis must separate facts from hypotheses, avoid endpoint-map-only output, and use only traceable evidence.
+- Live testing is passive-first, read-only, ≤1 rps, and limited to `GET`/`HEAD`/`OPTIONS`; no mutations, auth bypass, or customer-data access.
+- Out of scope: brute force/rate-limit policy, descriptive errors, public login panels, missing email verification, scanner-only claims, and similar rejected classes.
+- Current standing chains:
+  - `sso.alfaview.com/oauth2/introspect` missing client authentication, confidence 94; requires a real self-owned token for impact confirmation.
+  - `apis.alfaview.com/v2/guest-links` / `/v2/group-links` un-narrowable credential-bearing lists, confidence 88; requires authenticated read-only verification.
+  - `apis.alfaview.com/v2/audit-log` is live but its first IDOR claim was retracted; confidence 20, predicted false, because `AUDIT_LOG` bit 21 exists.
+- Authenticated work is blocked on the email-gated `Signup` → `FinishSignup` flow.
+- REST `/v2/auth/guest-link` requires `accessKey`, `companyId`, and `roomId`; prior four-field/`displayName` claims are incorrect.
+- No repository files have been modified.
+
+## Work State
+### Completed
+- Inspected repository structure and current state: `phase: POC`, `target: api`; current commit is `3230523 reposcan 2026-09-30-08-04`.
+- Analyzed stale local contract `recon-notes/alfaview-openapi.yaml`:
+  - OpenAPI 3.1.0, 37 paths, 56 operations, 159550 bytes.
+  - Raw YAML MD5 `082e2ba8fa493f8634ecd87328ebf1fa`.
+  - Contains no `Event`, `Actor`, `Target`, or `PaginatedBodyListEvent`.
+- Performed one permitted passive request:
+  - `curl -s -m 25 -o av-openapi-live.json -w "HTTP:%{http_code} BYTES:%{size_download}\n" https://apis.alfaview.com/v2/docs/openapi.json`
+  - Result: HTTP 200, 132100 bytes, MD5 `284a3383c1ac3cfc9152ffcc631891f2`, 38 paths, 57 operations.
+- Saved the live response as `/tmp/opencode/av-openapi-live.json`.
+- Verified the live contract has 69 schemas.
+- Determined the only raw `$ref` roots with zero references anywhere are:
+  - `ErrorModel`
+  - `PaginatedBodyListEvent`
+- Established that `Actor`, `Event`, and `Target` each have one reference and form the audit-log orphan cluster rooted at `PaginatedBodyListEvent`.
+- Found the description: `Event.metadata` says, `"refer to the 'List Searchable metadata attributes' endpoint."`
+- Confirmed direct-operation schema scanning produces false orphan candidates because many schemas are reached transitively through request/response components or inlined structures.
+- Reviewed standing hypotheses and validation state from `reports/hypotheses-bigpickle.txt` and `reports/valid-bugs.md`.
+
+### Active
+- Building a robust JSON `$ref` dependency graph to print the complete `PaginatedBodyListEvent → Event → Actor/Target` structure and distinguish true roots from transitively used schemas.
+- Searching locally for the exact GraphQL/REST symbol corresponding to `"List Searchable metadata attributes"` before considering another request.
+- No independent new finding has yet been established; current evidence may still resolve to `NO_DELTA`.
+
+### Blocked
+- The attempted referrer-owner parser returned `owners={}` for every schema because its indentation regex did not handle JSON keys ending in `{`; ownership must be recomputed with native JSON traversal.
+- Real authorization behavior for introspection, guest-link lists, audit logs, and admin-switch operations remains unverified without a self-owned bearer token.
+- User rules prohibit the required GraphQL/REST `POST` operations during this cycle.
+
+## Next Move
+1. Recursively traverse `/tmp/openapi-live.json` with native JSON parsing to map every `$ref`, dump the full audit-log schema cluster, and run `rg -n "List Searchable metadata attributes|SearchableMetadata|metadataAttributes" .` across local artifacts.
+2. If no exact route or new behavioral lead emerges, finalize with `NO_DELTA`, retain only confidence ≥40 hypotheses, and issue exactly one `[NEXT] HUMAN` action for the self-owned account sequence: token-info → guest-link list → audit log.
+
+## Relevant Files
+- `/tmp/openapi-live.json`: current live 38-path/57-operation OpenAPI response.
+- `recon-notes/alfaview-openapi.yaml`: stale 37-path/56-operation local snapshot used for comparison.
+- `reports/hypotheses-bigpickle.txt`: current ranked hypotheses and next authenticated sequence.
+- `leads/lead-bigpickle.md`: detailed hypothesis history, retractions, and supporting evidence.
+- `knowledge/index.md`: accumulated knowledge base.
+- `probe-results.md`: historical request-level observations.
+- `reports/valid-bugs.md`: validation and triage state.
+- `analyst-prompt.txt`: full analyst instructions and structured-output requirements.
+- `scope.yml`: authorized asset scope.
+- `inventory/alfaview.md`: target inventory.
+- `reposcan-raw/`: local raw repository/artifact data for symbol searches.
+Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt; ls; echo ---; wc -l analyst-prompt.txt reports/hypotheses-bigpickle.txt 2>/dev/null
+README.md
+analyst-out.txt
+analyst-prompt.txt
+ctx.txt
+inventory
+knowledge
+leads
+probe-results.md
+recon-notes
+reports
+reposcan-raw
+scope.yml
+scripts
+state_bigpickle.json
+state_laguna.json
+state_ling3.json
+state_longcat.json
+state_mimo.json
+state_nemotron3.json
+triage
+---
+  2322 analyst-prompt.txt
+    30 reports/hypotheses-bigpickle.txt
+  2352 total
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt; grep -nE "^(#|##|###|STEP|\[STEP)" analyst-prompt.txt | sed -n '1,160p'
+2:# Knowledge Base (seed)
+973:## 2026-09-30 02:23:28 UTC [target] (model bigpickle)
+1029:## RANKED HYPOTHESES 2026-09-30 02:23:38 UTC
+1045:# alfaview gmbh inventory (discovery seed 2026-09-02)
+1046:# NOTE: hosts below are discovery candidates from passive DNS/CT; confirm in-scope vs program scope before active testing.
+1056:## PASSIVE RECON 2026-09-02 (read-only, non-intrusive)
+1071:## DEEP SERVICE SCAN 2026-09-02 (read-only connect+banner)
+1075:## DEEP SERVICE SCAN 2026-09-02 (read-only connect+banner)
+1079:## DEEP ENUM (wildcard-cleaned) 2026-09-03
+1138:## 2026-09-03 11:40:30 UTC
+1140:## 2026-09-03 14:23:21 UTC
+1142:## 2026-09-03 15:21:33 UTC
+1151:## 2026-09-03 18:48:37 UTC
+1159:## 2026-09-03 21:22:00 UTC
+1161:## 2026-09-03 23:24:23 UTC
+1168:## 2026-09-04 01:12:26 UTC
+1180:## 2026-09-04 06:00:56 UTC
+1186:## 2026-09-04 10:12:15 UTC
+1188:## 2026-09-04 14:25:07 UTC
+1207:## 2026-09-04 17:51:04 UTC
+1209:## 2026-09-04 20:04:20 UTC
+1215:## 2026-09-04 22:09:53 UTC
+1222:## 2026-09-05 00:15:07 UTC
+1224:## 2026-09-05 04:34:13 UTC
+1232:## 2026-09-05 08:50:59 UTC
+1244:## 2026-09-05 12:20:10 UTC
+1246:## 2026-09-05 15:02:37 UTC
+1248:## 2026-09-05 17:06:17 UTC
+1268:## 2026-09-05 18:56:58 UTC
+1286:## 2026-09-05 20:53:46 UTC
+1305:## 2026-09-05 22:28:21 UTC
+1307:## 2026-09-06 00:15:48 UTC
+1309:## 2026-09-06 04:41:59 UTC
+1311:## 2026-09-06 08:57:09 UTC
+1313:## 2026-09-06 12:28:54 UTC
+1315:## 2026-09-06 16:02:35 UTC
+1319:## 2026-09-06 18:09:34 UTC
+1321:## 2026-09-06 19:58:58 UTC
+1330:## 2026-09-06 21:51:20 UTC
+1334:## 2026-09-06 23:21:54 UTC
+1343:## 2026-09-07 01:08:39 UTC
+1352:## 2026-09-07 06:09:48 UTC
+1354:## 2026-09-07 12:48:25 UTC
+1366:## 2026-09-07 18:00:22 UTC
+1371:## 2026-09-07 21:00:34 UTC
+1375:## 2026-09-07 23:07:47 UTC
+1379:## 2026-09-08 01:17:28 UTC
+1381:## 2026-09-08 06:04:11 UTC
+1390:## 2026-09-08 10:36:18 UTC
+1399:## 2026-09-08 14:53:43 UTC
+1401:## 2026-09-08 18:17:59 UTC
+1409:## 2026-09-08 21:14:43 UTC
+1417:## 2026-09-08 23:25:31 UTC
+1425:## 2026-09-09 01:31:29 UTC
+1427:## 2026-09-09 06:50:32 UTC
+1440:## 2026-09-09 12:00:41 UTC
+1448:## 2026-09-09 15:42:12 UTC
+1454:## 2026-09-09 18:53:03 UTC
+1460:## 2026-09-09 21:21:16 UTC
+1466:## 2026-09-09 23:20:30 UTC
+1468:## 2026-09-10 01:10:03 UTC
+1476:## 2026-09-10 06:04:15 UTC
+1484:## 2026-09-10 10:40:25 UTC
+1494:## 2026-09-10 14:51:53 UTC
+1502:## 2026-09-10 18:00:00 UTC
+1504:## 2026-09-10 20:11:21 UTC
+1508:## 2026-09-10 22:38:18 UTC
+1512:## 2026-09-11 00:31:54 UTC
+1514:## 2026-09-11 05:14:39 UTC
+1519:## 2026-09-11 09:46:07 UTC
+1521:## 2026-09-11 14:02:27 UTC
+1525:## 2026-09-11 17:24:48 UTC
+1527:## 2026-09-11 20:01:24 UTC
+1529:## 2026-09-11 22:20:38 UTC
+1532:## 2026-09-12 00:22:37 UTC
+1534:## 2026-09-12 04:46:37 UTC
+1536:## 2026-09-12 09:01:14 UTC
+1541:## 2026-09-12 12:31:51 UTC
+1552:## 2026-09-12 15:58:13 UTC
+1559:## 2026-09-12 18:02:37 UTC
+1566:## 2026-09-12 19:50:05 UTC
+1573:## 2026-09-12 21:47:15 UTC
+1575:## 2026-09-12 23:32:36 UTC
+1577:## 2026-09-13 01:24:28 UTC
+1588:## 2026-09-13 06:47:39 UTC
+1599:## 2026-09-13 12:27:40 UTC
+1610:## 2026-09-13 16:55:46 UTC
+1612:## 2026-09-13 18:59:54 UTC
+1623:## 2026-09-13 21:13:10 UTC
+1634:## 2026-09-13 23:12:19 UTC
+1645:## 2026-09-14 01:10:10 UTC
+1647:## 2026-09-14 06:20:58 UTC
+1653:## 2026-09-14 13:04:48 UTC
+1655:## 2026-09-14 18:20:43 UTC
+1663:## 2026-09-14 21:57:34 UTC
+1665:## 2026-09-15 00:04:40 UTC
+1667:## 2026-09-15 05:00:31 UTC
+1671:## 2026-09-15 09:46:28 UTC
+1678:## 2026-09-15 14:51:11 UTC
+1680:## 2026-09-15 18:38:47 UTC
+1687:## 2026-09-15 21:45:11 UTC
+1689:## 2026-09-15 23:48:48 UTC
+1696:## 2026-09-16 01:58:31 UTC
+1703:## 2026-09-16 07:03:01 UTC
+1712:## 2026-09-16 12:29:57 UTC
+1714:## 2026-09-16 17:18:32 UTC
+1716:## 2026-09-16 20:09:54 UTC
+1718:## 2026-09-16 22:58:04 UTC
+1720:## 2026-09-17 00:59:42 UTC
+1722:## 2026-09-17 05:42:24 UTC
+1727:## 2026-09-17 10:35:17 UTC
+1736:## 2026-09-17 15:18:46 UTC
+1745:## 2026-09-17 19:07:00 UTC
+1748:## 2026-09-17 22:11:09 UTC
+1751:## 2026-09-18 00:24:18 UTC
+1761:## 2026-09-18 05:10:12 UTC
+1772:## 2026-09-18 09:50:18 UTC
+1781:## 2026-09-18 14:04:20 UTC
+1795:## 2026-09-18 17:25:41 UTC
+1797:## 2026-09-18 19:58:19 UTC
+1811:## 2026-09-18 22:07:50 UTC
+1813:## 2026-09-18 23:56:23 UTC
+1827:## 2026-09-19 01:57:11 UTC
+1829:## 2026-09-19 06:50:19 UTC
+1841:## 2026-09-19 11:45:19 UTC
+1843:## 2026-09-19 14:59:50 UTC
+1845:## 2026-09-19 17:34:38 UTC
+1847:## 2026-09-19 19:37:21 UTC
+1849:## 2026-09-19 21:45:13 UTC
+1851:## 2026-09-19 23:43:34 UTC
+1853:## 2026-09-20 01:57:25 UTC
+1855:## 2026-09-20 07:22:23 UTC
+1870:## 2026-09-20 12:32:54 UTC
+1884:## 2026-09-20 16:40:07 UTC
+1886:## 2026-09-20 19:03:46 UTC
+1888:## 2026-09-20 21:35:34 UTC
+1899:## 2026-09-20 23:29:08 UTC
+1913:## 2026-09-21 01:35:51 UTC
+1915:## 2026-09-21 07:04:51 UTC
+1917:## 2026-09-21 14:15:27 UTC
+1919:## 2026-09-21 19:31:10 UTC
+1924:## 2026-09-21 22:49:20 UTC
+1926:## 2026-09-22 01:21:14 UTC
+1929:## 2026-09-22 06:27:05 UTC
+1931:## 2026-09-22 11:51:47 UTC
+1933:## 2026-09-22 15:56:24 UTC
+1935:## 2026-09-22 19:24:31 UTC
+1937:## 2026-09-22 22:17:42 UTC
+1939:## 2026-09-23 00:38:38 UTC
+1941:## 2026-09-23 05:07:09 UTC
+1943:## 2026-09-23 10:11:31 UTC
+1945:## 2026-09-23 14:46:43 UTC
+1948:## 2026-09-23 18:44:47 UTC
+1950:## 2026-09-23 21:52:55 UTC
+1953:## 2026-09-24 00:06:46 UTC
+1955:## 2026-09-24 04:54:59 UTC
+1957:## 2026-09-24 09:40:02 UTC
+1964:## 2026-09-24 14:28:45 UTC
+1966:## 2026-09-24 18:39:47 UTC
+1968:## 2026-09-24 21:47:13 UTC
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt; grep -rn "STEP 1\|STEP 2\|STEP 3\|NEXT\]\|FINAL\]" --include=*.txt --include=*.md . | head -40
+./leads/lead-bigpickle.md:34:[FINAL] Beta API weaker auth enforcement — **RANK 1 for next probe**. PASSIVE, no auth required, directly testable.
+./leads/lead-bigpickle.md:35:[NEXT] PROBE: GET `https://beta-apis.alfaview.com/v2/languages` — no Authorization header, compare response code/body vs production `https://apis.alfaview.com/v2/languages` (known 401).
+./leads/lead-bigpickle.md:75:[FINAL] IDOR on room permissions: 72% confidence, highest value, AUTH_HELPED.
+./leads/lead-bigpickle.md:76:[FINAL] Guest link access key enumeration: 65% confidence, requires valid credentials.
+./leads/lead-bigpickle.md:77:[FINAL] Demo company test data exposure: 60% confidence, PASSIVE, immediate testability.
+./leads/lead-bigpickle.md:78:[NEXT] PROBE: GET `https://demo-company.alfaview.com/api/v1/users` — no auth, check for exposed user list or test data.
+./leads/lead-bigpickle.md:117:[NEXT] PROBE: GET https://insider-webclient.alfaview.com/ — observe response body, content-type, title tag, script src URLs. Then GET https://insider-webclient.alfaview.com/api/health or /api/config for exposed backend routes.
+./leads/lead-bigpickle.md:156:[NEXT] PROBE: GET https://insider-webclient.alfaview.com/ — capture Content-Type header, <title> tag, and all <script src> URLs. Then GET https://insider-webclient.alfaview.com/api/health and https://insider-webclient.alfaview.com/api/config — check for non-SPA responses indicating exposed backend routes.
+./leads/lead-bigpickle.md:199:[FINAL] Alfacheck engineering debug exposure: confidence 55. Unprobed dedicated host, naming implies control plane. Passive probe in next step.
+./leads/lead-bigpickle.md:200:[FINAL] Beta hydra orchestration exposure: confidence 45. Three separate cloud provider instances returning 200 — unusual pattern for internal service. Passive probe in next step.
+./leads/lead-bigpickle.md:201:[NEXT] PROBE: GET https://alfacheck-engine.alfaview.com/ — capture status, Content-Type, body. GET https://alfacheck-audio.alfaview.com/ — same. GET https://alfacheck-video.alfaview.com/ — same. GET https://beta-hcloud-19-beta-hydra-dzwx8.alfaview.com/ — same. All 4 probes in sequence, <=1 rps, read-only GET only.
+./leads/lead-bigpickle.md:249:[FINAL] Cross-tenant IDOR: 80. Survives — highest impact, confirmed by OpenAPI spec, needs auth. Rank 1.
+./leads/lead-bigpickle.md:250:[FINAL] Guest link access key enumeration: 65. Survives — confirmed endpoint, distinct error oracle, needs auth. Rank 2.
+./leads/lead-bigpickle.md:251:[FINAL] Beta hydra OIDC exposure: 40. Survives but marginal — 9-byte body limits hypothesis. Worth one passive probe to confirm body content. Rank 3.
+./leads/lead-bigpickle.md:252:[NEXT] PROBE: GET https://beta-hcloud-19-beta-hydra-dzwx8.alfaview.com/ — capture exact 9-byte body, Content-Type. Then GET https://beta-hcloud-19-beta-hydra-dzwx8.alfaview.com/.well-known/openid-configuration and https://beta-hcloud-19-beta-hydra-dzwx8.alfaview.com/health — check for OIDC metadata or health endpoint. Sequential, ≤1 rps, GET-only.
+./leads/lead-bigpickle.md:300:[NEXT] PROBE: GET https://alfatraining.alfaview.com/ — capture full HTML body (Content-Length, inline scripts, <script src> URLs, any tenant-specific data in HTML or JSON). Then GET https://bhc.alfaview.com/ and https://kh-freiburg.alfaview.com/ — compare response sizes and content. Check for:
+./leads/lead-bigpickle.md:360:[FINAL] Cross-tenant IDOR: 80. Survives — Rank 1. Strongest structural evidence, highest impact, needs auth.
+./leads/lead-bigpickle.md:361:[FINAL] Guest link access key enumeration: 65. Survives — Rank 2. Confirmed endpoint, distinct error oracle, needs auth probe.
+./leads/lead-bigpickle.md:362:[NEXT] PROBE: GET https://alfatraining.alfaview.com/ — capture full HTML body (Content-Length, inline scripts, <script src> URLs, any tenant-specific data). Then GET https://bhc.alfaview.com/ and https://kh-freiburg.alfaview.com/ — compare response sizes and content. Check for: (1) inline <script> tags with config objects or API endpoints, (2) JavaScript bundle URLs, (3) any tenant/company names rendered in HTML, (4) differences between the 3 SPA shells. Sequential, ≤1 rps, GET-only.
+./leads/lead-bigpickle.md:422:[FINAL] redirect_uri bypass: 65. Survives — rank 1, now grounded on confirmed FusionAuth + exact `invalid_client` gate. Blocked on client_id harvest.
+./leads/lead-bigpickle.md:423:[FINAL] issuer=acme.com drift: 90. Survives — direct read-only evidence, low severity baselined for reporting.
+./leads/lead-bigpickle.md:424:[NEXT] PROBE: GET `https://sso.alfaview.com/oauth2/register` (checks open tenant self-registration on prod IAM — if live, also maps default-registration surface); follow-up HUMAN: extract registered client_id from desktop client's public config/bundle to unlock redirect_uri + device-flow testing on `/oauth2/authorize`.
+./leads/lead-bigpickle.md:458:[NEXT] HUMAN: Create one throwaway free alfaview company via the documented self-service flow ("Create your free alfaview company now" on app.alfaview.com login page) or supply a test account — this single action unlocks all three live high-value hypotheses (REST IDOR id 80, GraphQL authz-gap id 70, guest-link testing id 45) that are otherwise permanently gated. Then run: GET apis.alfaview.com/v2/users/{ownUserId} with the issued opaque bearer as the IDOR baseline.
+./leads/lead-bigpickle.md:495:[NEXT] PROBE: POST `https://app.alfaview.com/graphql` with `{"query":"mutation{guestAuthenticate(userId:\"<own-tenant-guestId>\",companyId:\"<own-companyId>\",roomId:\"<own-roomId>\"){accessToken expiry}}"}` — repeat with the identical triple on REST `POST https://apis.alfaview.com/v2/auth/guest-link` (with and without accessKey); the 200+accessToken-vs-401 delta is the one-shot proof of the accessKey-bypass. Requires own-tenant guest triple: obtain via `[NEXT] HUMAN` — create one throwaway free alfaview company via the self-service signup ("Create your free alfaview company now" on app.alfaview.com login / `createCompany` mutation), which also unlocks the rank-1 IDOR test suite (GET /v2/users/{ownUserId} baseline, then fetchUserPermissions with a victim ID).
+./leads/lead-bigpickle.md:525:[NEXT] HUMAN: Create one throwaway free alfaview company via the documented self-service flow ("Create your free alfaview company now" on app.alfaview.com login page) — unlock rank-1 (REST IDOR) and the guest-authz splice test. Baseline on acceptance: POST https://apis.alfaview.com/v2/auth/password {"username","password"} → store opaque bearer → GET https://apis.alfaview.com/v2/users/me (expect 200, own user/company IDs) → then GET https://apis.alfaview.com/v2/rooms/{victimRoomId}/passcode (expect 403 = enforced vs 200 = IDOR). Anything below that signup resolves all remaining live hypotheses (also unblocks POSTing GET-blocked GraphQL mutations magicTokenAuthenticate/guestAuthenticate).
+./leads/lead-bigpickle.md:562:[FINAL] 1. Cross-tenant IDOR — 80. Highest impact, strongest structural evidence, clear verify steps. Blocked on: account creation (HUMAN).
+./leads/lead-bigpickle.md:563:[FINAL] 2. OAuth redirect_uri bypass — 65. HIGH impact if client_id harvested. Blocked on: desktop installer extraction (HUMAN).
+./leads/lead-bigpickle.md:564:[FINAL] 3. Guest-authz lifecycle/cross-tenant splice — 55. Design-level authz gap (no accessKey in GraphQL guest path). Blocked on: own tenant guest triple (HUMAN).
+./leads/lead-bigpickle.md:582:[NEXT] HUMAN: Create one throwaway free alfaview company — now fully prepped: either (a) UI: https://app.alfaview.com signup (plan "Continue with free") with a disposable inbox, click activation email, report the chosen email+password; or (b) operator approves + drops a catch-all inbox address and I run the two mutation chain: POST app.alfaview.com/graphql {q: signup(displayName,user:{email,userProfile:{firstname,lastname},locale:{UILanguage}},agreedToTerms:true,agreedToPrivacyPolicy:true,planId:"free-business")}, await activation email for {companyId,activationToken} → finishSignup(username,password,companyId,activationToken) → POST apis.alfaview.com/v2/auth/password {"username","password"} → opaque base64 bearer → GET /v2/users/me baseline 200 → GET /v2/rooms/{victimUUID}/passcode (403=enforced vs 200=IDOR) → fetchUserPermissions(victimUserId) cross-tenant verdict. After handoff all remaining probes are read/mutate-own-tenant only at <=1 rps.
+./leads/lead-bigpickle.md:651:[FINAL] 1. Cross-tenant IDOR — 80. Highest impact, strongest structural evidence, clear verify steps. Blocked on: account creation (HUMAN).
+./leads/lead-bigpickle.md:652:[FINAL] 2. OAuth redirect_uri bypass — 65. HIGH impact if client_id harvested. Blocked on: desktop installer extraction (HUMAN) — BUT: binary may be extractable from test.alfaview.com (NEW passive path).
+./leads/lead-bigpickle.md:653:[FINAL] 3. Guest-authz lifecycle/cross-tenant splice — 55. Design-level authz gap (no accessKey in GraphQL guest path). Blocked on: own tenant guest triple (HUMAN).
+./leads/lead-bigpickle.md:666:[NEXT] PROBE: GET `https://test.alfaview.com/` → extract binary download URLs for alfacheck v470079 (linux/amd64, smallest) → download the ELF binary → run `strings` on it to search for: (1) OAuth/OIDC client_id patterns (e.g. `client_id`, `oauth`, `fusionauth`, `alfaview`, UUID patterns matching registered app clients), (2) internal API hostnames/URLs not in public inventory, (3) hardcoded API keys or tokens. This is a read-only passive extraction of a publicly-served binary — no auth needed. If client_id found → immediately unlock the redirect_uri bypass test on sso.alfaview.com. Rate: ≤1 rps. All results are local analysis only.
+./leads/lead-bigpickle.md:715:[FINAL] redirect_uri bypass: 65. Survives — rank 1, now grounded on confirmed FusionAuth + exact `invalid_client` gate. Blocked on client_id harvest.
+./leads/lead-bigpickle.md:716:[FINAL] issuer=acme.com drift: 90. Survives — direct read-only evidence, low severity baselined for reporting.
+./leads/lead-bigpickle.md:717:[NEXT] PROBE: GET `https://sso.alfaview.com/oauth2/register` (checks open tenant self-registration on prod IAM — if live, also maps default-registration surface); follow-up HUMAN: extract registered client_id from desktop client's public config/bundle to unlock redirect_uri + device-flow testing on `/oauth2/authorize`.
+./leads/lead-bigpickle.md:750:[NEXT] HUMAN: Create one throwaway free alfaview company via the documented self-service flow ("Create your free alfaview company now" on app.alfaview.com login page) or supply a test account — this single action unlocks all three live high-value hypotheses (REST IDOR id 80, GraphQL authz-gap id 70, guest-link testing id 45) that are otherwise permanently gated. Then run: GET apis.alfaview.com/v2/users/{ownUserId} with the issued opaque bearer as the IDOR baseline.
+./leads/lead-bigpickle.md:786:[NEXT] PROBE: POST `https://app.alfaview.com/graphql` with `{"query":"mutation{guestAuthenticate(userId:\"<own-tenant-guestId>\",companyId:\"<own-companyId>\",roomId:\"<own-roomId>\"){accessToken expiry}}"}` — repeat with the identical triple on REST `POST https://apis.alfaview.com/v2/auth/guest-link` (with and without accessKey); the 200+accessToken-vs-401 delta is the one-shot proof of the accessKey-bypass. Requires own-tenant guest triple: obtain via `[NEXT] HUMAN` — create one throwaway free alfaview company via the self-service signup ("Create your free alfaview company now" on app.alfaview.com login / `createCompany` mutation), which also unlocks the rank-1 IDOR test suite (GET /v2/users/{ownUserId} baseline, then fetchUserPermissions with a victim ID).
+./leads/lead-bigpickle.md:815:[NEXT] HUMAN: Create one throwaway free alfaview company via the documented self-service flow ("Create your free alfaview company now" on app.alfaview.com login page) — unlock rank-1 (REST IDOR) and the guest-authz splice test. Baseline on acceptance: POST https://apis.alfaview.com/v2/auth/password {"username","password"} → store opaque bearer → GET https://apis.alfaview.com/v2/users/me (expect 200, own user/company IDs) → then GET https://apis.alfaview.com/v2/rooms/{victimRoomId}/passcode (expect 403 = enforced vs 200 = IDOR). Anything below that signup resolves all remaining live hypotheses (also unblocks POSTing GET-blocked GraphQL mutations magicTokenAuthenticate/guestAuthenticate).
+./leads/lead-bigpickle.md:851:[FINAL] 1. Cross-tenant IDOR — 80. Highest impact, strongest structural evidence, clear verify steps. Blocked on: account creation (HUMAN).
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt; cat reports/hypotheses-bigpickle.txt; echo "=========== LEAD TAIL"; tail -c 3000 leads/lead-bigpickle.md
+## 2026-09-30 02:23:28 UTC [target] (model bigpickle)
+[HYP] Company-wide guest-link/group-link enumeration yields live join credentials without expressible authorization check
+class: IDOR
+asset: apis.alfaview.com GET /v2/guest-links (ListGuestLinks) + GET /v2/group-links
+confidence: 88
+reasoning: Un-narrowable server-side (measured: roomId/companyId not bound, 422 errors array contains only query.limit). GuestLink requires accessKey/joinUrl/dialInCode/emailAddress (12/15). TokenUserPermissions is a closed 7-boolean additionalProperties:false vocabulary (verified this cycle inside TokenInfo.permissions) with no guest-link axis. Flat unscoped POST create now proven absent — writes are room-scoped, so the lists are the only company-wide read of join credentials.
+evidence_needed: One self-owned low-priv token; GET /v2/auth/token-info to record own bitmask; GET /v2/guest-links?limit=500.
+verify_steps: AUTH_HELPED, read-only, self-owned tenant. GET /v2/auth/token-info → GET /v2/guest-links?limit=1 → compare returned accessKey-bearing rows to own tenant scope.
+impact: Cross-tenant harvest of guest join credentials (accessKey+joinUrl+dialInCode) + guest email addresses. HIGH if the five undeclared server-side checks are absent.
+testability: AUTH_HELPED
+[HYP] The REST audit-log mirrors GraphQL listAuditEvents; server enforces the AUDIT_LOG company gate correctly
+class: IDOR (PREDICTED FALSE — carried so disconfirming evidence stays on record)
+asset: apis.alfaview.com GET /v2/audit-log
+confidence: 20
+reasoning: Live undocumented 39th path (prod+beta), GET-only, validation-before-auth (422 missing from/to) then auth-bound (401 valid params) — same 10-op class. GraphQL mirror gated by AUDIT_LOG=bit21 (client bundle) and feature-flagged to alfaview-internal companies. My earlier "no permission axis" claim was falsified; the gate exists.
+evidence_needed: Self-owned tenant user holding MANAGE_COMPANY; GET V2 /v2/auth/token-info to confirm bit 21; then GET /v2/audit-log?from=..&to=..
+verify_steps: AUTH_HELPED, read-only. Confirm bit 21, issue query, compare returned events to self-owned scope only.
+impact: If cross-tenant boundary unenforced, company admin reads another tenant's audited actions (room/meeting/user ops, actor userId+target ids). HIGH only if the (likely present) gate is broken.
+testability: AUTH_HELPED
+[HYP] RFC7662 introspection runs without client authentication in the same build that validates tokens at userinfo
+class: MISCONFIG
+asset: sso.alfaview.com POST /oauth2/introspect
+confidence: 94 (carried, not re-measured)
+reasoning: 30+ cycle-stable: fabricated client_id accepted on POST-body and Basic channels (200 active:false); same-deployment control /oauth2/userinfo tiers and rejects forged JOSE → omission not architecture.
+evidence_needed: One real self-owned token; POST /oauth2/introspect with it.
+verify_steps: AUTH_HELPED. POST token in body, fabricated client_id (body + Basic variants).
+impact: MEDIUM — token validity/claims disclosed to a caller who proved no client identity; no forgery.
+testability: AUTH_HELPED
+[NEXT] HUMAN: obtain one self-owned low-privlege account (unauthenticated signup at app.alfaview.com/graphql → email → finishSignup, email-gated) then, read-only on self-owned tenant only: `GET /v2/auth/token-info`, then `GET /v2/guest-links?limit=1` and `GET /v2/audit-log?from=2026-09-28T00:00:00Z&to=2026-09-30T00:00:00Z` — replaces the falsified IDOR with a measured authorization-behaviour answer on the top two chains.
+[RISK] alfaview gmbh: 61. Down 1 from 62: two standing spec-debt hypotheses closed (unscoped create, hidden quotas) and the audit surface proved auth-bound, so no unauthenticated exposure was added. The 94 introspect and 88 guest-link chains remain valid but strictly token-gated — risk is carried, not increased.
+=========== LEAD TAIL
+en-info to record own bitmask; GET /v2/guest-links?limit=500.
+verify_steps: AUTH_HELPED, read-only, self-owned tenant. GET /v2/auth/token-info → GET /v2/guest-links?limit=1 → compare returned accessKey-bearing rows to own tenant scope.
+impact: Cross-tenant harvest of guest join credentials (accessKey+joinUrl+dialInCode) + guest email addresses. HIGH if the five undeclared server-side checks are absent.
+testability: AUTH_HELPED
+[HYP] The REST audit-log mirrors GraphQL listAuditEvents; server enforces the AUDIT_LOG company gate correctly
+class: IDOR (PREDICTED FALSE — carried so disconfirming evidence stays on record)
+asset: apis.alfaview.com GET /v2/audit-log
+confidence: 20
+reasoning: Live undocumented 39th path (prod+beta), GET-only, validation-before-auth (422 missing from/to) then auth-bound (401 valid params) — same 10-op class. GraphQL mirror gated by AUDIT_LOG=bit21 (client bundle) and feature-flagged to alfaview-internal companies. My earlier "no permission axis" claim was falsified; the gate exists.
+evidence_needed: Self-owned tenant user holding MANAGE_COMPANY; GET V2 /v2/auth/token-info to confirm bit 21; then GET /v2/audit-log?from=..&to=..
+verify_steps: AUTH_HELPED, read-only. Confirm bit 21, issue query, compare returned events to self-owned scope only.
+impact: If cross-tenant boundary unenforced, company admin reads another tenant's audited actions (room/meeting/user ops, actor userId+target ids). HIGH only if the (likely present) gate is broken.
+testability: AUTH_HELPED
+[HYP] RFC7662 introspection runs without client authentication in the same build that validates tokens at userinfo
+class: MISCONFIG
+asset: sso.alfaview.com POST /oauth2/introspect
+confidence: 94 (carried, not re-measured)
+reasoning: 30+ cycle-stable: fabricated client_id accepted on POST-body and Basic channels (200 active:false); same-deployment control /oauth2/userinfo tiers and rejects forged JOSE → omission not architecture.
+evidence_needed: One real self-owned token; POST /oauth2/introspect with it.
+verify_steps: AUTH_HELPED. POST token in body, fabricated client_id (body + Basic variants).
+impact: MEDIUM — token validity/claims disclosed to a caller who proved no client identity; no forgery.
+testability: AUTH_HELPED
+[NEXT] HUMAN: obtain one self-owned low-privlege account (unauthenticated signup at app.alfaview.com/graphql → email → finishSignup, email-gated) then, read-only on self-owned tenant only: `GET /v2/auth/token-info`, then `GET /v2/guest-links?limit=1` and `GET /v2/audit-log?from=2026-09-28T00:00:00Z&to=2026-09-30T00:00:00Z` — replaces the falsified IDOR with a measured authorization-behaviour answer on the top two chains.
+[RISK] alfaview gmbh: 61. Down 1 from 62: two standing spec-debt hypotheses closed (unscoped create, hidden quotas) and the audit surface proved auth-bound, so no unauthenticated exposure was added. The 94 introspect and 88 guest-link chains remain valid but strictly token-gated — risk is carried, not increased.
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt; echo "--- analyst-out.txt:"; cat analyst-out.txt; echo "--- state:"; cat state_bigpickle.json; echo; echo "--- tail of knowledge/index.md"; tail -c 700 knowledge/index.md
+...output truncated...
+
+Full output saved to: /home/runner/.local/share/opencode/tool-output/tool_0f17f6fc3001XcwQsYaXT4n9GG
+
+POST   /v2/meetings/{id}/cancellation                       ['MeetingCancellation']
+POST   /v2/rooms                                            ['RoomCreate']
+PATCH  /v2/rooms/{id}                                       ['RoomUpdate']
+PATCH  /v2/rooms/{roomId}/features                          ['RoomFeaturesEdit']
+PATCH  /v2/rooms/{roomId}/file-share-settings               ['RoomSettingsUpdate']
+POST   /v2/rooms/{roomId}/group-links                       ['CreateGroupLinksRequestBody']
+POST   /v2/rooms/{roomId}/guest-links                       ['CreateGuestLinksRequestBody']
+PATCH  /v2/rooms/{roomId}/language-settings                 ['LanguageSettingsEdit']
+POST   /v2/rooms/{roomId}/permissions                       ['ParticipantPermissions']
+PATCH  /v2/rooms/{roomId}/permissions/{userId}              ['PermissionsEdit']
+POST   /v2/rooms/{roomId}/subrooms                          ['SubroomEdit']
+PATCH  /v2/rooms/{roomId}/subrooms/{subroomId}              ['SubroomEdit']
+PATCH  /v2/users                                            ['UserUpdate']
+POST   /v2/users/invitation                                 ['UserInvitation']
+
+### declared response codes per op
+POST   /v2/auth/api-key                                     ['200', '400', '401', '403', '422']
+POST   /v2/auth/group-link                                  ['200', '400', '401', '422']
+POST   /v2/auth/guest-link                                  ['200', '400', '401', '422']
+POST   /v2/auth/password                                    ['200', '400', '401', '403', '422']
+GET    /v2/auth/token-info                                  ['200', '422']
+GET    /v2/group-links                                      ['200', '401']
+GET    /v2/group-links/{id}                                 ['200', '401', '403', '404', '422']
+PATCH  /v2/group-links/{id}                                 ['204', '400', '401', '404', '422']
+GET    /v2/guest-links                                      ['200', '401', '403']
+GET    /v2/guest-links/{id}                                 ['200', '401', '403', '404', '422']
+PATCH  /v2/guest-links/{id}                                 ['204', '400', '401', '404', '422']
+GET    /v2/languages                                        ['200', '401']
+GET    /v2/meetings                                         ['200', '401', '403']
+POST   /v2/meetings                                         ['201', '400', '401', '403', '422']
+GET    /v2/meetings/{id}                                    ['200', '401', '403', '404', '422']
+PATCH  /v2/meetings/{id}                                    ['204', '400', '401', '403', '404', '422']
+POST   /v2/meetings/{id}/cancellation                       ['204', '400', '401', '404', '422']
+GET    /v2/permission-groups                                ['200', '400', '404']
+GET    /v2/room-types                                       ['200', '401']
+GET    /v2/rooms                                            ['200', '401', '422']
+POST   /v2/rooms                                            ['201', '400', '401', '403', '422']
+DELETE /v2/rooms/{id}                                       ['204', '401', '403', '422']
+GET    /v2/rooms/{id}                                       ['200', '401', '404', '422']
+PATCH  /v2/rooms/{id}                                       ['204', '400', '401', '403', '404', '422']
+GET    /v2/rooms/{id}/participants                          ['200', '401', '403', '404', '422']
+GET    /v2/rooms/{roomId}/attendances                       ['200', '401', '403', '422']
+DELETE /v2/rooms/{roomId}/features                          ['204', '401', '403', '404', '422']
+GET    /v2/rooms/{roomId}/features                          ['200', '401', '404', '422']
+PATCH  /v2/rooms/{roomId}/features                          ['204', '400', '401', '403', '404', '422']
+GET    /v2/rooms/{roomId}/file-share-limits                 ['200', '401', '403', '422']
+GET    /v2/rooms/{roomId}/file-share-settings               ['200', '401', '403', '422']
+PATCH  /v2/rooms/{roomId}/file-share-settings               ['204', '400', '401', '403', '422']
+GET    /v2/rooms/{roomId}/group-links                       ['200', '401', '403', '422']
+POST   /v2/rooms/{roomId}/group-links                       ['201', '400', '401', '403', '422']
+DELETE /v2/rooms/{roomId}/group-links/{id}                  ['204', '401', '403']
+GET    /v2/rooms/{roomId}/guest-links                       ['200', '401', '403', '422']
+POST   /v2/rooms/{roomId}/guest-links                       ['201', '400', '401', '403', '422']
+DELETE /v2/rooms/{roomId}/guest-links/{id}                  ['204', '401', '403']
+GET    /v2/rooms/{roomId}/language-settings                 ['200', '401', '404', '422']
+PATCH  /v2/rooms/{roomId}/language-settings                 ['204', '400', '401', '403', '404', '422']
+GET    /v2/rooms/{roomId}/passcode                          ['200', '401', '403', '404', '422']
+POST   /v2/rooms/{roomId}/passcode                          ['200', '401', '403', '404', '422']
+GET    /v2/rooms/{roomId}/permissions                       ['200', '401', '404', '422']
+POST   /v2/rooms/{roomId}/permissions                       ['204', '400', '401', '403', '404', '409', '422']
+DELETE /v2/rooms/{roomId}/permissions/{userId}              ['204', '401', '403', '404', '422']
+PATCH  /v2/rooms/{roomId}/permissions/{userId}              ['204', '400', '401', '403', '404', '422']
+GET    /v2/rooms/{roomId}/subrooms                          ['200', '401', '404', '422']
+POST   /v2/rooms/{roomId}/subrooms                          ['201', '400', '401', '403', '404', '422']
+DELETE /v2/rooms/{roomId}/subrooms/{subroomId}              ['204', '401', '403', '404', '422']
+PATCH  /v2/rooms/{roomId}/subrooms/{subroomId}              ['204', '400', '401', '403', '404', '422']
+GET    /v2/stats                                            ['200', '401', '403', '422']
+GET    /v2/users                                            ['200', '401', '422']
+PATCH  /v2/users                                            ['204', '400', '401', '422']
+POST   /v2/users/invitation                                 ['202', '400', '401', '403', '422']
+GET    /v2/users/me                                         ['200', '401']
+GET    /v2/users/me/company                                 ['200', '401', '422']
+DELETE /v2/users/{id}                                       ['204', '401', '422']
+[0m
+[0m$ [0mcd /tmp/opencode; python3 - <<'PY'
+import json
+d=json.load(open('av-openapi-live.json')); sch=d['components']['schemas']
+for n in ['Event','Actor','Target','PaginatedBodyListEvent','GroupLink','RoomQuotas','RoomQuotasEdit','ParticipantPermissions','PermissionsEdit','GuestLinkUpdate']:
+    s=sch.get(n)
+    if not s: print(n,"MISSING"); continue
+    print("=== %s  addProps=%s required=%s"%(n,s.get('additionalProperties'),s.get('required')))
+    for k,v in (s.get('properties') or {}).items():
+        t=v.get('type') or v.get('$ref','')
+        print("   %-22s %-16s %s"%(k,t,(v.get('description') or '')[:150]))
+    print()
+PY
+=== Event  addProps=False required=['id', 'occurredAt', 'actor', 'action', 'targets', 'actionType', 'outcome', 'checksum', 'checksumValid']
+   action                 string           The audited action in the format 'domain.object.action'. Empty if 'checksumValid' is false.
+   actionType             string           Signals whether the action was reading or a writing operation.
+   actor                  #/components/schemas/Actor The user or internal event that triggered the audited action.
+   checksum               string           The checksum that the audit log service stored with the event.
+   checksumValid          boolean          If false, the stored event does not match its checksum and its fields cannot be trusted.
+   correlationId          string           The ID that groups all audit events of the same request.
+   details                object           Details about the audited action, (e.g., 'before' and 'after' comparison).
+   id                     string           The audit event ID.
+   metadata               object           The metadata attributes of the audit event. To get the available keys, refer to the 'List Searchable metadata attributes' endpoint.
+   occurredAt             string           The time at which the audited action happened.
+   outcome                string           The result of the audited action.
+   parentEventId          string           The ID of the audit event that caused this one.
+   targets                ['array', 'null'] The affected resources.
+
+=== Actor  addProps=False required=['type']
+   systemName             string           The name of the acting service. Set if the actor type is 'system'.
+   type                   string           The type of actor.
+   userId                 string           The ID of the acting user. Set if the actor type is 'user', 'support' or 'async_task'.
+
+=== Target  addProps=False required=['type', 'id']
+   id                     string           The resource ID.
+   type                   string           The type of resource the audited action was applied to.
+
+=== PaginatedBodyListEvent  addProps=False required=['data']
+   data                   ['array', 'null'] The actual data for a paginated request.
+   nextPageToken          string           A token that can be used to obtain the next page of the requested data.
+
+=== GroupLink  addProps=False required=['id', 'roomId', 'description', 'permissionGroupId', 'createdBy', 'createdAt', 'joinLink', 'joinUrl', 'accessKey', 'origin', 'dialInAllowed', 'dialInCode']
+   accessKey              string           The access key.
+   createdAt              string           The creation timestamp.
+   createdBy              string           The creator user ID.
+   description            string           A description of the group link.
+   dialInAllowed          boolean          If true, the group link is allowed to be used via dial-in.
+   dialInCode             string           The dial-in authentication code for the group link.
+   id                     string           The group link ID.
+   joinLink               string           Deprecated. Use joinUrl instead.
+   joinUrl                string           The URL of the room join page. That page allows the user to set a display name and to choose whether to join the room with the native client or the we
+   origin                 string           String that specifies the creator or reason for the creation of the group link (e.g., 'my external tool' or 'initial meeting delayed').
+   permissionGroupId      string           The permission group ID.
+   roomId                 string           The room ID.
+   validFrom              string           The group link is valid from this point in time.
+   validUntil             string           The group link is valid until this point in time.
+
+=== RoomQuotas  addProps=False required=['activeParticipants', 'spectatorOnlyParticipants', 'maxVideoTilesPerPage']
+   activeParticipants     integer          The number of allowed active participants.
+   maxVideoTilesPerPage   integer          The number of allowed video tiles displayed per page. If this value mismatches the defined options in the alfaview client, the next lower value will b
+   spectatorOnlyParticipants integer          The number of allowed spectator-only participants.
+
+=== RoomQuotasEdit  addProps=False required=['activeParticipants', 'spectatorOnlyParticipants', 'maxVideoTilesPerPage']
+   activeParticipants     integer          The maximum number of active participants.
+   maxVideoTilesPerPage   integer          The maximum number of video tiles displayed per page. If this value mismatches the defined options in the alfaview client, the next lower value will b
+   spectatorOnlyParticipants integer          The maximum number of spectator-only participants.
+
+=== ParticipantPermissions  addProps=False required=['participantId', 'permissions']
+   participantId          string           The user ID / guest link ID / group link ID to which the permissions apply.
+   permissions            #/components/schemas/Permissions The assigned permissions.
+
+=== PermissionsEdit  addProps=False required=None
+   admin                  ['boolean', 'null'] Permission to act as an administrator. Administrators are allowed to edit or delete rooms, change room settings or features and manage guests in the r
+   chat                   ['boolean', 'null'] Permission to chat in the room.
+   join                   ['boolean', 'null'] Permission to join the room.
+   promote                ['boolean', 'null'] Permission to promote permissions for other users for the room.
+   screen                 ['boolean', 'null'] Permission to share the screen in the room.
+   upload                 ['boolean', 'null'] Permission to upload files in the room.
+   video                  ['boolean', 'null'] Permission to stream video input in the room.
+   vip                    ['boolean', 'null'] Permission to mark users as VIP in the room.
+   voice                  ['boolean', 'null'] Permission to speak in the room.
+
+=== GuestLinkUpdate  addProps=False required=['displayName', 'sendEmail']
+   dialInAllowed          boolean          If true, the guest link is allowed to be used via dial-in.
+   displayName            string           The name of the guest that is displayed in UIs.
+   emailAddress           string           The email address associated with the guest link.
+   locale                 string           The locale settings (e.g., UI language) for the guest link.
+   permissionGroupId      ['string', 'null'] The permission group ID.
+   sendEmail              boolean          If true, an information email with the updated guest link information will be sent to the associated email address.
+   timezone               ['string', 'null'] The time zone to use in the notification emails. Can be 'UTC', 'Local' or a TZ identifier from the IANA time zone database. If empty, the default is '
+   validFrom              string           The guest link is valid from this point in time.
+   validUntil             string           The guest link is valid until this point in time.
+[0m
+[0m$ [0mcd /tmp/opencode; python3 - <<'PY'
+import json
+d=json.load(open('av-openapi-live.json')); sch=d['components']['schemas']
+P=sch['Permissions']
+print("=== Permissions addProps=%s required=%s"%(P.get('additionalProperties'),P.get('required')))
+for k,v in P['properties'].items(): print("   %-12s %-14s %s"%(k,v.get('type'),(v.get('description') or '')[:120]))
+print()
+print("=== TokenUserPermissions addProps=%s required=%s"%(sch['TokenUserPermissions'].get('additionalProperties'),sch['TokenUserPermissions'].get('required')))
+for k,v in sch['TokenUserPermissions']['properties'].items(): print("   %-16s %s"%(k,(v.get('description') or '')[:190]))
+print()
+for path,meth in [('/v2/rooms/{roomId}/permissions','post'),('/v2/rooms/{roomId}/permissions/{userId}','patch'),
+                  ('/v2/rooms/{roomId}/permissions/{userId}','delete'),('/v2/rooms/{roomId}/permissions','get'),
+                  ('/v2/users/{id}','delete'),('/v2/group-links/{id}','patch'),('/v2/guest-links/{id}','patch')]:
+    o=d['paths'][path][meth]
+    print("--- %s %s  opId=%s"%(meth.upper(),path,o.get('operationId')))
+    print("    summary:",(o.get('summary') or '')[:160])
+    print("    descr  :",(o.get('description') or '')[:600].replace("\n"," "))
+    print("    params :",[(p.get('name'),p.get('in'),p.get('required')) for p in o.get('parameters',[])])
+    print("    sortIdx:",o.get('x-sort-index'))
+PY
+=== Permissions addProps=False required=['admin', 'voice', 'video', 'promote', 'join', 'screen', 'vip', 'chat', 'upload']
+   admin        boolean        If true, the associated user is an admin.
+   chat         boolean        Permission to chat.
+   join         boolean        Permission to join the room.
+   promote      boolean        Permission to promote permissions for other users.
+   screen       boolean        Permission to share the screen.
+   upload       boolean        Permission to upload files.
+   video        boolean        Permission to stream video input.
+   vip          boolean        Permission to mark users as VIP.
+   voice        boolean        Permission to speak.
+
+=== TokenUserPermissions addProps=False required=['manageCompany', 'userAdmin', 'userList', 'userShow', 'roomAdmin', 'roomList', 'roomCreate']
+   manageCompany    If true, the user can manage company settings.
+   roomAdmin        If true, the user can create, update and delete any room.
+   roomCreate       If true, the user can create rooms for their company.
+   roomList         If true, the user can list all rooms in their company.
+   userAdmin        If true, the user can create, update and delete other users, send password reset mails and resend sign-up mails for new users.
+   userList         If true, the user can list all users in their company.
+   userShow         If true, the user can see the user names of all users in rooms they can access.
+
+--- POST /v2/rooms/{roomId}/permissions  opId=CreatePermissions
+    summary: Create Room Permissions
+    descr  : Creates permissions for a user that are applied in a room.
+    params : [('Authorization', 'header', None), ('roomId', 'path', True)]
+    sortIdx: 15
+--- PATCH /v2/rooms/{roomId}/permissions/{userId}  opId=UpdatePermissions
+    summary: Update Room Permissions
+    descr  : Updates permissions of a user that are applied in a room.
+    params : [('Authorization', 'header', None), ('roomId', 'path', True), ('userId', 'path', True)]
+    sortIdx: 16
+--- DELETE /v2/rooms/{roomId}/permissions/{userId}  opId=DeletePermissions
+    summary: Delete Room Permissions
+    descr  : Deletes permissions of a user that are applied in a room.
+    params : [('Authorization', 'header', None), ('roomId', 'path', True), ('userId', 'path', True)]
+    sortIdx: 17
+--- GET /v2/rooms/{roomId}/permissions  opId=ListPermissions
+    summary: List Room Permissions
+    descr  : Lists permissions applied in a room.
+    params : [('Authorization', 'header', None), ('roomId', 'path', True)]
+    sortIdx: 14
+--- DELETE /v2/users/{id}  opId=DeleteUser
+    summary: Delete user
+    descr  : Deletes a user. If the user is logged in at the time of the deletion, it can take up to an hour until the user is fully unable to access any part of the system.
+    params : [('Authorization', 'header', None), ('id', 'path', True)]
+    sortIdx: 4
+--- PATCH /v2/group-links/{id}  opId=UpdateGroupLink
+    summary: Update Group Link
+    descr  : Updates a group link.
+    params : [('Authorization', 'header', None), ('id', 'path', True)]
+    sortIdx: 10
+--- PATCH /v2/guest-links/{id}  opId=UpdateGuestLink
+    summary: Update Guest Link
+    descr  : Updates a guest link.
+    params : [('Authorization', 'header', None), ('id', 'path', True)]
+    sortIdx: 4
+[0m
+[0m$ [0mcd /tmp/opencode; for u in "https://apis.alfaview.com/v2/rooms/not-a-uuid/permissions" "https://apis.alfaview.com/v2/audit-log"; do
+  printf "== %s\n" "$u"
+  curl -s -m 20 -o body.tmp -D head.tmp -w "HTTP:%{http_code} BYTES:%{size_download}\n" "$u"
+  grep -iE "^(allow|www-authenticate|content-type|server):" head.tmp | tr -d '\r'
+  md5sum body.tmp | cut -c1-12; head -c 240 body.tmp; echo; sleep 2
+done
+== https://apis.alfaview.com/v2/rooms/not-a-uuid/permissions
+HTTP:401 BYTES:107
+content-type: application/problem+json
+www-authenticate: AccessToken
+server: edge-proxy
+60ed2f29d492
+{"title":"Unauthorized","status":401,"detail":"No access token was provided in the Authorization header."}
+
+== https://apis.alfaview.com/v2/audit-log
+HTTP:422 BYTES:232
+content-type: application/problem+json
+server: edge-proxy
+b4adcd157348
+{"title":"Unprocessable Entity","status":422,"detail":"validation failed","errors":[{"message":"required query parameter is missing","location":"query.from"},{"message":"required query parameter is missing","location":"query.to"}]}
+[0m
+## Objective
+- Finish the current `alfaview gmbh` bug-bounty analyst cycle in `POC` phase (`target: api`) and emit the required structured STEP blocks.
+- Determine whether deeper analysis of the live OpenAPI contract reveals a new actionable finding beyond the standing token-gated hypotheses.
+
+## Important Details
+- Final analysis must separate facts from hypotheses, avoid endpoint-map-only output, and use only traceable evidence.
+- Live testing is passive-first, read-only, ≤1 rps, and limited to `GET`/`HEAD`/`OPTIONS`; no mutations, auth bypass, or customer-data access.
+- Out of scope: brute force/rate-limit policy, descriptive errors, public login panels, missing email verification, scanner-only claims, and similar rejected classes.
+- Current standing chains:
+  - `sso.alfaview.com/oauth2/introspect` missing client authentication, confidence 94; requires a real self-owned token for impact confirmation.
+  - `apis.alfaview.com/v2/guest-links` / `/v2/group-links` un-narrowable credential-bearing lists, confidence 88; requires authenticated read-only verification.
+  - `apis.alfaview.com/v2/audit-log` is live but its first IDOR claim was retracted; confidence 20, predicted false, because `AUDIT_LOG` bit 21 exists.
+- Authenticated work is blocked on the email-gated `Signup` → `FinishSignup` flow.
+- REST `/v2/auth/guest-link` requires `accessKey`, `companyId`, and `roomId`; prior four-field/`displayName` claims are incorrect.
+- No repository files have been modified.
+
+## Work State
+### Completed
+- Inspected repository structure and current state: `phase: POC`, `target: api`; current commit is `3230523 reposcan 2026-09-30-08-04`.
+- Analyzed stale local contract `recon-notes/alfaview-openapi.yaml`:
+  - OpenAPI 3.1.0, 37 paths, 56 operations, 159550 bytes.
+  - Raw YAML MD5 `082e2ba8fa493f8634ecd87328ebf1fa`.
+  - Contains no `Event`, `Actor`, `Target`, or `PaginatedBodyListEvent`.
+- Performed one permitted passive request:
+  - `curl -s -m 25 -o av-openapi-live.json -w "HTTP:%{http_code} BYTES:%{size_download}\n" https://apis.alfaview.com/v2/docs/openapi.json`
+  - Result: HTTP 200, 132100 bytes, MD5 `284a3383c1ac3cfc9152ffcc631891f2`, 38 paths, 57 operations.
+- Saved the live response as `/tmp/opencode/av-openapi-live.json`.
+- Verified the live contract has 69 schemas.
+- Determined the only raw `$ref` roots with zero references anywhere are:
+  - `ErrorModel`
+  - `PaginatedBodyListEvent`
+- Established that `Actor`, `Event`, and `Target` each have one reference and form the audit-log orphan cluster rooted at `PaginatedBodyListEvent`.
+- Found the description: `Event.metadata` says, `"refer to the 'List Searchable metadata attributes' endpoint."`
+- Confirmed direct-operation schema scanning produces false orphan candidates because many schemas are reached transitively through request/response components or inlined structures.
+- Reviewed standing hypotheses and validation state from `reports/hypotheses-bigpickle.txt` and `reports/valid-bugs.md`.
+
+### Active
+- Building a robust JSON `$ref` dependency graph to print the complete `PaginatedBodyListEvent → Event → Actor/Target` structure and distinguish true roots from transitively used schemas.
+- Searching locally for the exact GraphQL/REST symbol corresponding to `"List Searchable metadata attributes"` before considering another request.
+- No independent new finding has yet been established; current evidence may still resolve to `NO_DELTA`.
+
+### Blocked
+- The attempted referrer-owner parser returned `owners={}` for every schema because its indentation regex did not handle JSON keys ending in `{`; ownership must be recomputed with native JSON traversal.
+- Real authorization behavior for introspection, guest-link lists, audit logs, and admin-switch operations remains unverified without a self-owned bearer token.
+- User rules prohibit the required GraphQL/REST `POST` operations during this cycle.
+
+## Next Move
+1. Recursively traverse `/tmp/openapi-live.json` with native JSON parsing to map every `$ref`, dump the full audit-log schema cluster, and run `rg -n "List Searchable metadata attributes|SearchableMetadata|metadataAttributes" .` across local artifacts.
+2. If no exact route or new behavioral lead emerges, finalize with `NO_DELTA`, retain only confidence ≥40 hypotheses, and issue exactly one `[NEXT] HUMAN` action for the self-owned account sequence: token-info → guest-link list → audit log.
+
+## Relevant Files
+- `/tmp/openapi-live.json`: current live 38-path/57-operation OpenAPI response.
+- `recon-notes/alfaview-openapi.yaml`: stale 37-path/56-operation local snapshot used for comparison.
+- `reports/hypotheses-bigpickle.txt`: current ranked hypotheses and next authenticated sequence.
+- `leads/lead-bigpickle.md`: detailed hypothesis history, retractions, and supporting evidence.
+- `knowledge/index.md`: accumulated knowledge base.
+- `probe-results.md`: historical request-level observations.
+- `reports/valid-bugs.md`: validation and triage state.
+- `analyst-prompt.txt`: full analyst instructions and structured-output requirements.
+- `scope.yml`: authorized asset scope.
+- `inventory/alfaview.md`: target inventory.
+- `reposcan-raw/`: local raw repository/artifact data for symbol searches.
+Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt; ls; echo ---; wc -l analyst-prompt.txt reports/hypotheses-bigpickle.txt 2>/dev/null
+README.md
+analyst-out.txt
+analyst-prompt.txt
+ctx.txt
+inventory
+knowledge
+leads
+probe-results.md
+recon-notes
+reports
+reposcan-raw
+scope.yml
+scripts
+state_bigpickle.json
+state_laguna.json
+state_ling3.json
+state_longcat.json
+state_mimo.json
+state_nemotron3.json
+triage
+---
+  2322 analyst-prompt.txt
+    30 reports/hypotheses-bigpickle.txt
+  2352 total
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt; grep -nE "^(#|##|###|STEP|\[STEP)" analyst-prompt.txt | sed -n '1,160p'
+2:# Knowledge Base (seed)
+973:## 2026-09-30 02:23:28 UTC [target] (model bigpickle)
+1029:## RANKED HYPOTHESES 2026-09-30 02:23:38 UTC
+1045:# alfaview gmbh inventory (discovery seed 2026-09-02)
+1046:# NOTE: hosts below are discovery candidates from passive DNS/CT; confirm in-scope vs program scope before active testing.
+1056:## PASSIVE RECON 2026-09-02 (read-only, non-intrusive)
+1071:## DEEP SERVICE SCAN 2026-09-02 (read-only connect+banner)
+1075:## DEEP SERVICE SCAN 2026-09-02 (read-only connect+banner)
+1079:## DEEP ENUM (wildcard-cleaned) 2026-09-03
+1138:## 2026-09-03 11:40:30 UTC
+1140:## 2026-09-03 14:23:21 UTC
+1142:## 2026-09-03 15:21:33 UTC
+1151:## 2026-09-03 18:48:37 UTC
+1159:## 2026-09-03 21:22:00 UTC
+1161:## 2026-09-03 23:24:23 UTC
+1168:## 2026-09-04 01:12:26 UTC
+1180:## 2026-09-04 06:00:56 UTC
+1186:## 2026-09-04 10:12:15 UTC
+1188:## 2026-09-04 14:25:07 UTC
+1207:## 2026-09-04 17:51:04 UTC
+1209:## 2026-09-04 20:04:20 UTC
+1215:## 2026-09-04 22:09:53 UTC
+1222:## 2026-09-05 00:15:07 UTC
+1224:## 2026-09-05 04:34:13 UTC
+1232:## 2026-09-05 08:50:59 UTC
+1244:## 2026-09-05 12:20:10 UTC
+1246:## 2026-09-05 15:02:37 UTC
+1248:## 2026-09-05 17:06:17 UTC
+1268:## 2026-09-05 18:56:58 UTC
+1286:## 2026-09-05 20:53:46 UTC
+1305:## 2026-09-05 22:28:21 UTC
+1307:## 2026-09-06 00:15:48 UTC
+1309:## 2026-09-06 04:41:59 UTC
+1311:## 2026-09-06 08:57:09 UTC
+1313:## 2026-09-06 12:28:54 UTC
+1315:## 2026-09-06 16:02:35 UTC
+1319:## 2026-09-06 18:09:34 UTC
+1321:## 2026-09-06 19:58:58 UTC
+1330:## 2026-09-06 21:51:20 UTC
+1334:## 2026-09-06 23:21:54 UTC
+1343:## 2026-09-07 01:08:39 UTC
+1352:## 2026-09-07 06:09:48 UTC
+1354:## 2026-09-07 12:48:25 UTC
+1366:## 2026-09-07 18:00:22 UTC
+1371:## 2026-09-07 21:00:34 UTC
+1375:## 2026-09-07 23:07:47 UTC
+1379:## 2026-09-08 01:17:28 UTC
+1381:## 2026-09-08 06:04:11 UTC
+1390:## 2026-09-08 10:36:18 UTC
+1399:## 2026-09-08 14:53:43 UTC
+1401:## 2026-09-08 18:17:59 UTC
+1409:## 2026-09-08 21:14:43 UTC
+1417:## 2026-09-08 23:25:31 UTC
+1425:## 2026-09-09 01:31:29 UTC
+1427:## 2026-09-09 06:50:32 UTC
+1440:## 2026-09-09 12:00:41 UTC
+1448:## 2026-09-09 15:42:12 UTC
+1454:## 2026-09-09 18:53:03 UTC
+1460:## 2026-09-09 21:21:16 UTC
+1466:## 2026-09-09 23:20:30 UTC
+1468:## 2026-09-10 01:10:03 UTC
+1476:## 2026-09-10 06:04:15 UTC
+1484:## 2026-09-10 10:40:25 UTC
+1494:## 2026-09-10 14:51:53 UTC
+1502:## 2026-09-10 18:00:00 UTC
+1504:## 2026-09-10 20:11:21 UTC
+1508:## 2026-09-10 22:38:18 UTC
+1512:## 2026-09-11 00:31:54 UTC
+1514:## 2026-09-11 05:14:39 UTC
+1519:## 2026-09-11 09:46:07 UTC
+1521:## 2026-09-11 14:02:27 UTC
+1525:## 2026-09-11 17:24:48 UTC
+1527:## 2026-09-11 20:01:24 UTC
+1529:## 2026-09-11 22:20:38 UTC
+1532:## 2026-09-12 00:22:37 UTC
+1534:## 2026-09-12 04:46:37 UTC
+1536:## 2026-09-12 09:01:14 UTC
+1541:## 2026-09-12 12:31:51 UTC
+1552:## 2026-09-12 15:58:13 UTC
+1559:## 2026-09-12 18:02:37 UTC
+1566:## 2026-09-12 19:50:05 UTC
+1573:## 2026-09-12 21:47:15 UTC
+1575:## 2026-09-12 23:32:36 UTC
+1577:## 2026-09-13 01:24:28 UTC
+1588:## 2026-09-13 06:47:39 UTC
+1599:## 2026-09-13 12:27:40 UTC
+1610:## 2026-09-13 16:55:46 UTC
+1612:## 2026-09-13 18:59:54 UTC
+1623:## 2026-09-13 21:13:10 UTC
+1634:## 2026-09-13 23:12:19 UTC
+1645:## 2026-09-14 01:10:10 UTC
+1647:## 2026-09-14 06:20:58 UTC
+1653:## 2026-09-14 13:04:48 UTC
+1655:## 2026-09-14 18:20:43 UTC
+1663:## 2026-09-14 21:57:34 UTC
+1665:## 2026-09-15 00:04:40 UTC
+1667:## 2026-09-15 05:00:31 UTC
+1671:## 2026-09-15 09:46:28 UTC
+1678:## 2026-09-15 14:51:11 UTC
+1680:## 2026-09-15 18:38:47 UTC
+1687:## 2026-09-15 21:45:11 UTC
+1689:## 2026-09-15 23:48:48 UTC
+1696:## 2026-09-16 01:58:31 UTC
+1703:## 2026-09-16 07:03:01 UTC
+1712:## 2026-09-16 12:29:57 UTC
+1714:## 2026-09-16 17:18:32 UTC
+1716:## 2026-09-16 20:09:54 UTC
+1718:## 2026-09-16 22:58:04 UTC
+1720:## 2026-09-17 00:59:42 UTC
+1722:## 2026-09-17 05:42:24 UTC
+1727:## 2026-09-17 10:35:17 UTC
+1736:## 2026-09-17 15:18:46 UTC
+1745:## 2026-09-17 19:07:00 UTC
+1748:## 2026-09-17 22:11:09 UTC
+1751:## 2026-09-18 00:24:18 UTC
+1761:## 2026-09-18 05:10:12 UTC
+1772:## 2026-09-18 09:50:18 UTC
+1781:## 2026-09-18 14:04:20 UTC
+1795:## 2026-09-18 17:25:41 UTC
+1797:## 2026-09-18 19:58:19 UTC
+1811:## 2026-09-18 22:07:50 UTC
+1813:## 2026-09-18 23:56:23 UTC
+1827:## 2026-09-19 01:57:11 UTC
+1829:## 2026-09-19 06:50:19 UTC
+1841:## 2026-09-19 11:45:19 UTC
+1843:## 2026-09-19 14:59:50 UTC
+1845:## 2026-09-19 17:34:38 UTC
+1847:## 2026-09-19 19:37:21 UTC
+1849:## 2026-09-19 21:45:13 UTC
+1851:## 2026-09-19 23:43:34 UTC
+1853:## 2026-09-20 01:57:25 UTC
+1855:## 2026-09-20 07:22:23 UTC
+1870:## 2026-09-20 12:32:54 UTC
+1884:## 2026-09-20 16:40:07 UTC
+1886:## 2026-09-20 19:03:46 UTC
+1888:## 2026-09-20 21:35:34 UTC
+1899:## 2026-09-20 23:29:08 UTC
+1913:## 2026-09-21 01:35:51 UTC
+1915:## 2026-09-21 07:04:51 UTC
+1917:## 2026-09-21 14:15:27 UTC
+1919:## 2026-09-21 19:31:10 UTC
+1924:## 2026-09-21 22:49:20 UTC
+1926:## 2026-09-22 01:21:14 UTC
+1929:## 2026-09-22 06:27:05 UTC
+1931:## 2026-09-22 11:51:47 UTC
+1933:## 2026-09-22 15:56:24 UTC
+1935:## 2026-09-22 19:24:31 UTC
+1937:## 2026-09-22 22:17:42 UTC
+1939:## 2026-09-23 00:38:38 UTC
+1941:## 2026-09-23 05:07:09 UTC
+1943:## 2026-09-23 10:11:31 UTC
+1945:## 2026-09-23 14:46:43 UTC
+1948:## 2026-09-23 18:44:47 UTC
+1950:## 2026-09-23 21:52:55 UTC
+1953:## 2026-09-24 00:06:46 UTC
+1955:## 2026-09-24 04:54:59 UTC
+1957:## 2026-09-24 09:40:02 UTC
+1964:## 2026-09-24 14:28:45 UTC
+1966:## 2026-09-24 18:39:47 UTC
+1968:## 2026-09-24 21:47:13 UTC
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt; grep -rn "STEP 1\|STEP 2\|STEP 3\|NEXT\]\|FINAL\]" --include=*.txt --include=*.md . | head -40
+./leads/lead-bigpickle.md:34:[FINAL] Beta API weaker auth enforcement — **RANK 1 for next probe**. PASSIVE, no auth required, directly testable.
+./leads/lead-bigpickle.md:35:[NEXT] PROBE: GET `https://beta-apis.alfaview.com/v2/languages` — no Authorization header, compare response code/body vs production `https://apis.alfaview.com/v2/languages` (known 401).
+./leads/lead-bigpickle.md:75:[FINAL] IDOR on room permissions: 72% confidence, highest value, AUTH_HELPED.
+./leads/lead-bigpickle.md:76:[FINAL] Guest link access key enumeration: 65% confidence, requires valid credentials.
+./leads/lead-bigpickle.md:77:[FINAL] Demo company test data exposure: 60% confidence, PASSIVE, immediate testability.
+./leads/lead-bigpickle.md:78:[NEXT] PROBE: GET `https://demo-company.alfaview.com/api/v1/users` — no auth, check for exposed user list or test data.
+./leads/lead-bigpickle.md:117:[NEXT] PROBE: GET https://insider-webclient.alfaview.com/ — observe response body, content-type, title tag, script src URLs. Then GET https://insider-webclient.alfaview.com/api/health or /api/config for exposed backend routes.
+./leads/lead-bigpickle.md:156:[NEXT] PROBE: GET https://insider-webclient.alfaview.com/ — capture Content-Type header, <title> tag, and all <script src> URLs. Then GET https://insider-webclient.alfaview.com/api/health and https://insider-webclient.alfaview.com/api/config — check for non-SPA responses indicating exposed backend routes.
+./leads/lead-bigpickle.md:199:[FINAL] Alfacheck engineering debug exposure: confidence 55. Unprobed dedicated host, naming implies control plane. Passive probe in next step.
+./leads/lead-bigpickle.md:200:[FINAL] Beta hydra orchestration exposure: confidence 45. Three separate cloud provider instances returning 200 — unusual pattern for internal service. Passive probe in next step.
+./leads/lead-bigpickle.md:201:[NEXT] PROBE: GET https://alfacheck-engine.alfaview.com/ — capture status, Content-Type, body. GET https://alfacheck-audio.alfaview.com/ — same. GET https://alfacheck-video.alfaview.com/ — same. GET https://beta-hcloud-19-beta-hydra-dzwx8.alfaview.com/ — same. All 4 probes in sequence, <=1 rps, read-only GET only.
+./leads/lead-bigpickle.md:249:[FINAL] Cross-tenant IDOR: 80. Survives — highest impact, confirmed by OpenAPI spec, needs auth. Rank 1.
+./leads/lead-bigpickle.md:250:[FINAL] Guest link access key enumeration: 65. Survives — confirmed endpoint, distinct error oracle, needs auth. Rank 2.
+./leads/lead-bigpickle.md:251:[FINAL] Beta hydra OIDC exposure: 40. Survives but marginal — 9-byte body limits hypothesis. Worth one passive probe to confirm body content. Rank 3.
+./leads/lead-bigpickle.md:252:[NEXT] PROBE: GET https://beta-hcloud-19-beta-hydra-dzwx8.alfaview.com/ — capture exact 9-byte body, Content-Type. Then GET https://beta-hcloud-19-beta-hydra-dzwx8.alfaview.com/.well-known/openid-configuration and https://beta-hcloud-19-beta-hydra-dzwx8.alfaview.com/health — check for OIDC metadata or health endpoint. Sequential, ≤1 rps, GET-only.
+./leads/lead-bigpickle.md:300:[NEXT] PROBE: GET https://alfatraining.alfaview.com/ — capture full HTML body (Content-Length, inline scripts, <script src> URLs, any tenant-specific data in HTML or JSON). Then GET https://bhc.alfaview.com/ and https://kh-freiburg.alfaview.com/ — compare response sizes and content. Check for:
+./leads/lead-bigpickle.md:360:[FINAL] Cross-tenant IDOR: 80. Survives — Rank 1. Strongest structural evidence, highest impact, needs auth.
+./leads/lead-bigpickle.md:361:[FINAL] Guest link access key enumeration: 65. Survives — Rank 2. Confirmed endpoint, distinct error oracle, needs auth probe.
+./leads/lead-bigpickle.md:362:[NEXT] PROBE: GET https://alfatraining.alfaview.com/ — capture full HTML body (Content-Length, inline scripts, <script src> URLs, any tenant-specific data). Then GET https://bhc.alfaview.com/ and https://kh-freiburg.alfaview.com/ — compare response sizes and content. Check for: (1) inline <script> tags with config objects or API endpoints, (2) JavaScript bundle URLs, (3) any tenant/company names rendered in HTML, (4) differences between the 3 SPA shells. Sequential, ≤1 rps, GET-only.
+./leads/lead-bigpickle.md:422:[FINAL] redirect_uri bypass: 65. Survives — rank 1, now grounded on confirmed FusionAuth + exact `invalid_client` gate. Blocked on client_id harvest.
+./leads/lead-bigpickle.md:423:[FINAL] issuer=acme.com drift: 90. Survives — direct read-only evidence, low severity baselined for reporting.
+./leads/lead-bigpickle.md:424:[NEXT] PROBE: GET `https://sso.alfaview.com/oauth2/register` (checks open tenant self-registration on prod IAM — if live, also maps default-registration surface); follow-up HUMAN: extract registered client_id from desktop client's public config/bundle to unlock redirect_uri + device-flow testing on `/oauth2/authorize`.
+./leads/lead-bigpickle.md:458:[NEXT] HUMAN: Create one throwaway free alfaview company via the documented self-service flow ("Create your free alfaview company now" on app.alfaview.com login page) or supply a test account — this single action unlocks all three live high-value hypotheses (REST IDOR id 80, GraphQL authz-gap id 70, guest-link testing id 45) that are otherwise permanently gated. Then run: GET apis.alfaview.com/v2/users/{ownUserId} with the issued opaque bearer as the IDOR baseline.
+./leads/lead-bigpickle.md:495:[NEXT] PROBE: POST `https://app.alfaview.com/graphql` with `{"query":"mutation{guestAuthenticate(userId:\"<own-tenant-guestId>\",companyId:\"<own-companyId>\",roomId:\"<own-roomId>\"){accessToken expiry}}"}` — repeat with the identical triple on REST `POST https://apis.alfaview.com/v2/auth/guest-link` (with and without accessKey); the 200+accessToken-vs-401 delta is the one-shot proof of the accessKey-bypass. Requires own-tenant guest triple: obtain via `[NEXT] HUMAN` — create one throwaway free alfaview company via the self-service signup ("Create your free alfaview company now" on app.alfaview.com login / `createCompany` mutation), which also unlocks the rank-1 IDOR test suite (GET /v2/users/{ownUserId} baseline, then fetchUserPermissions with a victim ID).
+./leads/lead-bigpickle.md:525:[NEXT] HUMAN: Create one throwaway free alfaview company via the documented self-service flow ("Create your free alfaview company now" on app.alfaview.com login page) — unlock rank-1 (REST IDOR) and the guest-authz splice test. Baseline on acceptance: POST https://apis.alfaview.com/v2/auth/password {"username","password"} → store opaque bearer → GET https://apis.alfaview.com/v2/users/me (expect 200, own user/company IDs) → then GET https://apis.alfaview.com/v2/rooms/{victimRoomId}/passcode (expect 403 = enforced vs 200 = IDOR). Anything below that signup resolves all remaining live hypotheses (also unblocks POSTing GET-blocked GraphQL mutations magicTokenAuthenticate/guestAuthenticate).
+./leads/lead-bigpickle.md:562:[FINAL] 1. Cross-tenant IDOR — 80. Highest impact, strongest structural evidence, clear verify steps. Blocked on: account creation (HUMAN).
+./leads/lead-bigpickle.md:563:[FINAL] 2. OAuth redirect_uri bypass — 65. HIGH impact if client_id harvested. Blocked on: desktop installer extraction (HUMAN).
+./leads/lead-bigpickle.md:564:[FINAL] 3. Guest-authz lifecycle/cross-tenant splice — 55. Design-level authz gap (no accessKey in GraphQL guest path). Blocked on: own tenant guest triple (HUMAN).
+./leads/lead-bigpickle.md:582:[NEXT] HUMAN: Create one throwaway free alfaview company — now fully prepped: either (a) UI: https://app.alfaview.com signup (plan "Continue with free") with a disposable inbox, click activation email, report the chosen email+password; or (b) operator approves + drops a catch-all inbox address and I run the two mutation chain: POST app.alfaview.com/graphql {q: signup(displayName,user:{email,userProfile:{firstname,lastname},locale:{UILanguage}},agreedToTerms:true,agreedToPrivacyPolicy:true,planId:"free-business")}, await activation email for {companyId,activationToken} → finishSignup(username,password,companyId,activationToken) → POST apis.alfaview.com/v2/auth/password {"username","password"} → opaque base64 bearer → GET /v2/users/me baseline 200 → GET /v2/rooms/{victimUUID}/passcode (403=enforced vs 200=IDOR) → fetchUserPermissions(victimUserId) cross-tenant verdict. After handoff all remaining probes are read/mutate-own-tenant only at <=1 rps.
+./leads/lead-bigpickle.md:651:[FINAL] 1. Cross-tenant IDOR — 80. Highest impact, strongest structural evidence, clear verify steps. Blocked on: account creation (HUMAN).
+./leads/lead-bigpickle.md:652:[FINAL] 2. OAuth redirect_uri bypass — 65. HIGH impact if client_id harvested. Blocked on: desktop installer extraction (HUMAN) — BUT: binary may be extractable from test.alfaview.com (NEW passive path).
+./leads/lead-bigpickle.md:653:[FINAL] 3. Guest-authz lifecycle/cross-tenant splice — 55. Design-level authz gap (no accessKey in GraphQL guest path). Blocked on: own tenant guest triple (HUMAN).
+./leads/lead-bigpickle.md:666:[NEXT] PROBE: GET `https://test.alfaview.com/` → extract binary download URLs for alfacheck v470079 (linux/amd64, smallest) → download the ELF binary → run `strings` on it to search for: (1) OAuth/OIDC client_id patterns (e.g. `client_id`, `oauth`, `fusionauth`, `alfaview`, UUID patterns matching registered app clients), (2) internal API hostnames/URLs not in public inventory, (3) hardcoded API keys or tokens. This is a read-only passive extraction of a publicly-served binary — no auth needed. If client_id found → immediately unlock the redirect_uri bypass test on sso.alfaview.com. Rate: ≤1 rps. All results are local analysis only.
+./leads/lead-bigpickle.md:715:[FINAL] redirect_uri bypass: 65. Survives — rank 1, now grounded on confirmed FusionAuth + exact `invalid_client` gate. Blocked on client_id harvest.
+./leads/lead-bigpickle.md:716:[FINAL] issuer=acme.com drift: 90. Survives — direct read-only evidence, low severity baselined for reporting.
+./leads/lead-bigpickle.md:717:[NEXT] PROBE: GET `https://sso.alfaview.com/oauth2/register` (checks open tenant self-registration on prod IAM — if live, also maps default-registration surface); follow-up HUMAN: extract registered client_id from desktop client's public config/bundle to unlock redirect_uri + device-flow testing on `/oauth2/authorize`.
+./leads/lead-bigpickle.md:750:[NEXT] HUMAN: Create one throwaway free alfaview company via the documented self-service flow ("Create your free alfaview company now" on app.alfaview.com login page) or supply a test account — this single action unlocks all three live high-value hypotheses (REST IDOR id 80, GraphQL authz-gap id 70, guest-link testing id 45) that are otherwise permanently gated. Then run: GET apis.alfaview.com/v2/users/{ownUserId} with the issued opaque bearer as the IDOR baseline.
+./leads/lead-bigpickle.md:786:[NEXT] PROBE: POST `https://app.alfaview.com/graphql` with `{"query":"mutation{guestAuthenticate(userId:\"<own-tenant-guestId>\",companyId:\"<own-companyId>\",roomId:\"<own-roomId>\"){accessToken expiry}}"}` — repeat with the identical triple on REST `POST https://apis.alfaview.com/v2/auth/guest-link` (with and without accessKey); the 200+accessToken-vs-401 delta is the one-shot proof of the accessKey-bypass. Requires own-tenant guest triple: obtain via `[NEXT] HUMAN` — create one throwaway free alfaview company via the self-service signup ("Create your free alfaview company now" on app.alfaview.com login / `createCompany` mutation), which also unlocks the rank-1 IDOR test suite (GET /v2/users/{ownUserId} baseline, then fetchUserPermissions with a victim ID).
+./leads/lead-bigpickle.md:815:[NEXT] HUMAN: Create one throwaway free alfaview company via the documented self-service flow ("Create your free alfaview company now" on app.alfaview.com login page) — unlock rank-1 (REST IDOR) and the guest-authz splice test. Baseline on acceptance: POST https://apis.alfaview.com/v2/auth/password {"username","password"} → store opaque bearer → GET https://apis.alfaview.com/v2/users/me (expect 200, own user/company IDs) → then GET https://apis.alfaview.com/v2/rooms/{victimRoomId}/passcode (expect 403 = enforced vs 200 = IDOR). Anything below that signup resolves all remaining live hypotheses (also unblocks POSTing GET-blocked GraphQL mutations magicTokenAuthenticate/guestAuthenticate).
+./leads/lead-bigpickle.md:851:[FINAL] 1. Cross-tenant IDOR — 80. Highest impact, strongest structural evidence, clear verify steps. Blocked on: account creation (HUMAN).
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt; cat reports/hypotheses-bigpickle.txt; echo "=========== LEAD TAIL"; tail -c 3000 leads/lead-bigpickle.md
+## 2026-09-30 02:23:28 UTC [target] (model bigpickle)
+[HYP] Company-wide guest-link/group-link enumeration yields live join credentials without expressible authorization check
+class: IDOR
+asset: apis.alfaview.com GET /v2/guest-links (ListGuestLinks) + GET /v2/group-links
+confidence: 88
+reasoning: Un-narrowable server-side (measured: roomId/companyId not bound, 422 errors array contains only query.limit). GuestLink requires accessKey/joinUrl/dialInCode/emailAddress (12/15). TokenUserPermissions is a closed 7-boolean additionalProperties:false vocabulary (verified this cycle inside TokenInfo.permissions) with no guest-link axis. Flat unscoped POST create now proven absent — writes are room-scoped, so the lists are the only company-wide read of join credentials.
+evidence_needed: One self-owned low-priv token; GET /v2/auth/token-info to record own bitmask; GET /v2/guest-links?limit=500.
+verify_steps: AUTH_HELPED, read-only, self-owned tenant. GET /v2/auth/token-info → GET /v2/guest-links?limit=1 → compare returned accessKey-bearing rows to own tenant scope.
+impact: Cross-tenant harvest of guest join credentials (accessKey+joinUrl+dialInCode) + guest email addresses. HIGH if the five undeclared server-side checks are absent.
+testability: AUTH_HELPED
+[HYP] The REST audit-log mirrors GraphQL listAuditEvents; server enforces the AUDIT_LOG company gate correctly
+class: IDOR (PREDICTED FALSE — carried so disconfirming evidence stays on record)
+asset: apis.alfaview.com GET /v2/audit-log
+confidence: 20
+reasoning: Live undocumented 39th path (prod+beta), GET-only, validation-before-auth (422 missing from/to) then auth-bound (401 valid params) — same 10-op class. GraphQL mirror gated by AUDIT_LOG=bit21 (client bundle) and feature-flagged to alfaview-internal companies. My earlier "no permission axis" claim was falsified; the gate exists.
+evidence_needed: Self-owned tenant user holding MANAGE_COMPANY; GET V2 /v2/auth/token-info to confirm bit 21; then GET /v2/audit-log?from=..&to=..
+verify_steps: AUTH_HELPED, read-only. Confirm bit 21, issue query, compare returned events to self-owned scope only.
+impact: If cross-tenant boundary unenforced, company admin reads another tenant's audited actions (room/meeting/user ops, actor userId+target ids). HIGH only if the (likely present) gate is broken.
+testability: AUTH_HELPED
+[HYP] RFC7662 introspection runs without client authentication in the same build that validates tokens at userinfo
+class: MISCONFIG
+asset: sso.alfaview.com POST /oauth2/introspect
+confidence: 94 (carried, not re-measured)
+reasoning: 30+ cycle-stable: fabricated client_id accepted on POST-body and Basic channels (200 active:false); same-deployment control /oauth2/userinfo tiers and rejects forged JOSE → omission not architecture.
+evidence_needed: One real self-owned token; POST /oauth2/introspect with it.
+verify_steps: AUTH_HELPED. POST token in body, fabricated client_id (body + Basic variants).
+impact: MEDIUM — token validity/claims disclosed to a caller who proved no client identity; no forgery.
+testability: AUTH_HELPED
+[NEXT] HUMAN: obtain one self-owned low-privlege account (unauthenticated signup at app.alfaview.com/graphql → email → finishSignup, email-gated) then, read-only on self-owned tenant only: `GET /v2/auth/token-info`, then `GET /v2/guest-links?limit=1` and `GET /v2/audit-log?from=2026-09-28T00:00:00Z&to=2026-09-30T00:00:00Z` — replaces the falsified IDOR with a measured authorization-behaviour answer on the top two chains.
+[RISK] alfaview gmbh: 61. Down 1 from 62: two standing spec-debt hypotheses closed (unscoped create, hidden quotas) and the audit surface proved auth-bound, so no unauthenticated exposure was added. The 94 introspect and 88 guest-link chains remain valid but strictly token-gated — risk is carried, not increased.
+=========== LEAD TAIL
+en-info to record own bitmask; GET /v2/guest-links?limit=500.
+verify_steps: AUTH_HELPED, read-only, self-owned tenant. GET /v2/auth/token-info → GET /v2/guest-links?limit=1 → compare returned accessKey-bearing rows to own tenant scope.
+impact: Cross-tenant harvest of guest join credentials (accessKey+joinUrl+dialInCode) + guest email addresses. HIGH if the five undeclared server-side checks are absent.
+testability: AUTH_HELPED
+[HYP] The REST audit-log mirrors GraphQL listAuditEvents; server enforces the AUDIT_LOG company gate correctly
+class: IDOR (PREDICTED FALSE — carried so disconfirming evidence stays on record)
+asset: apis.alfaview.com GET /v2/audit-log
+confidence: 20
+reasoning: Live undocumented 39th path (prod+beta), GET-only, validation-before-auth (422 missing from/to) then auth-bound (401 valid params) — same 10-op class. GraphQL mirror gated by AUDIT_LOG=bit21 (client bundle) and feature-flagged to alfaview-internal companies. My earlier "no permission axis" claim was falsified; the gate exists.
+evidence_needed: Self-owned tenant user holding MANAGE_COMPANY; GET V2 /v2/auth/token-info to confirm bit 21; then GET /v2/audit-log?from=..&to=..
+verify_steps: AUTH_HELPED, read-only. Confirm bit 21, issue query, compare returned events to self-owned scope only.
+impact: If cross-tenant boundary unenforced, company admin reads another tenant's audited actions (room/meeting/user ops, actor userId+target ids). HIGH only if the (likely present) gate is broken.
+testability: AUTH_HELPED
+[HYP] RFC7662 introspection runs without client authentication in the same build that validates tokens at userinfo
+class: MISCONFIG
+asset: sso.alfaview.com POST /oauth2/introspect
+confidence: 94 (carried, not re-measured)
+reasoning: 30+ cycle-stable: fabricated client_id accepted on POST-body and Basic channels (200 active:false); same-deployment control /oauth2/userinfo tiers and rejects forged JOSE → omission not architecture.
+evidence_needed: One real self-owned token; POST /oauth2/introspect with it.
+verify_steps: AUTH_HELPED. POST token in body, fabricated client_id (body + Basic variants).
+impact: MEDIUM — token validity/claims disclosed to a caller who proved no client identity; no forgery.
+testability: AUTH_HELPED
+[NEXT] HUMAN: obtain one self-owned low-privlege account (unauthenticated signup at app.alfaview.com/graphql → email → finishSignup, email-gated) then, read-only on self-owned tenant only: `GET /v2/auth/token-info`, then `GET /v2/guest-links?limit=1` and `GET /v2/audit-log?from=2026-09-28T00:00:00Z&to=2026-09-30T00:00:00Z` — replaces the falsified IDOR with a measured authorization-behaviour answer on the top two chains.
+[RISK] alfaview gmbh: 61. Down 1 from 62: two standing spec-debt hypotheses closed (unscoped create, hidden quotas) and the audit surface proved auth-bound, so no unauthenticated exposure was added. The 94 introspect and 88 guest-link chains remain valid but strictly token-gated — risk is carried, not increased.
+[0m
+--- state:
+{"phase": "POC", "target": "api"}
+--- tail of knowledge/index.md
+[0m
+[0m$ [0mdate -u '+%Y-%m-%d %H:%M:%S UTC'
+2026-09-30 08:47:54 UTC
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt; cat > /tmp/opencode/cycle.md <<'EOF'
+
+## 2026-09-30 08:47:54 UTC [api] (model bigpickle)
+[FACT] Live contract re-fetched this cycle: GET https://apis.alfaview.com/v2/docs/openapi.json -> HTTP 200, 132100 B, md5 284a3383c1ac3cfc9152ffcc631891f2, 38 paths / 57 operations / 69 schemas. Local recon-notes/alfaview-openapi.yaml snapshot is 37 paths / 56 operations and predates the audit family. Delta = +1 path / +1 op, both audit-log.
+[FACT] The audit family (Event, Actor, Target, PaginatedBodyListEvent) exists in components.schemas but is referenced by ZERO operations — the only raw $ref roots in the whole document besides ErrorModel. /v2/audit-log is live in code yet deliberately omitted from the published contract. Confirms my earlier 39th-path finding is a documentation-deliberate surface, not an accident.
+[FACT] Event carries an integrity self-attestation: checksum ("the checksum that the audit log service stored with the event") + checksumValid ("if false, the stored event does not match its checksum and its fields cannot be trusted") + action ("empty if checksumValid is false"). The audit stream is designed to be self-verifying on the client side. This is a defensive control, not a defect.
+[FACT] TokenUserPermissions.roomAdmin = "If true, the user can create, update and delete ANY room." — a COMPANY-WIDE room-admin bit that is strictly coarser than the per-room Permissions.admin the same API exposes and writes. The only room-administration primitive in the token vocabulary is company-scoped; there is no per-room room-admin axis.
+[FACT] GET /v2/rooms/{roomId}/permissions (ListPermissions) declares only 200/401/404/422 — no 403. Its own write sibling POST on the same path DOES declare 403, and GET /v2/rooms/{roomId}/participants DOES declare 403. The vendor 403-tiers participant-identity reads and does not 403-tier the permission read.
+[FACT] POST /v2/rooms/{roomId}/permissions takes ParticipantPermissions{participantId, permissions} as the bare body. participantId is documented as "The user ID / guest link ID / group link ID to which the permissions apply" — a three-namespace UUID union with no discriminator field. permissions is the FULL 9-boolean Permissions object (admin, voice, video, promote, join, screen, vip, chat, upload — all required), so the caller supplies both the target principal and the complete bitmask including admin.
+[FACT] PATCH/DELETE /v2/rooms/{roomId}/permissions/{userId} type the same identifier as a plain userId in the path, while POST types it as the 3-namespace union in the body — the identical UUID space flows through two different type systems with no discriminator.
+[FACT] DELETE /v2/users/{id} is company-wide destructive, takes no companyId/roomId scoping parameter, and declares only 204/401/422 (no 403, no 404).
+[FACT] GroupLink is credential-bearing to the same degree as GuestLink: 12/15 fields required including accessKey, joinUrl, the deprecated joinLink, and dialInCode. Declared-code asymmetry: GET /v2/group-links declares 200/401 only, while GET /v2/guest-links declares 200/401/403, and BOTH room-scoped siblings declare 403. Response-code declarations are NOT behaviourally load-bearing (already established — /v2/permission-groups declares no 401 yet returns 401), so this is recorded as a supporting signal only and is never the claim itself.
+[FACT] Measured this cycle: GET /v2/rooms/not-a-uuid/permissions -> HTTP 401, 107 B, md5 60ed2f29d492, www-authenticate: AccessToken (auth-before-path-validation, NOT one of the 10 validation-first ops). GET /v2/audit-log bare -> HTTP 422, 232 B, md5 b4adcd157348, errors[] requires query.from and query.to. Both unchanged from prior cycles; all three requests this cycle were GET and read-only.
+[FINAL] 1. RFC7662 introspection runs without client authentication in the same build that validates tokens at userinfo. class: MISCONFIG. asset: sso.alfaview.com POST /oauth2/introspect. confidence: 94 (carried, not re-measured — 30+ cycle-stable, fabricated client_id accepted on POST-body and Basic channels, same-deployment /oauth2/userinfo control tiers and rejects forged JOSE). Blocked on: one real self-owned token. Impact MEDIUM — token validity/claims to a caller who proved no client identity; no forgery. testability: AUTH_HELPED.
+[FINAL] 2. Company-wide guest-link AND group-link enumeration returns live join credentials with no expressible authorization axis. class: IDOR. asset: apis.alfaview.com GET /v2/guest-links + GET /v2/group-links. confidence: 90 (up 1 from 88 — this cycle proved GroupLink is credential-equivalent to GuestLink, so the hypothesis was previously under-scoped). Group links are meeting-scoped at creation (POST /v2/meetings/{id} groupLinks[]) but listed company-wide, so their accessKey/joinUrl/dialInCode are join credentials for every meeting in the tenant. Un-narrowable server-side (measured: roomId/companyId unbound, 422 errors[] contains only query.limit); writes are room-scoped so these lists are the only company-wide read of join credentials; TokenUserPermissions is a closed 7-boolean additionalProperties:false vocabulary with no link axis. Blocked on: one self-owned low-priv token. testability: AUTH_HELPED.
+[FINAL] 3. The room-permission read/write pair is authorized at company scope, not room scope — any member can enumerate a room's principal set and mint room-admin rights. class: IDOR. asset: apis.alfaview.com GET /v2/rooms/{roomId}/permissions (ListPermissions) + POST /v2/rooms/{roomId}/permissions (CreatePermissions), escalating to DELETE /v2/users/{id}. confidence: 62 (NEW this cycle, entirely unmeasured behaviourally). reasoning: three converging contract facts. (a) The only room-admin primitive a token carries is company-wide ("ANY room"), so room-level Permissions.admin has no corresponding authorization vocabulary and must be enforced by an undeclared server-side comparison. (b) ListPermissions is the one participant-identity read the vendor does NOT 403-tier, and its payload is the room's full participantId set plus every participant's 9-boolean permission bitmap. (c) CreatePermissions lets the caller name both the principal (participantId) and the entire bitmask including admin, with the operation description documenting no authorization requirement at all. The sharpest variant needs no user account: a guest holds its own guest-link id in plain sight in its join URL, and that id is a valid participantId value. evidence_needed: one self-owned low-priv member account plus its own room. verify_steps: AUTH_HELPED. (1) GET /v2/auth/token-info to record whether roomAdmin is false. (2) GET /v2/rooms/{roomId}/permissions on a room the account has merely joined — 403/404 = enforced, 200 with other participants' ids = IDOR half proven. (3) ONE own-tenant write: POST /v2/rooms/{roomId}/permissions with participantId = own user id and permissions.admin = true on a room the account only joined — 204 = escalation to room admin (gates every room-admin operation: room edit/delete, features, file-share limits, language settings, passcode, guest management), 403/404/409 = enforced. (4) If (3) returns 204, repeat with participantId = own guest-link id. impact: LOW-priv member to room-admin privilege escalation plus cross-tenant disclosure of room participant user IDs and permission bitmaps. HIGH if (3) returns 204; MEDIUM if only step (2) discloses. testability: AUTH_HELPED.
+[NEXT] HUMAN: supply one self-owned LOW-PRIVILEGE alfaview account with company roomCreate+roomList but roomAdmin=false, plus the id of one room that account has merely joined (via the app.alfaview.com signup -> email -> finishSignup flow, which is email-gated and cannot be automated). That single input unblocks all three chains above; the read-only sequence I will then run at <=1 rps is `GET /v2/auth/token-info` -> `GET /v2/rooms?limit=1` -> `GET /v2/rooms/{roomId}/permissions`, followed by exactly ONE own-tenant write (`POST /v2/rooms/{roomId}/permissions`, participantId = own user id, permissions.admin = true) to read the escalation verdict. No customer data is touched at any point.
+[RISK] alfaview gmbh: 62. Up 1 from 61. No new unauthenticated exposure was found — all three requests this cycle were auth-bound or validation-first. The increase reflects a new unmeasured BOLA chain on a WRITE primitive (room-permission minting) whose declared-code pattern the vendor's own contract contradicts, and which is reachable with a plain member account rather than a credential-harvest chain. Risk is carried, not measured; the 94 introspect and now-90 guest/group-link chains remain strictly token-gated.
+EOF
+cat /tmp/opencode/cycle.md >> reports/hypotheses-bigpickle.txt
+cat /tmp/opencode/cycle.md >> leads/lead-bigpickle.md
+wc -l reports/hypotheses-bigpickle.txt leads/lead-bigpickle.md
+47 reports/hypotheses-bigpickle.txt
+   7242 leads/lead-bigpickle.md
+   7289 total
+[0m
+Analysis cycle complete. Wrote the new entry to `reports/hypotheses-bigpickle.txt` and `leads/lead-bigpickle.md`.
+
+**New this cycle (3 GETs, all read-only, ≤1 rps):**
+- Re-fetched live spec: 38 paths / 57 ops / 69 schemas. Local `recon-notes/alfaview-openapi.yaml` is stale at 37/56 — the delta is the audit family.
+- `Event`/`Actor`/`Target`/`PaginatedBodyListEvent` are referenced by **zero** operations → `/v2/audit-log` ships in code but is deliberately unpublished. `Event.checksumValid` is a self-attestation control, not a defect.
+- `POST /v2/rooms/{roomId}/permissions` takes `{participantId, permissions}` as the bare body; `participantId` is documented as "user ID / **guest link ID** / group link ID" (3-namespace UUID union, no discriminator) and `permissions` is the full 9-boolean set with `admin` caller-supplied. The only room-admin bit a token carries is company-wide (`roomAdmin`: "create, update and delete **ANY** room") — there is no per-room room-admin axis.
+- `GET /v2/rooms/{roomId}/permissions` is the one participant-identity read the vendor does *not* 403-tier (its POST sibling and `/participants` both do), and it returns the room's full participantId set + permission bitmaps.
+- `GroupLink` is credential-equivalent to `GuestLink` (`accessKey`, `joinUrl`, `dialInCode` all required) → the standing 88 was under-scoped, now 90.
+
+**Ranked:** introspect 94 (carried) → guest/group-link credential lists 90 → **new** room-permission BOLA/priv-esc chain 62. A guest could mint room-admin using only the guest-link id already printed in its own join URL; the test is one read plus one own-tenant write with a binary verdict.
+
+**Risk:** 61 → 62 (carried, not measured — no new unauthenticated exposure). Blocker is unchanged and now sharpened: need one self-owned low-priv account with `roomAdmin=false` plus one room it merely joined.
