@@ -1251,3 +1251,17 @@ www.alfaview.com
 ## 2026-09-30 08:48:27 UTC
 
 ## 2026-09-30 15:31:48 UTC
+
+## 2026-09-30 20:25:21 UTC
+- NEW apis.alfaview.com OpenAPI spec rotated to 38 paths (was 37) — new /v2/users/me/company (GetOwnCompany) identified as sole 200-response supplier of companyId across 57 operations, enabling guest-link c
+- NEW apis.alfaview.com GET /v2/audit-log — LIVE, UNDOCUMENTED 39th path absent from OpenAPI; pre-auth query binder complete (10 GET ops now validate pre-auth); orphan schema family Event/Actor/Target/Pagin
+- NEW apis.alfaview.com/v2/auth/api-key — 4th unauthenticated credential endpoint discovered (HEAD→405 allow:POST, OPTIONS→405/19B text/plain); declares unique 403 account-status tier
+- NEW app.alfaview.com public bundle rotated to app.min.67e8a68d4318b34ca241.js (md5 2cb9128353b1f7444e222b4f61e4ffa5) — carries admin session flow (AdminTokenAuthenticate → adminSession.accessToken/permiss
+- NEW tools.alfaview.com/whiteboard/ — second unmapped RPC backend proven by controlled differential: returns 47B gRPC status envelope vs poll gateway's 45B compact jsonpb; distinct marshaller; no WWW-Authe
+- NEW staging-tools.alfaview.com/whiteboard/ — byte-identical 47B envelope ⇒ unmapped RPC mount mirrored to staging with exposure equal to production
+- NEW whiteboard.alfaview.com — /whiteboard/ absent from renderer host (302→/, strict single-route) ⇒ board renderer and board data RPC are separate systems
+- CHANGED sso.alfaview.com/oauth2/introspect — 30+ consecutive stable cycles: fabricated client_id accepted on POST-body and Basic channels (200 {"active":false}); to[0m
+- CHANGED apis.alfaview.com OpenAPI — components.securitySchemes={}, security=null (absent) — auth purely handler middleware; validation-before-auth on 9/26 GET ops (query-param routes); path-param routes corre
+- CHANGED apis.alfaview.com/v2/users/invitation{,s} — OpenAPI declares POST only; live server advertises Allow: DELETE,POST on /v2/users/invitation and DELETE-only on undocumented /v2/users/invitations; both Go
+- CHANGED test.alfaview.com — alfacheck release bumped v470079→v483102 (4 platforms); index page still carries no sha256/signatures
+- CHANGED Inventory 100% probed — 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain

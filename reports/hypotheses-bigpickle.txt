@@ -1,1 +1,2 @@
-## 2026-09-30 15:31:30 UTC [target] (model bigpickle)
+## 2026-09-30 20:25:09 UTC [target] (model bigpickle)
+[NEXT] HUMAN: supply one self-owned low-privilege alfaview account with company `roomCreate+roomList` but `roomAdmin=false`, plus one self-owned `roomId` that the account has merely joined.
