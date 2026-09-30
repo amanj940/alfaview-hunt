@@ -1265,3 +1265,15 @@ www.alfaview.com
 - CHANGED apis.alfaview.com/v2/users/invitation{,s} — OpenAPI declares POST only; live server advertises Allow: DELETE,POST on /v2/users/invitation and DELETE-only on undocumented /v2/users/invitations; both Go
 - CHANGED test.alfaview.com — alfacheck release bumped v470079→v483102 (4 platforms); index page still carries no sha256/signatures
 - CHANGED Inventory 100% probed — 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain
+
+## 2026-09-30 23:53:15 UTC
+- NEW apis.alfaview.com GET /v2/audit-log — LIVE, UNDOCUMENTED 39th path absent from OpenAPI; pre-auth query binder complete (10 GET ops now validate pre-auth); orphan schema family Event/Actor/Target/Pagin
+- NEW apis.alfaview.com/v2/users/me/company (GetOwnCompany) — 38th OpenAPI path identified as sole 200-response supplier of companyId across 57 operations; enables guest-link chain execution by authorized t
+- NEW apis.alfaview.com/v2/auth/api-key — 4th unauthenticated credential endpoint discovered (HEAD→405 allow:POST, OPTIONS→405/19B text/plain); declares unique 403 account-status tier
+- CHANGED apis.alfaview.com OpenAPI rotated to MD5 284a3383c1ac3cfc9152ffcc631891f2 (132100B, 38 paths, 57 ops) — byte-identical on beta-apis.alfaview.com
+- CHANGED sso.alfaview.com/oauth2/introspect — 30+ consecutive stable cycles: fabricated client_id accepted on POST-body and Basic channels (200 {"active":false}); token_endpoint_auth_methods advertises client_
+- CHANGED apis.alfaview.com OpenAPI — components.securitySchemes={}, security=null (absent) — auth purely handler middleware; validation-before-auth on 9/26 GET ops (query-param routes); path-param routes corre
+- CHANGED app.alfaview.com public bundle rotated to app.min.67e8a68d4318b34ca241.js (md5 2cb9128353b1f7444e222b4f61e4ffa5) — carries admin session flow (AdminTokenAuthenticate → adminSession.accessToken/permiss
+- CHANGED tools.alfaview.com/whiteboard/ — second unmapped RPC backend proven by controlled differential: returns 47B gRPC status envelope vs poll gateway's 45B compact jsonpb; distinct marshaller; no WWW-Authe
+- CHANGED test.alfaview.com — alfacheck release bumped v470079→v483102 (4 platforms); index page still carries no sha256/signatures — supply-chain hardening absent across successive releases
+- CHANGED Inventory 100% probed — 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain
