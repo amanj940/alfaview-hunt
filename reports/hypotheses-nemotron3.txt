@@ -1,4 +1,4 @@
-## 2026-09-29 23:27:57 UTC [target] (model nemotron3)
+## 2026-09-30 02:21:03 UTC [target] (model nemotron3)
 [CHANGED] apis.alfaview.com OpenAPI md5 rotated to `284a3383c1ac3cfc9152ffcc631891f2` (132100B, 38 paths, 57 ops) — 3rd consecutive stable cycle; byte-identical on beta-apis.alfaview.com
 [CHANGED] `/v2/users/me/company` (GetOwnCompany) identified as the 38th path — sole 200-response supplier of `companyId` across 57 operations; enables guest-link chain execution by authorized tester
 [CHANGED] alfaview 2FA is a shipped feature with public KB article; measured 2FA enforcement asymmetry (SSO vs native password paths)

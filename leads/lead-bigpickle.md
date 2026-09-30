@@ -7193,3 +7193,33 @@ testability: AUTH_HELPED
 [LEARN] METHOD: Apollo Server's per-field validation errors are a complete schema oracle with no auth and no
 [LEARN] METHOD: the client bundle is a permission-model source, not just a route-string source. Numeric
 [RISK] alfaview gmbh: 62. LOWERED from 72. The 72 was priced on a hypothesis I built from a single source and
+## 2026-09-30 02:23:28 UTC [target] (model bigpickle)
+[HYP] Company-wide guest-link/group-link enumeration yields live join credentials without expressible authorization check
+class: IDOR
+asset: apis.alfaview.com GET /v2/guest-links (ListGuestLinks) + GET /v2/group-links
+confidence: 88
+reasoning: Un-narrowable server-side (measured: roomId/companyId not bound, 422 errors array contains only query.limit). GuestLink requires accessKey/joinUrl/dialInCode/emailAddress (12/15). TokenUserPermissions is a closed 7-boolean additionalProperties:false vocabulary (verified this cycle inside TokenInfo.permissions) with no guest-link axis. Flat unscoped POST create now proven absent — writes are room-scoped, so the lists are the only company-wide read of join credentials.
+evidence_needed: One self-owned low-priv token; GET /v2/auth/token-info to record own bitmask; GET /v2/guest-links?limit=500.
+verify_steps: AUTH_HELPED, read-only, self-owned tenant. GET /v2/auth/token-info → GET /v2/guest-links?limit=1 → compare returned accessKey-bearing rows to own tenant scope.
+impact: Cross-tenant harvest of guest join credentials (accessKey+joinUrl+dialInCode) + guest email addresses. HIGH if the five undeclared server-side checks are absent.
+testability: AUTH_HELPED
+[HYP] The REST audit-log mirrors GraphQL listAuditEvents; server enforces the AUDIT_LOG company gate correctly
+class: IDOR (PREDICTED FALSE — carried so disconfirming evidence stays on record)
+asset: apis.alfaview.com GET /v2/audit-log
+confidence: 20
+reasoning: Live undocumented 39th path (prod+beta), GET-only, validation-before-auth (422 missing from/to) then auth-bound (401 valid params) — same 10-op class. GraphQL mirror gated by AUDIT_LOG=bit21 (client bundle) and feature-flagged to alfaview-internal companies. My earlier "no permission axis" claim was falsified; the gate exists.
+evidence_needed: Self-owned tenant user holding MANAGE_COMPANY; GET V2 /v2/auth/token-info to confirm bit 21; then GET /v2/audit-log?from=..&to=..
+verify_steps: AUTH_HELPED, read-only. Confirm bit 21, issue query, compare returned events to self-owned scope only.
+impact: If cross-tenant boundary unenforced, company admin reads another tenant's audited actions (room/meeting/user ops, actor userId+target ids). HIGH only if the (likely present) gate is broken.
+testability: AUTH_HELPED
+[HYP] RFC7662 introspection runs without client authentication in the same build that validates tokens at userinfo
+class: MISCONFIG
+asset: sso.alfaview.com POST /oauth2/introspect
+confidence: 94 (carried, not re-measured)
+reasoning: 30+ cycle-stable: fabricated client_id accepted on POST-body and Basic channels (200 active:false); same-deployment control /oauth2/userinfo tiers and rejects forged JOSE → omission not architecture.
+evidence_needed: One real self-owned token; POST /oauth2/introspect with it.
+verify_steps: AUTH_HELPED. POST token in body, fabricated client_id (body + Basic variants).
+impact: MEDIUM — token validity/claims disclosed to a caller who proved no client identity; no forgery.
+testability: AUTH_HELPED
+[NEXT] HUMAN: obtain one self-owned low-privlege account (unauthenticated signup at app.alfaview.com/graphql → email → finishSignup, email-gated) then, read-only on self-owned tenant only: `GET /v2/auth/token-info`, then `GET /v2/guest-links?limit=1` and `GET /v2/audit-log?from=2026-09-28T00:00:00Z&to=2026-09-30T00:00:00Z` — replaces the falsified IDOR with a measured authorization-behaviour answer on the top two chains.
+[RISK] alfaview gmbh: 61. Down 1 from 62: two standing spec-debt hypotheses closed (unscoped create, hidden quotas) and the audit surface proved auth-bound, so no unauthenticated exposure was added. The 94 introspect and 88 guest-link chains remain valid but strictly token-gated — risk is carried, not increased.

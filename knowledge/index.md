@@ -926,3 +926,14 @@
 - 2026-09-29 REJECTED SURFACE @ apis.alfaview.com: /v2/audit-log/{uuid} and /v2/audit-log/{metadata,
 - 2026-09-29 METHOD: Apollo Server's per-field validation errors are a complete schema oracle with no auth and no
 - 2026-09-29 METHOD: the client bundle is a permission-model source, not just a route-string source. Numeric
+- 2026-09-30 ACCEPTED IDOR @ apis.alfaview.com: Company-wide guest-link list un-narrowable and credential-bearing; TokenUserPermissions has no guest-link axis; RoomPermissions proves guest links are permission-bearing principals
+- 2026-09-30 ACCEPTED MISCONFIG @ app.alfaview.com (public bundle): adminSwitchCompany mutation mints cross-tenant admin tokens with no administration proof; hardcoded production tenant IDs in bundle
+- 2026-09-30 ACCEPTED AUTH @ sso.alfaview.com/oauth2/introspect: 30th cycle unchanged — fabricated client_id accepted on POST-body and Basic; token_endpoint_auth_methods advertises client_secret_basic/post/none with no runtime verification; introspection_endpoint absent from discovery while endpoint live
+- 2026-09-30 ACCEPTED MISCONFIG @ tools.alfaview.com/whiteboard/: Second unmapped RPC backend proven by controlled differential — 47B gRPC envelope vs poll's 45B; distinct marshaller; no auth challenge; zero client references
+- 2026-09-30 ACCEPTED MISCONFIG @ apis.alfaview.com: Validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI components.securitySchemes={}, security=null
+- 2026-09-30 ACCEPTED MISCONFIG @ apis.alfaview.com/v2/users/invitation{,s}: OpenAPI declares POST only; live server advertises Allow: DELETE,POST on /v2/users/invitation and DELETE-only on undocumented /v2/users/invitations; both Go router (19B text/plain), both 405 before 401
+- 2026-09-30 REJECTED AUTH @ sso.alfaview.com/oauth2/userinfo: JOSE algorithm confusion tested (alg=none, HS256 with RSA pubkey, HS256 random, RS256 self-signed) — all byte-identical access_token_failed_processing; no third tier
+- 2026-09-30 REJECTED OATH @ sso.alfaview.com/oauth2/logout: post_logout_redirect_uri and redirect_uri both ignored; every variant 302 → /
+- 2026-09-30 REJECTED AUTH @ apis.alfaview.com/v2/auth/{guest,group}-link: NO accessKey existence oracle — well-formed synthetic triple returns 422/88B ACTION_INVALID byte-identical to traversal key; taxonomy exactly two tiers (schema 422, business 422)
+- 2026-09-30 REJECTED MISCONFIG @ apis.alfaview.com: 403-declaration asymmetry not behaviorally load-bearing — /v2/permission-groups returns 401 while declaring no 401; whole authenticated surface returns uniform 401
+- 2026-09-30 ACCEPTED MISCONFIG @ apis.alfaview.com: Pre-auth query-parameter binder is unauthenticated parameter-enumeration oracle (9 of 26 GET ops); append wrong-typed value → 422 with location: query.<param>; unrecognized → 401
