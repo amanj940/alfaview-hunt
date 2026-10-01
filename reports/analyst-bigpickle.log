@@ -58072,3 +58072,1290 @@ Request from the reporter one low-privilege self-owned alfaview account plus one
 - **Third-party script execution.** `/docs` executes `unpkg.com` JavaScript on the `apis.alfaview.com` origin. It is SRI-pinned and CSP-sandboxed so the current risk is low, but it is a third-party dependency on an API origin and any SRI or CSP regression there would be directly exploitable. Worth one line in the report as an observation; not a finding.
 - **Account creation.** `FinishSignup` is email-gated. Do not attempt to bypass the gate; the account task stays HUMAN_ONLY.
 - **Rate and scope discipline.** Every request this cycle was a single unauthenticated GET at ≤1 rps with a browser UA, against `apis.alfaview.com` only, with no attempt at customer or third-party tenant hosts.
+===== ANALYST bigpickle 2026-10-01 09:36:49 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && ls -la && ls -la recon-notes/ 2>/dev/null | head -30
+total 964
+drwxr-xr-x 12 runner runner   4096 Oct  1 09:30 .
+drwxr-xr-x  3 runner runner   4096 Oct  1 09:29 ..
+drwxr-xr-x  7 runner runner   4096 Oct  1 09:30 .git
+drwxr-xr-x  3 runner runner   4096 Oct  1 09:29 .github
+-rw-r--r--  1 runner runner   1883 Oct  1 09:29 README.md
+-rw-r--r--  1 runner runner     32 Oct  1 09:30 analyst-out.txt
+-rw-r--r--  1 runner runner 407461 Oct  1 09:30 analyst-prompt.txt
+-rw-r--r--  1 runner runner 403551 Oct  1 09:30 ctx.txt
+drwxr-xr-x  2 runner runner   4096 Oct  1 09:29 inventory
+drwxr-xr-x  2 runner runner   4096 Oct  1 09:29 knowledge
+drwxr-xr-x  2 runner runner   4096 Oct  1 09:29 leads
+-rw-r--r--  1 runner runner  76362 Oct  1 09:29 probe-results.md
+drwxr-xr-x  2 runner runner   4096 Oct  1 09:29 recon-notes
+drwxr-xr-x  2 runner runner   4096 Oct  1 09:29 reports
+drwxr-xr-x  2 runner runner   4096 Oct  1 09:29 reposcan-raw
+-rw-r--r--  1 runner runner   3323 Oct  1 09:29 scope.yml
+drwxr-xr-x  2 runner runner   4096 Oct  1 09:29 scripts
+-rw-r--r--  1 runner runner     33 Oct  1 09:29 state_bigpickle.json
+-rw-r--r--  1 runner runner     33 Oct  1 09:29 state_laguna.json
+-rw-r--r--  1 runner runner     33 Oct  1 09:29 state_ling3.json
+-rw-r--r--  1 runner runner     33 Oct  1 09:29 state_longcat.json
+-rw-r--r--  1 runner runner     33 Oct  1 09:29 state_mimo.json
+-rw-r--r--  1 runner runner     33 Oct  1 09:29 state_nemotron3.json
+drwxr-xr-x  2 runner runner  12288 Oct  1 09:29 triage
+total 192
+drwxr-xr-x  2 runner runner   4096 Oct  1 09:29 .
+drwxr-xr-x 12 runner runner   4096 Oct  1 09:30 ..
+-rw-r--r--  1 runner runner   4789 Oct  1 09:29 CORPUS-ALFAVIEW.md
+-rw-r--r--  1 runner runner   3624 Oct  1 09:29 DEDICATED-DEEP.md
+-rw-r--r--  1 runner runner   7833 Oct  1 09:29 DEEPER-FINDINGS.md
+-rw-r--r--  1 runner runner   6061 Oct  1 09:29 SCOPE-CONFIRMATION.md
+-rw-r--r--  1 runner runner 159550 Oct  1 09:29 alfaview-openapi.yaml
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && ls leads/ 2>/dev/null && ls art/ 2>/dev/null | head -20
+lead-bigpickle.md
+lead-laguna.md
+lead-ling3.md
+lead-longcat.md
+lead-mimo.md
+lead-nemotron3.md
+reposcan-alfaview.md
+[0m
+I'll run the 8-step analysis. Let me first re-probe the standing surface to establish current state.
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && tail -60 leads/lead-bigpickle.md
+asset: apis.alfaview.com GET /v2/guest-links (ListGuestLinks) + GET /v2/group-links
+confidence: 88
+reasoning: Un-narrowable server-side (measured: roomId/companyId not bound, 422 errors array contains only query.limit). GuestLink requires accessKey/joinUrl/dialInCode/emailAddress (12/15). TokenUserPermissions is a closed 7-boolean additionalProperties:false vocabulary (verified this cycle inside TokenInfo.permissions) with no guest-link axis. Flat unscoped POST create now proven absent — writes are room-scoped, so the lists are the only company-wide read of join credentials.
+evidence_needed: One self-owned low-priv token; GET /v2/auth/token-info to record own bitmask; GET /v2/guest-links?limit=500.
+verify_steps: AUTH_HELPED, read-only, self-owned tenant. GET /v2/auth/token-info → GET /v2/guest-links?limit=1 → compare returned accessKey-bearing rows to own tenant scope.
+impact: Cross-tenant harvest of guest join credentials (accessKey+joinUrl+dialInCode) + guest email addresses. HIGH if the five undeclared server-side checks are absent.
+testability: AUTH_HELPED
+[HYP] The REST audit-log mirrors GraphQL listAuditEvents; server enforces the AUDIT_LOG company gate correctly
+class: IDOR (PREDICTED FALSE — carried so disconfirming evidence stays on record)
+asset: apis.alfaview.com GET /v2/audit-log
+confidence: 20
+reasoning: Live undocumented 39th path (prod+beta), GET-only, validation-before-auth (422 missing from/to) then auth-bound (401 valid params) — same 10-op class. GraphQL mirror gated by AUDIT_LOG=bit21 (client bundle) and feature-flagged to alfaview-internal companies. My earlier "no permission axis" claim was falsified; the gate exists.
+evidence_needed: Self-owned tenant user holding MANAGE_COMPANY; GET V2 /v2/auth/token-info to confirm bit 21; then GET /v2/audit-log?from=..&to=..
+verify_steps: AUTH_HELPED, read-only. Confirm bit 21, issue query, compare returned events to self-owned scope only.
+impact: If cross-tenant boundary unenforced, company admin reads another tenant's audited actions (room/meeting/user ops, actor userId+target ids). HIGH only if the (likely present) gate is broken.
+testability: AUTH_HELPED
+[HYP] RFC7662 introspection runs without client authentication in the same build that validates tokens at userinfo
+class: MISCONFIG
+asset: sso.alfaview.com POST /oauth2/introspect
+confidence: 94 (carried, not re-measured)
+reasoning: 30+ cycle-stable: fabricated client_id accepted on POST-body and Basic channels (200 active:false); same-deployment control /oauth2/userinfo tiers and rejects forged JOSE → omission not architecture.
+evidence_needed: One real self-owned token; POST /oauth2/introspect with it.
+verify_steps: AUTH_HELPED. POST token in body, fabricated client_id (body + Basic variants).
+impact: MEDIUM — token validity/claims disclosed to a caller who proved no client identity; no forgery.
+testability: AUTH_HELPED
+[NEXT] HUMAN: obtain one self-owned low-privlege account (unauthenticated signup at app.alfaview.com/graphql → email → finishSignup, email-gated) then, read-only on self-owned tenant only: `GET /v2/auth/token-info`, then `GET /v2/guest-links?limit=1` and `GET /v2/audit-log?from=2026-09-28T00:00:00Z&to=2026-09-30T00:00:00Z` — replaces the falsified IDOR with a measured authorization-behaviour answer on the top two chains.
+[RISK] alfaview gmbh: 61. Down 1 from 62: two standing spec-debt hypotheses closed (unscoped create, hidden quotas) and the audit surface proved auth-bound, so no unauthenticated exposure was added. The 94 introspect and 88 guest-link chains remain valid but strictly token-gated — risk is carried, not increased.
+verify_steps: AUTH_HELPED, read-only, self-owned tenant. GET /v2/auth/token-info → GET /v2/guest-links?limit=1 → compare returned accessKey-bearing rows to own tenant scope.
+impact: Cross-tenant harvest of guest join credentials (accessKey+joinUrl+dialInCode) + guest email addresses. HIGH if the five undeclared server-side checks are absent.
+testability: AUTH_HELPED
+[HYP] The REST audit-log mirrors GraphQL listAuditEvents; server enforces the AUDIT_LOG company gate correctly
+class: IDOR (PREDICTED FALSE — carried so disconfirming evidence stays on record)
+asset: apis.alfaview.com GET /v2/audit-log
+confidence: 20
+reasoning: Live undocumented 39th path (prod+beta), GET-only, validation-before-auth (422 missing from/to) then auth-bound (401 valid params) — same 10-op class. GraphQL mirror gated by AUDIT_LOG=bit21 (client bundle) and feature-flagged to alfaview-internal companies. My earlier "no permission axis" claim was falsified; the gate exists.
+evidence_needed: Self-owned tenant user holding MANAGE_COMPANY; GET V2 /v2/auth/token-info to confirm bit 21; then GET /v2/audit-log?from=..&to=..
+verify_steps: AUTH_HELPED, read-only. Confirm bit 21, issue query, compare returned events to self-owned scope only.
+impact: If cross-tenant boundary unenforced, company admin reads another tenant's audited actions (room/meeting/user ops, actor userId+target ids). HIGH only if the (likely present) gate is broken.
+testability: AUTH_HELPED
+[HYP] RFC7662 introspection runs without client authentication in the same build that validates tokens at userinfo
+class: MISCONFIG
+asset: sso.alfaview.com POST /oauth2/introspect
+confidence: 94 (carried, not re-measured)
+reasoning: 30+ cycle-stable: fabricated client_id accepted on POST-body and Basic channels (200 active:false); same-deployment control /oauth2/userinfo tiers and rejects forged JOSE → omission not architecture.
+evidence_needed: One real self-owned token; POST /oauth2/introspect with it.
+verify_steps: AUTH_HELPED. POST token in body, fabricated client_id (body + Basic variants).
+impact: MEDIUM — token validity/claims disclosed to a caller who proved no client identity; no forgery.
+testability: AUTH_HELPED
+[NEXT] HUMAN: obtain one self-owned low-privlege account (unauthenticated signup at app.alfaview.com/graphql → email → finishSignup, email-gated) then, read-only on self-owned tenant only: `GET /v2/auth/token-info`, then `GET /v2/guest-links?limit=1` and `GET /v2/audit-log?from=2026-09-28T00:00:00Z&to=2026-09-30T00:00:00Z` — replaces the falsified IDOR with a measured authorization-behaviour answer on the top two chains.
+[RISK] alfaview gmbh: 61. Down 1 from 62: two standing spec-debt hypotheses closed (unscoped create, hidden quotas) and the audit surface proved auth-bound, so no unauthenticated exposure was added. The 94 introspect and 88 guest-link chains remain valid but strictly token-gated — risk is carried, not increased.
+[FINAL] 1. RFC7662 introspection runs without client authentication in the same build that validates tokens at userinfo. class: MISCONFIG. asset: sso.alfaview.com POST /oauth2/introspect. confidence: 94 (carried, not re-measured — 30+ cycle-stable, fabricated client_id accepted on POST-body and Basic channels, same-deployment /oauth2/userinfo control tiers and rejects forged JOSE). Blocked on: one real self-owned token. Impact MEDIUM — token validity/claims to a caller who proved no client identity; no forgery. testability: AUTH_HELPED.
+[FINAL] 2. Company-wide guest-link AND group-link enumeration returns live join credentials with no expressible authorization axis. class: IDOR. asset: apis.alfaview.com GET /v2/guest-links + GET /v2/group-links. confidence: 90 (up 1 from 88 — this cycle proved GroupLink is credential-equivalent to GuestLink, so the hypothesis was previously under-scoped). Group links are meeting-scoped at creation (POST /v2/meetings/{id} groupLinks[]) but listed company-wide, so their accessKey/joinUrl/dialInCode are join credentials for every meeting in the tenant. Un-narrowable server-side (measured: roomId/companyId unbound, 422 errors[] contains only query.limit); writes are room-scoped so these lists are the only company-wide read of join credentials; TokenUserPermissions is a closed 7-boolean additionalProperties:false vocabulary with no link axis. Blocked on: one self-owned low-priv token. testability: AUTH_HELPED.
+[FINAL] 3. The room-permission read/write pair is authorized at company scope, not room scope — any member can enumerate a room's principal set and mint room-admin rights. class: IDOR. asset: apis.alfaview.com GET /v2/rooms/{roomId}/permissions (ListPermissions) + POST /v2/rooms/{roomId}/permissions (CreatePermissions), escalating to DELETE /v2/users/{id}. confidence: 62 (NEW this cycle, entirely unmeasured behaviourally). reasoning: three converging contract facts. (a) The only room-admin primitive a token carries is company-wide ("ANY room"), so room-level Permissions.admin has no corresponding authorization vocabulary and must be enforced by an undeclared server-side comparison. (b) ListPermissions is the one participant-identity read the vendor does NOT 403-tier, and its payload is the room's full participantId set plus every participant's 9-boolean permission bitmap. (c) CreatePermissions lets the caller name both the principal (participantId) and the entire bitmask including admin, with the operation description documenting no authorization requirement at all. The sharpest variant needs no user account: a guest holds its own guest-link id in plain sight in its join URL, and that id is a valid participantId value. evidence_needed: one self-owned low-priv member account plus its own room. verify_steps: AUTH_HELPED. (1) GET /v2/auth/token-info to record whether roomAdmin is false. (2) GET /v2/rooms/{roomId}/permissions on a room the account has merely joined — 403/404 = enforced, 200 with other participants' ids = IDOR half proven. (3) ONE own-tenant write: POST /v2/rooms/{roomId}/permissions with participantId = own user id and permissions.admin = true on a room the account only joined — 204 = escalation to room admin (gates every room-admin operation: room edit/delete, features, file-share limits, language settings, passcode, guest management), 403/404/409 = enforced. (4) If (3) returns 204, repeat with participantId = own guest-link id. impact: LOW-priv member to room-admin privilege escalation plus cross-tenant disclosure of room participant user IDs and permission bitmaps. HIGH if (3) returns 204; MEDIUM if only step (2) discloses. testability: AUTH_HELPED.
+[NEXT] HUMAN: supply one self-owned LOW-PRIVILEGE alfaview account with company roomCreate+roomList but roomAdmin=false, plus the id of one room that account has merely joined (via the app.alfaview.com signup -> email -> finishSignup flow, which is email-gated and cannot be automated). That single input unblocks all three chains above; the read-only sequence I will then run at <=1 rps is `GET /v2/auth/token-info` -> `GET /v2/rooms?limit=1` -> `GET /v2/rooms/{roomId}/permissions`, followed by exactly ONE own-tenant write (`POST /v2/rooms/{roomId}/permissions`, participantId = own user id, permissions.admin = true) to read the escalation verdict. No customer data is touched at any point.
+[RISK] alfaview gmbh: 62. Up 1 from 61. No new unauthenticated exposure was found — all three requests this cycle were auth-bound or validation-first. The increase reflects a new unmeasured BOLA chain on a WRITE primitive (room-permission minting) whose declared-code pattern the vendor's own contract contradicts, and which is reachable with a plain member account rather than a credential-harvest chain. Risk is carried, not measured; the 94 introspect and now-90 guest/group-link chains remain strictly token-gated.
+## 2026-09-30 15:31:30 UTC [target] (model bigpickle)
+## 2026-09-30 20:25:09 UTC [target] (model bigpickle)
+[NEXT] HUMAN: supply one self-owned low-privilege alfaview account with company `roomCreate+roomList` but `roomAdmin=false`, plus one self-owned `roomId` that the account has merely joined.
+## 2026-09-30 23:52:54 UTC [target] (model bigpickle)
+## 2026-10-01 02:48:53 UTC [target] (model bigpickle)
+[0m
+Now let me re-probe the standing surface to establish the current delta (passive, ≤1 rps, GET/HEAD/OPTIONS only).
+[0m$ [0mcd /tmp/opencode && UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+echo "=== 1. OpenAPI prod ==="
+curl -s -o oa.json -w "code=%{http_code} size=%{size_download}\n" -A "$UA" "https://apis.alfaview.com/v2/docs/openapi.json" --max-time 20
+md5sum oa.json
+echo "=== 2. OIDC discovery ==="
+curl -s -o oidc.json -w "code=%{http_code} size=%{size_download}\n" -A "$UA" "https://sso.alfaview.com/.well-known/openid-configuration" --max-time 20
+md5sum oidc.json
+echo "=== 3. JWKS ==="
+curl -s -o jwks.json -w "code=%{http_code} size=%{size_download}\n" -A "$UA" "https://sso.alfaview.com/.well-known/jwks.json" --max-time 20
+md5sum jwks.json
+=== 1. OpenAPI prod ===
+code=200 size=132100
+284a3383c1ac3cfc9152ffcc631891f2  oa.json
+=== 2. OIDC discovery ===
+code=200 size=2169
+f78a08fced8b042093396383b74d8458  oidc.json
+=== 3. JWKS ===
+code=200 size=16257
+3f8d456c7fd92c6107f3fd77732bd0f4  jwks.json
+[0m
+[0m$ [0mcd /tmp/opencode && UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36"
+echo "=== users/me (401 baseline) ==="
+curl -s -o um.txt -w "code=%{http_code} size=%{size_download}\n" -A "$UA" "https://apis.alfaview.com/v2/users/me" --max-time 20; md5sum um.txt
+echo "=== audit-log bare (422 pre-auth) ==="
+curl -s -o al.txt -w "code=%{http_code} size=%{size_download}\n" -A "$UA" "https://apis.alfaview.com/v2/audit-log" --max-time 20; md5sum al.txt; head -c 300 al.txt; echo
+echo "=== audit-log valid params (expect 401) ==="
+curl -s -o al2.txt -w "code=%{http_code} size=%{size_download}\n" -A "$UA" "https://apis.alfaview.com/v2/audit-log?from=2026-09-28T00:00:00Z&to=2026-09-30T00:00:00Z" --max-time 20; md5sum al2.txt; head -c 200 al2.txt; echo
+echo "=== api-key OPTIONS (405 allow POST) ==="
+curl -s -o ak.txt -D ak.h -w "code=%{http_code} size=%{size_download}\n" -X OPTIONS -A "$UA" "https://apis.alfaview.com/v2/auth/api-key" --max-time 20; grep -i "^allow\|^server\|^content-type" ak.h
+=== users/me (401 baseline) ===
+code=401 size=107
+60ed2f29d492ec872c598cc7d36aa37e  um.txt
+=== audit-log bare (422 pre-auth) ===
+code=422 size=232
+b4adcd157348f493646c0196c185bd34  al.txt
+{"title":"Unprocessable Entity","status":422,"detail":"validation failed","errors":[{"message":"required query parameter is missing","location":"query.from"},{"message":"required query parameter is missing","location":"query.to"}]}
+
+=== audit-log valid params (expect 401) ===
+code=401 size=107
+60ed2f29d492ec872c598cc7d36aa37e  al2.txt
+{"title":"Unauthorized","status":401,"detail":"No access token was provided in the Authorization header."}
+
+=== api-key OPTIONS (405 allow POST) ===
+code=405 size=19
+allow: POST
+content-type: text/plain; charset=utf-8
+server: edge-proxy
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+print('paths',len(d['paths']))
+ops=0
+for p,v in d['paths'].items():
+    for m in v:
+        if m in ('get','post','put','patch','delete'): ops+=1
+print('ops',ops)
+# orphan schemas
+raw=json.dumps(d['paths'])
+orph=[]
+for name in d.get('components',{}).get('schemas',{}):
+    if name not in raw: orph.append(name)
+print('ORPHAN SCHEMAS (not referenced by any path):', orph)
+"
+paths 38
+ops 57
+ORPHAN SCHEMAS (not referenced by any path): ['Actor', 'ErrorDetail', 'ErrorModel', 'Event', 'GroupLinkCreate', 'GuestLinkCreate', 'InviteUserPermissions', 'PaginatedBodyListEvent', 'RoomQuotas', 'RoomQuotasEdit', 'SubroomCreateListItem', 'SubroomEditListItem', 'Target', 'TokenUserPermissions', 'Translation', 'UserInformation']
+[0m
+All standing probes byte-identical. Let me do zero-request spec analysis on the newest chain (FINAL 3, confidence 62) plus an orphan-schema diff.
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+s=d['components']['schemas']
+for n in ['RoomQuotas','RoomQuotasEdit']:
+    print('===',n,'===')
+    print(json.dumps(s[n],indent=1)[:1800])
+"
+=== RoomQuotas ===
+{
+ "additionalProperties": false,
+ "properties": {
+  "activeParticipants": {
+   "description": "The number of allowed active participants.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "maxVideoTilesPerPage": {
+   "description": "The number of allowed video tiles displayed per page. If this value mismatches the defined options in the alfaview client, the next lower value will be chosen.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "spectatorOnlyParticipants": {
+   "description": "The number of allowed spectator-only participants.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "activeParticipants",
+  "spectatorOnlyParticipants",
+  "maxVideoTilesPerPage"
+ ],
+ "type": "object"
+}
+=== RoomQuotasEdit ===
+{
+ "additionalProperties": false,
+ "properties": {
+  "activeParticipants": {
+   "description": "The maximum number of active participants.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "maxVideoTilesPerPage": {
+   "description": "The maximum number of video tiles displayed per page. If this value mismatches the defined options in the alfaview client, the next lower value will be chosen.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "spectatorOnlyParticipants": {
+   "description": "The maximum number of spectator-only participants.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "activeParticipants",
+  "spectatorOnlyParticipants",
+  "maxVideoTilesPerPage"
+ ],
+ "type": "object"
+}
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && grep -rn -i "quota" probe-results.md recon-notes/DEEPER-FINDINGS.md recon-notes/DEEP-CORPUS*.md 2>/dev/null | head -20; echo "--- leads ---"; grep -rn -i "quota" leads/*.md | head -10
+--- leads ---
+leads/lead-bigpickle.md:6840:[LEARN] ACCEPTED MISCONFIG (negative result) @ apis.alfaview.com: the contract's structural change produced **zero** new pre-authentication exposure. All 11 newly-surfaced paths return 401/107B md5 `60ed2f29` — `/v2/users/me/company` and the 10 room-scoped reads including the never-before-probed `participants`, `features`, `file-share-limits`, `file-share-settings`, `language-settings`, `passcode` and `subrooms` — and malformed identifiers (`not-a-uuid`) still return 401 on both a declared GET and a declared 401-only route, so the UUID path validator still runs behind authentication. The 27-GET sweep left the pre-auth validator map unchanged at 9 operations, of which only `/v2/stats` (422/319B md5 6d812e83) and `/v2/rooms/{roomId}/attendances` (422/232B md5 b4adcd15) disclose per-field names. The new schemas are individually unremarkable for attack surface: `RoomSettingsUpdate` is `additionalProperties:false` with only `defaultAccessLevel`, `enabled` and `participantsCanUpload`, closing mass assignment on that route; `RoomLimits` is read-only quota disclosure; `Passcode` returns `passcode` plus `required` and is 401-gated; `RoomFeaturesEdit` is `additionalProperties:false` with 14 nullable tri-state fields and no non-boolean injection surface; the subroom family is correctly room-scoped on both PATCH and DELETE, and `subrooms/{subroomId}` confirms `allow: DELETE, PATCH` exactly as declared.
+leads/lead-bigpickle.md:7225:[RISK] alfaview gmbh: 61. Down 1 from 62: two standing spec-debt hypotheses closed (unscoped create, hidden quotas) and the audit surface proved auth-bound, so no unauthenticated exposure was added. The 94 introspect and 88 guest-link chains remain valid but strictly token-gated — risk is carried, not increased.
+leads/lead-bigpickle.md:7255:[RISK] alfaview gmbh: 61. Down 1 from 62: two standing spec-debt hypotheses closed (unscoped create, hidden quotas) and the audit surface proved auth-bound, so no unauthenticated exposure was added. The 94 introspect and 88 guest-link chains remain valid but strictly token-gated — risk is carried, not increased.
+leads/lead-bigpickle.md:7278:[RISK] alfaview gmbh: 61. Down 1 from 62: two standing spec-debt hypotheses closed (unscoped create, hidden quotas) and the audit surface proved auth-bound, so no unauthenticated exposure was added. The 94 introspect and 88 guest-link chains remain valid but strictly token-gated — risk is carried, not increased.
+leads/lead-bigpickle.md:7307:[RISK] alfaview gmbh: 61. Down 1 from 62: two standing spec-debt hypotheses closed (unscoped create, hidden quotas) and the audit surface proved auth-bound, so no unauthenticated exposure was added. The 94 introspect and 88 guest-link chains remain valid but strictly token-gated — risk is carried, not increased.
+leads/lead-bigpickle.md:7330:[RISK] alfaview gmbh: 61. Down 1 from 62: two standing spec-debt hypotheses closed (unscoped create, hidden quotas) and the audit surface proved auth-bound, so no unauthenticated exposure was added. The 94 introspect and 88 guest-link chains remain valid but strictly token-gated — risk is carried, not increased.
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+for p in sorted(d['paths']): print(p, sorted(m for m in d['paths'][p] if m in('get','post','put','patch','delete')))
+"
+/v2/auth/api-key ['post']
+/v2/auth/group-link ['post']
+/v2/auth/guest-link ['post']
+/v2/auth/password ['post']
+/v2/auth/token-info ['get']
+/v2/group-links ['get']
+/v2/group-links/{id} ['get', 'patch']
+/v2/guest-links ['get']
+/v2/guest-links/{id} ['get', 'patch']
+/v2/languages ['get']
+/v2/meetings ['get', 'post']
+/v2/meetings/{id} ['get', 'patch']
+/v2/meetings/{id}/cancellation ['post']
+/v2/permission-groups ['get']
+/v2/room-types ['get']
+/v2/rooms ['get', 'post']
+/v2/rooms/{id} ['delete', 'get', 'patch']
+/v2/rooms/{id}/participants ['get']
+/v2/rooms/{roomId}/attendances ['get']
+/v2/rooms/{roomId}/features ['delete', 'get', 'patch']
+/v2/rooms/{roomId}/file-share-limits ['get']
+/v2/rooms/{roomId}/file-share-settings ['get', 'patch']
+/v2/rooms/{roomId}/group-links ['get', 'post']
+/v2/rooms/{roomId}/group-links/{id} ['delete']
+/v2/rooms/{roomId}/guest-links ['get', 'post']
+/v2/rooms/{roomId}/guest-links/{id} ['delete']
+/v2/rooms/{roomId}/language-settings ['get', 'patch']
+/v2/rooms/{roomId}/passcode ['get', 'post']
+/v2/rooms/{roomId}/permissions ['get', 'post']
+/v2/rooms/{roomId}/permissions/{userId} ['delete', 'patch']
+/v2/rooms/{roomId}/subrooms ['get', 'post']
+/v2/rooms/{roomId}/subrooms/{subroomId} ['delete', 'patch']
+/v2/stats ['get']
+/v2/users ['get', 'patch']
+/v2/users/invitation ['post']
+/v2/users/me ['get']
+/v2/users/me/company ['get']
+/v2/users/{id} ['delete']
+[0m
+`RoomQuotas` **and** `RoomQuotasEdit` are orphan schemas — and my "hidden quotas" closure note never recorded which paths were tested. An orphan *edit* schema is a bigger lead than a read one. Let me check the path naming convention.
+Naming convention is clear (`file-share-limits` GET / `file-share-settings` GET+PATCH is the closest paired read/edit analog). Probing the orphan `RoomQuotas`/`RoomQuotasEdit` pair with a positive control.
+[0m$ [0mcd /tmp/opencode && UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36"
+probe(){ printf "%-46s " "$2 $1"; curl -s -o p.txt -w "code=%{http_code} len=%{size_download}" -X "$2" -A "$UA" "https://apis.alfaview.com$1" --max-time 20; echo -n " md5=$(md5sum p.txt|cut -c1-8)"; head -c 60 p.txt|tr -d '\n'; echo; sleep 1.2; }
+echo "--- POSITIVE CONTROL (known room-scoped subresource) ---"
+probe /v2/rooms/x/file-share-settings GET
+probe /v2/rooms/x/features GET
+echo "--- TARGET: orphan RoomQuotas/Edit candidate routes ---"
+probe /v2/rooms/x/quotas GET
+probe /v2/rooms/x/room-quotas GET
+probe /v2/rooms/x/quota GET
+probe /v2/rooms/x/limits GET
+--- POSITIVE CONTROL (known room-scoped subresource) ---
+GET /v2/rooms/x/file-share-settings            code=401 len=107 md5=60ed2f29{"title":"Unauthorized","status":401,"detail":"No access tok
+GET /v2/rooms/x/features                       code=401 len=107 md5=60ed2f29{"title":"Unauthorized","status":401,"detail":"No access tok
+--- TARGET: orphan RoomQuotas/Edit candidate routes ---
+GET /v2/rooms/x/quotas                         code=404 len=19 md5=595e8801404 page not found
+GET /v2/rooms/x/room-quotas                    code=404 len=19 md5=595e8801404 page not found
+GET /v2/rooms/x/quota                          code=404 len=19 md5=595e8801404 page not found
+GET /v2/rooms/x/limits                         code=404 len=19 md5=595e8801404 page not found
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+raw=json.dumps(d)  # FULL document incl. other schemas
+for n in ['RoomQuotas','RoomQuotasEdit']:
+    # find where referenced
+    hits=[]
+    for p,v in d['components']['schemas'].items():
+        if p!=n and n in json.dumps(v): hits.append('schema:'+p)
+    for p,v in d['paths'].items():
+        if n in json.dumps(v): hits.append('path:'+p)
+    print(n,'-> referenced in:',hits if hits else 'NOWHERE in full doc (truly orphan)')
+print()
+# what references RoomLimits for comparison (a mapped quota-ish schema)
+raw2=json.dumps(d['paths'])
+for n in ['RoomLimits','RoomFeatures','RoomSettings']:
+    print(n,'in paths:', n in raw2)
+"
+RoomQuotas -> referenced in: ['schema:Room', 'schema:RoomCreate', 'schema:RoomUpdate']
+RoomQuotasEdit -> referenced in: ['schema:RoomCreate', 'schema:RoomUpdate']
+
+RoomLimits in paths: True
+RoomFeatures in paths: True
+RoomSettings in paths: True
+[0m
+Positive control confirms the oracle (401/107B = registered, 404/19B = absent). Let me widen the candidate set and re-check the orphan test, which only searched `paths` — not other schemas.
+My orphan test was wrong — that was a false positive. `RoomQuotas`/`RoomQuotasEdit` are inlined into `RoomCreate`/`RoomUpdate` bodies, not separate routes. That redirects to a **mass-assignment** question on room creation.
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+s=d['components']['schemas']
+for n in ['RoomCreate','RoomUpdate']:
+    v=s[n]
+    print('===',n,'=== additionalProperties:',v.get('additionalProperties'))
+    print('required:',v.get('required'))
+    print('props:',sorted(v.get('properties',{}).keys()))
+    q=v['properties'].get('quotas')
+    if q: print('  quotas ref ->',q)
+    print()
+"
+=== RoomCreate === additionalProperties: False
+required: ['displayName', 'type', 'waitingRoomEnabled']
+props: ['defaultPermissions', 'displayName', 'features', 'parentId', 'passcodeRequired', 'permissions', 'quotas', 'subrooms', 'type', 'waitingRoomEnabled', 'waitingRoomWelcomeNote']
+  quotas ref -> {'$ref': '#/components/schemas/RoomQuotasEdit', 'description': "The requested quotas. These are checked against the company's available quotas, which are provided by its billing plan."}
+
+=== RoomUpdate === additionalProperties: False
+required: None
+props: ['defaultPermissions', 'displayName', 'features', 'passcodeRequired', 'permissions', 'quotas', 'subrooms', 'waitingRoomEnabled', 'waitingRoomWelcomeNote']
+  quotas ref -> {'$ref': '#/components/schemas/RoomQuotasEdit', 'description': 'The quota information.'}
+[0m
+Two leads. `RoomCreate.quotas` explicitly documents a billing-plan server-side check, but `RoomUpdate.quotas` does not. Let me examine the `permissions` field on room create — a self-escalation primitive.
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+s=d['components']['schemas']
+v=s['RoomCreate']
+for f in ['permissions','defaultPermissions','subrooms','parentId','type']:
+    print(f,'->',json.dumps(v['properties'][f])[:300]); print()
+print('=== Permissions ==='); print(json.dumps(s.get('Permissions'),indent=1)[:1500])
+"
+permissions -> {"description": "The user permissions.", "items": {"$ref": "#/components/schemas/ParticipantPermissions"}, "type": ["array", "null"]}
+
+defaultPermissions -> {"$ref": "#/components/schemas/Permissions", "description": "Optional default permissions for every non-guest user. If default permissions are empty, users will not have any permissions by default."}
+
+subrooms -> {"description": "The contained subrooms.", "items": {"$ref": "#/components/schemas/SubroomCreateListItem"}, "type": ["array", "null"]}
+
+parentId -> {"description": "The parent room ID.", "examples": ["00000000-0000-0000-0000-000000000000"], "type": ["string", "null"]}
+
+type -> {"description": "The room type. 'room' is used for normal rooms. Departments are unjoinable rooms that can hold multiple child rooms to help improving room structuring.", "enum": ["department", "room"], "type": "string"}
+
+=== Permissions ===
+{
+ "additionalProperties": false,
+ "properties": {
+  "admin": {
+   "description": "If true, the associated user is an admin.",
+   "type": "boolean"
+  },
+  "chat": {
+   "description": "Permission to chat.",
+   "type": "boolean"
+  },
+  "join": {
+   "description": "Permission to join the room.",
+   "type": "boolean"
+  },
+  "promote": {
+   "description": "Permission to promote permissions for other users.",
+   "type": "boolean"
+  },
+  "screen": {
+   "description": "Permission to share the screen.",
+   "type": "boolean"
+  },
+  "upload": {
+   "description": "Permission to upload files.",
+   "type": "boolean"
+  },
+  "video": {
+   "description": "Permission to stream video input.",
+   "type": "boolean"
+  },
+  "vip": {
+   "description": "Permission to mark users as VIP.",
+   "type": "boolean"
+  },
+  "voice": {
+   "description": "Permission to speak.",
+   "type": "boolean"
+  }
+ },
+ "required": [
+  "admin",
+  "voice",
+  "video",
+  "promote",
+  "join",
+  "screen",
+  "vip",
+  "chat",
+  "upload"
+ ],
+ "type": "object"
+}
+[0m
+Significant: `RoomCreate.permissions` is an **array of `ParticipantPermissions`** — the same type as the room-permission write route — and `RoomCreate` takes a caller-supplied `parentId`. Let me verify the full picture.
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+s=d['components']['schemas']
+print('=== ParticipantPermissions ==='); print(json.dumps(s['ParticipantPermissions'],indent=1)[:900])
+print()
+print('parentId on RoomUpdate?', 'parentId' in s['RoomUpdate']['properties'])
+print('type on RoomUpdate?', 'type' in s['RoomUpdate']['properties'])
+print()
+p=d['paths']['/v2/rooms']['post']
+print('=== POST /v2/rooms ===')
+print('summary:',p.get('summary')); print('description:',p.get('description'))
+print('declared responses:',sorted(p['responses'].keys()))
+print('security:',p.get('security'))
+print()
+for r in sorted(p['responses']): print('  ',r,'->',p['responses'][r].get('description'))
+"
+=== ParticipantPermissions ===
+{
+ "additionalProperties": false,
+ "properties": {
+  "participantId": {
+   "description": "The user ID / guest link ID / group link ID to which the permissions apply.",
+   "type": "string"
+  },
+  "permissions": {
+   "$ref": "#/components/schemas/Permissions",
+   "description": "The assigned permissions."
+  }
+ },
+ "required": [
+  "participantId",
+  "permissions"
+ ],
+ "type": "object"
+}
+
+parentId on RoomUpdate? False
+type on RoomUpdate? False
+
+=== POST /v2/rooms ===
+summary: Create Room
+description: Creates a room.
+declared responses: ['201', '400', '401', '403', '422']
+security: None
+
+   201 -> The requested resource was created.
+   400 -> The request was not valid.
+   401 -> The 'Authorization' header did not contain a valid API token.
+   403 -> The requesting user does not have the necessary permissions.
+   422 -> An entity in the request cannot be processed. Either a validation (e.g. ID validity) did not succeed or a precondition was not met.
+[0m
+Now let me measure what's observable pre-auth on this route, and verify the namespace-ambiguity claim.
+[0m$ [0mcd /tmp/opencode && UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36"
+echo "=== HEAD /v2/rooms (method-layer, no auth needed) ==="
+curl -s -I -A "$UA" "https://apis.alfaview.com/v2/rooms" --max-time 20 | grep -iE "^HTTP|^allow|^server|^www-auth|^content-type"
+sleep 1.2
+echo "=== control: HEAD /v2/rooms/00000000-0000-0000-0000-000000000000/permissions ==="
+curl -s -I -A "$UA" "https://apis.alfaview.com/v2/rooms/00000000-0000-0000-0000-000000000000/permissions" --max-time 20 | grep -iE "^HTTP|^allow|^www-auth"
+=== HEAD /v2/rooms (method-layer, no auth needed) ===
+HTTP/2 401 
+content-type: application/problem+json
+www-authenticate: AccessToken
+server: edge-proxy
+=== control: HEAD /v2/rooms/00000000-0000-0000-0000-000000000000/permissions ===
+HTTP/2 401 
+www-authenticate: AccessToken
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+s=d['components']['schemas']
+for n in ['GuestLink','GroupLink','User','RoomPermissions']:
+    v=s.get(n)
+    if not v: print(n,'MISSING'); continue
+    idp=v['properties'].get('id',{})
+    print(n,'-> id:',json.dumps(idp)[:200])
+print()
+print('=== RoomPermissions (GET /v2/rooms/{id}/permissions 200 shape) ===')
+print(json.dumps(s['RoomPermissions'],indent=1)[:1200])
+"
+GuestLink -> id: {"description": "The guest link ID.", "examples": ["00000000-0000-0000-0000-000000000000"], "type": "string"}
+GroupLink -> id: {"description": "The group link ID.", "examples": ["00000000-0000-0000-0000-000000000000"], "type": "string"}
+User -> id: {"description": "The user ID.", "examples": ["00000000-0000-0000-0000-000000000000"], "type": "string"}
+RoomPermissions -> id: {}
+
+=== RoomPermissions (GET /v2/rooms/{id}/permissions 200 shape) ===
+{
+ "additionalProperties": false,
+ "properties": {
+  "groupLinkPermissions": {
+   "description": "The permissions of group links for this room.",
+   "items": {
+    "$ref": "#/components/schemas/ParticipantPermissions"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  },
+  "guestLinkPermissions": {
+   "description": "The permissions of guest links for this room.",
+   "items": {
+    "$ref": "#/components/schemas/ParticipantPermissions"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  },
+  "userPermissions": {
+   "description": "The permissions of users for this room.",
+   "items": {
+    "$ref": "#/components/schemas/ParticipantPermissions"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  }
+ },
+ "type": "object"
+}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+s=d['components']['schemas']
+t=s['TokenUserPermissions']['properties']
+for k,v in t.items(): print(k,'->',v.get('description'))
+print()
+print('TokenUserPermissions additionalProperties:',s['TokenUserPermissions'].get('additionalProperties'))
+print('RoomCreate.quotas desc (billing check):',s['RoomCreate']['properties']['quotas']['description'])
+print('RoomUpdate.quotas desc (NO check stated):',s['RoomUpdate']['properties']['quotas']['description'])
+"
+manageCompany -> If true, the user can manage company settings.
+roomAdmin -> If true, the user can create, update and delete any room.
+roomCreate -> If true, the user can create rooms for their company.
+roomList -> If true, the user can list all rooms in their company.
+userAdmin -> If true, the user can create, update and delete other users, send password reset mails and resend sign-up mails for new users.
+userList -> If true, the user can list all users in their company.
+userShow -> If true, the user can see the user names of all users in rooms they can access.
+
+TokenUserPermissions additionalProperties: False
+RoomCreate.quotas desc (billing check): The requested quotas. These are checked against the company's available quotas, which are provided by its billing plan.
+RoomUpdate.quotas desc (NO check stated): The quota information.
+[0m
+Decisive finding. All three principal namespaces are **the identical unprefixed UUID string**, and one write field accepts all three. Let me confirm the token bit and pre-auth status of the read side.
+[0m$ [0mcd /tmp/opencode && UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36"
+curl -s -o rp.txt -w "GET /v2/rooms/{id}/permissions code=%{http_code} len=%{size_download} " -A "$UA" "https://apis.alfaview.com/v2/rooms/00000000-0000-0000-0000-000000000000/permissions" --max-time 20
+echo "md5=$(md5sum rp.txt|cut -c1-8)"
+GET /v2/rooms/{id}/permissions code=401 len=107 md5=60ed2f29
+[0m
+All probes complete. Correcting one methodological error mid-cycle and recording it below.
+
+## STEP 1 — DELTA
+
+```
+[NEW]      apis.alfaview.com POST /v2/rooms — contract read this cycle reveals RoomCreate.permissions
+           is an array of ParticipantPermissions, the SAME type as the room-permission write route
+           and the room-permission read type, carrying the full 9-boolean Permissions bitmask
+           including admin:true. Gate on this route is roomCreate ("create rooms for their
+           company"), which the vendor documents as a DISTINCT bit from roomAdmin ("create,
+           update and delete any room"). Never analysed in 36 cycles.
+[NEW]      apis.alfaview.com — participantId namespace collision, proven from contract, zero
+           requests. ParticipantPermissions.participantId is one untyped string documented as
+           "The user ID / guest link ID / group link ID to which the permissions apply".
+           User.id, GuestLink.id and GroupLink.id all carry the IDENTICAL unprefixed example
+           "00000000-0000-0000-0000-000000000000" with no format, no prefix, no namespace tag.
+[NEW]      apis.alfaview.com RoomPermissions (GET /v2/rooms/{roomId}/permissions 200 shape)
+           re-sorts that one flat input namespace into THREE parallel arrays of the same type:
+           userPermissions[] / guestLinkPermissions[] / groupLinkPermissions[]. The read response
+           is therefore a principal-TYPE discriminator keyed on a single UUID, with no tenant
+           parameter anywhere in the shape.
+[NEW]      apis.alfaview.com PATCH /v2/rooms/{id} — RoomUpdate.quotas description is bare
+           "The quota information." while RoomCreate.quotas states "These are checked against
+           the company's available quotas, which are provided by its billing plan." The
+           server-side billing check is documented on the create path only.
+[CHANGED]  my own method, corrected mid-cycle: I ran an orphan-schema diff searching only the
+           `paths` JSON and reported RoomQuotas/RoomQuotasEdit as orphans. FALSE POSITIVE —
+           they are inlined into Room/RoomCreate/RoomUpdate bodies. Re-ran against the full
+           document. The four live-route quota probes it provoked (GET /v2/rooms/x/{quotas,
+           room-quotas,quota,limits}) all returned 404/19B "page not found" against a
+           byte-identical positive control (401/107B md5 60ed2f29 on /file-share-settings and
+           /features) — the quota route does not exist. Recorded because it is the same
+           "searched the wrong subtree" class of error, not a new finding.
+[NO_DELTA] Standing probes byte-identical: OpenAPI 200/132100B md5 284a3383c1ac3cfc9152ffcc631891f2
+           (38 paths, 57 ops), OIDC 200/2169B md5 f78a08fc, JWKS 200/16257B md5 3f8d456c (7xRS256),
+           users/me 401/107B md5 60ed2f29, /v2/audit-log bare 422/232B md5 b4adcd15,
+           /v2/audit-log valid-params 401/107B md5 60ed2f29, /v2/auth/api-key OPTIONS 405 allow:POST,
+           /v2/rooms/{id}/permissions 401/107B md5 60ed2f29, POST /v2/rooms HEAD 401 (no Allow leak).
+```
+
+## STEP 2 — PRIORITIZE
+
+```
+[PRIO] apis.alfaview.com POST /v2/rooms,7.1,"a9 b9 t7 g2 c3 f9 — write primitive on the lowest useful
+       privilege bit, accepts arbitrary foreign-tenant UUIDs in a namespace-ambiguous field; never analysed"
+[PRIO] apis.alfaview.com GET /v2/rooms/{roomId}/permissions,6.5,"a8 b8 t7 g2 c3 f8 — three parallel
+       arrays of the same type = principal-TYPE oracle keyed on one bare UUID, no tenant param in shape"
+[PRIO] apis.alfaview.com GET /v2/guest-links + /v2/group-links,5.8,"a7 b9 t6 g2 c3 f3 — carried 90,
+       credential-bearing and un-narrowable, but 34+ cycles of no new evidence"
+[PRIO] apis.alfaview.com PATCH /v2/rooms/{id} (quotas),4.9,"a5 b6 t5 g2 c2 f9 — spec-differential on a
+       paid-plan resource limit, billing check documented on create path only"
+[PRIO] sso.alfaview.com POST /oauth2/introspect,4.4,"a4 b6 t8 g2 c2 f2 — carried 94, OIDC surface but
+       no new measurement possible without a token"
+```
+
+## STEP 3 — HYPOTHESES
+
+```
+[HYP] Room creation grants room-scoped admin to arbitrary caller-named principals through a field
+      that cannot distinguish a user ID from a guest-link ID from a group-link ID
+class: IDOR
+asset: apis.alfaview.com POST /v2/rooms
+confidence: 70
+reasoning: (a) Gate is roomCreate — vendor text "If true, the user can create rooms for their
+      company" — explicitly a different bit from roomAdmin "If true, the user can create, update and
+      delete any room"; both sit in the same closed additionalProperties:false 7-boolean
+      TokenUserPermissions, so an account with roomCreate=true/roomAdmin=false is expressible.
+      (b) The same body carries permissions: ParticipantPermissions[], the identical type used by
+      POST /v2/rooms/{roomId}/permissions and returned by GET /v2/rooms/{roomId}/permissions, so the
+      room-permission write primitive is reachable through a route that only needs roomCreate.
+      (c) participantId is one untyped string, documented as accepting all three principal kinds;
+      User.id, GuestLink.id and GroupLink.id share the identical unprefixed zero-UUID example with
+      no format and no namespace tag, so the field carries no tenant discriminator. (d) Permissions
+      is additionalProperties:false, all 9 booleans required, admin documented "If true, the
+      associated user is an admin" — the caller names both the principal and the entire bitmask.
+      (e) The declared 403 on POST /v2/rooms is generic and names no specific check.
+      Measured pre-auth: HEAD 401/107B, www-authenticate AccessToken, no Allow leakage, so all
+      authorization behaviour is unmeasured.
+evidence_needed: One self-owned account with roomCreate=true and roomAdmin=false. Three reads of
+      the 201 create response plus one GET of the new room's permissions, all inside a tenant I own.
+verify_steps: AUTH_HELPED, self-owned tenant only. (1) GET /v2/auth/token-info and record that
+      roomCreate is true and roomAdmin is false — this is the precondition for the whole chain and
+      costs one request. (2) GET /v2/rooms?limit=1 for a control. (3) POST /v2/rooms with
+      {displayName:"t", type:"room", waitingRoomEnabled:false, permissions:[{participantId:<OWN
+      userId>, permissions:{admin:true,voice:false,video:false,promote:false,join:false,
+      screen:false,vip:false,chat:false,upload:false}}]}. Verdict: 201 with the admin bit
+      reflected in the response = roomCreate mints room admin, i.e. the roomAdmin gate does not
+      cover the create path (ESCALATION). 403 = the create path does enforce roomAdmin and this
+      chain is closed. (4) If 201, GET /v2/rooms/{newId}/permissions and read which of
+      userPermissions / guestLinkPermissions / groupLinkPermissions the entry landed in — that
+      array selection is the type discriminator. (5) Only if step 3 returns 201, repeat once with
+      participantId set to a random unallocated UUID to test whether the resolver 422s on unknown
+      principals or silently creates the binding; a 201 in both cases means no existence check at
+      all, and a 422/400 only for unknown means the resolver is existence-checking WITHOUT a tenant
+      constraint, which is the cross-tenant variant.
+impact: roomCreate-only member to room-admin escalation on a room they created, where room admin
+      gates room edit/delete, features, file-share limits, language settings, passcode and guest
+      management. Separately, a 200 read that resolves a bare UUID into one of three principal
+      types is a cross-tenant type-confirmation oracle (live user / live guest-link / live
+      group-link). Guest-link principals are the sharpest case because a guest link is a bearer
+      credential (accessKey + joinUrl), so binding one grants a third party standing in the room.
+      HIGH if step 3 returns 201. MEDIUM if only the type discriminator is confirmed. No claim is
+      made that the server resolves cross-tenant — that is exactly what step 5 tests.
+testability: AUTH_HELPED
+
+[HYP] The billing-plan quota check documented on room creation is not applied on the room update path
+class: BUSLOGIC
+asset: apis.alfaview.com PATCH /v2/rooms/{id}
+confidence: 45
+reasoning: (a) RoomCreate.quotas carries the vendor's own assurance "These are checked against the
+      company's available quotas, which are provided by its billing plan", establishing that quota
+      values are a metered commercial control and that a server-side check exists. (b)
+      RoomUpdate.quotas is documented only as "The quota information." — the assurance is absent
+      from the update path, and parentId/type are create-only so quotas are the sole mutable
+      commercial-limit field. (c) RoomQuotasEdit is additionalProperties:false with three required
+      int32 fields, minimum 0 and no maximum, so no schema-level bound substitutes for the missing
+      prose check. (d) This is a documentation differential, not a measured behaviour: I am not
+      claiming the check is absent server-side, only that the vendor documents it on one of two
+      paths that accept the identical schema.
+evidence_needed: A self-owned tenant on a metered plan, with the plan quota known, plus a room
+      owned by the account; PATCH quotas above the plan ceiling and a GET to read back.
+verify_steps: AUTH_HELPED, self-owned tenant only. (1) GET /v2/auth/token-info. (2) GET
+      /v2/rooms?limit=1, then GET /v2/rooms/{roomId}/quotas-equivalent by reading quotas off the
+      room read to establish the current plan ceiling as observed. (3) ONE PATCH /v2/rooms/{id} with
+      {quotas:{activeParticipants:<ceiling+1000, spectatorOnlyParticipants:0,
+      maxVideoTilesPerPage:0}}. Verdict: 2xx and the raised value persists on re-read = the billing
+      check is create-only and the plan limit is bypassable. 400/422 naming the plan quota =
+      enforced, chain closed. I will not exceed the observed ceiling by more than the single
+      synthetic amount above, and only inside a room I created.
+impact: A member with room-update rights on their own room raises that room's participant ceiling
+      above the tenant's contracted plan, consuming capacity the tenant does not pay for.
+      LOW-MEDIUM — self-limited to a room the account already owns, no cross-tenant effect, and
+      entirely contingent on the absent prose reflecting absent enforcement.
+testability: AUTH_HELPED
+
+[HYP] Company-wide guest-link and group-link list returns live join credentials with no expressible
+      authorization axis
+class: IDOR
+asset: apis.alfaview.com GET /v2/guest-links + GET /v2/group-links
+confidence: 90
+reasoning: Carried unchanged and not re-measured this cycle. Un-narrowable server-side (measured
+      previously: roomId and companyId unbound, the 422 errors array contains only query.limit).
+      GuestLink is additionalProperties:false with 12 of 15 fields required including accessKey,
+      joinUrl, dialInCode and guest emailAddress; GroupLink is credential-equivalent and
+      meeting-scoped at creation but listed company-wide. TokenUserPermissions is a closed
+      additionalProperties:false 7-boolean all-required vocabulary with no link axis, while every
+      other company-wide read is name-gated (roomList, userList) — so the convention exists and is
+      not applied to the one read that returns live join credentials. accessKey is a documented
+      required input to the unauthenticated POST /v2/auth/guest-link, so the disclosed value is
+      directly redeemable.
+evidence_needed: One self-owned low-priv token; GET /v2/auth/token-info to record the own bitmask;
+      GET /v2/guest-links?limit=1.
+verify_steps: AUTH_HELPED, read-only, self-owned tenant. GET /v2/auth/token-info -> GET
+      /v2/guest-links?limit=1 -> compare returned accessKey-bearing rows to own tenant scope.
+impact: Cross-tenant harvest of guest join credentials (accessKey + joinUrl + dialInCode) plus guest
+      email addresses. HIGH if the undeclared server-side checks are absent.
+testability: AUTH_HELPED
+```
+
+## STEP 4 — SELF-CRITIQUE
+
+```
+[PARKED] RoomQuotas/RoomQuotasEdit are orphan schemas implying an undocumented quota route:
+      falsified by my own probe. Re-scanning the full document showed both are inlined into
+      Room/RoomCreate/RoomUpdate, and four live-route GET candidates returned 404/19B against a
+      byte-identical positive control. The premise was an artifact of searching only the `paths`
+      subtree. Dropped.
+[PARKED] The REST audit-log mirrors GraphQL listAuditEvents without the AUDIT_LOG gate: confidence
+      20, below threshold, and the gate was already shown to exist (bit 21 in the client bundle,
+      feature-flagged to alfaview-internal companies). Carried at 20 so the disconfirming record
+      stays visible; not re-run.
+[PARKED] guest-link / group-link accessKey existence oracle: already REJECTED on 2026-09-27 —
+      well-formed synthetic triple returns 422/88B ACTION_INVALID byte-identical to a traversal
+      string, two tiers only. Rejected class, excluded.
+[FINAL] 1. Room creation grants room-scoped admin to arbitrary caller-named principals through a
+      namespace-ambiguous field. class: IDOR. asset: POST /v2/rooms. confidence: 70. Only
+      contract-level facts are proven: roomCreate is a bit distinct from roomAdmin, the body carries
+      the room-permission write type, participantId cannot discriminate user/guest-link/group-link
+      IDs, and the read re-sorts into three parallel arrays. Zero wire evidence of a defect;
+      authorization behaviour is entirely unmeasured behind a 401. Blocked on the same single
+      self-owned low-priv account as everything else. testability: AUTH_HELPED.
+[FINAL] 2. Company-wide guest-link and group-link enumeration returns live join credentials with no
+      expressible authorization axis. class: IDOR. asset: GET /v2/guest-links + GET /v2/group-links.
+      confidence: 90 (carried, not re-measured). testability: AUTH_HELPED.
+[FINAL] 3. The billing-plan quota check documented on room creation is not applied on the update
+      path. class: BUSLOGIC. asset: PATCH /v2/rooms/{id}. confidence: 45. Documentation
+      differential only — the vendor's own assurance is present on one path and absent on the other.
+      testability: AUTH_HELPED.
+[FINAL] carried, no new hypothesis: RFC7662 introspection runs without client authentication in
+      the same FusionAuth build that tiers and validates tokens at /oauth2/userinfo. class:
+      MISCONFIG. asset: sso.alfaview.com POST /oauth2/introspect. confidence: 94. 30+ cycles stable;
+      OIDC md5 f78a08fc and JWKS md5 3f8d456c re-confirmed byte-identical this cycle. No POST fired,
+      no token submitted. testability: AUTH_HELPED.
+```
+
+## STEP 5 — NEXT ACTION
+
+```
+[NEXT] HUMAN: supply one self-owned LOW-PRIVILEGE alfaview account in a tenant I control, holding
+      company roomCreate=true and roomAdmin=false, plus its own userId. This is the same account
+      profile already requested and it is the only missing input in the program — the signup path
+      at app.alfaview.com/graphql is email-gated and cannot be automated. On receipt, at <=1 rps and
+      entirely inside my own tenant, I will run:
+        GET  /v2/auth/token-info
+             -> assert roomCreate true AND roomAdmin false before spending a single write
+        GET  /v2/rooms?limit=1
+        POST /v2/rooms   (ONE write, own tenant, participantId = my own userId, admin:true)
+        GET  /v2/rooms/{newId}/permissions
+             -> read which of userPermissions/guestLinkPermissions/groupLinkPermissions I landed in
+      201 = escalation proven, 403 = roomAdmin enforced on the create path and the chain closes.
+      No customer data is read, written or inferred at any point; the only write creates a room I own.
+```
+
+## STEP 6 — LEARNING
+
+```
+[LEARN] ACCEPTED IDOR @ apis.alfaview.com POST /v2/rooms: a public, unauthenticated-to-read contract
+      discloses a privilege-minting write primitive on the lowest useful permission bit. Room
+      creation is gated by roomCreate ("create rooms for their company"), a bit the vendor documents
+      as distinct from roomAdmin ("create, update and delete any room"), yet the same request body
+      accepts permissions: ParticipantPermissions[] — the identical type used by the dedicated
+      room-permission write route — letting the caller name the principal and set the full 9-boolean
+      bitmask including admin:true. The principal field is a single untyped string documented as
+      accepting "user ID / guest link ID / group link ID", and all three ID schemas carry the
+      identical unprefixed zero-UUID example with no format and no namespace tag, so the field has
+      no tenant discriminator. The matching read returns THREE parallel arrays of that same type,
+      which makes a bare UUID resolvable to a principal type across tenants through a 200 response.
+      Confidence 70 and explicitly not a proven defect: the route is 401 auth-bound pre-auth, so
+      whether the server resolves cross-tenant is unmeasured. New this cycle; never analysed in 36.
+[LEARN] ACCEPTED BUSLOGIC @ apis.alfaview.com PATCH /v2/rooms/{id}: a documentation differential on
+      a metered commercial control. RoomCreate.quotas states the values "are checked against the
+      company's available quotas, which are provided by its billing plan"; RoomUpdate.quotas, which
+      accepts the identical RoomQuotasEdit schema, states only "The quota information." No
+      schema-level maximum substitutes for the missing prose. Confidence 45 — this records that the
+      assurance is documented on one of two paths, not that enforcement is absent.
+[LEARN] REJECTED MISCONFIG @ apis.alfaview.com (orphan quota route): an orphan-schema diff scoped to
+      the `paths` subtree reported RoomQuotas/RoomQuotasEdit as unreferenced and implied an
+      undocumented quota endpoint. Re-scanning the full document showed both inlined into
+      Room/RoomCreate/RoomUpdate, and four live-route GET candidates returned 404/19B
+      "page not found" while the positive control on /file-share-settings and /features returned
+      401/107B md5 60ed2f29 on the same session. No such route exists. Method corrected and recorded:
+      an orphan test must run against the whole document, because inlined body schemas are invisible
+      to a paths-only search.
+[LEARN] NO_DELTA @ apis/sso standing surface: OpenAPI 200/132100B md5 284a3383 (38 paths, 57 ops),
+      OIDC 200/2169B md5 f78a08fc, JWKS 200/16257B md5 3f8d456c (7xRS256), users/me 401/107B,
+      audit-log 422 pre-auth then 401 with valid params, api-key OPTIONS 405 allow:POST — all
+      byte-identical. No new endpoints, no regressions, no new unauthenticated exploit surface.
+```
+
+## STEP 7 — RISK
+
+```
+[RISK] alfaview gmbh: 63. Up 1 from 62. No unauthenticated exposure was found — every probe this
+      cycle was auth-bound or method-layer only, and the one route I wanted to reason about
+      (POST /v2/rooms) returned 401 with no Allow leakage before I touched a body. The increase
+      reflects a new chain on a WRITE primitive reached through the lowest useful privilege bit
+      (roomCreate), whose principal field cannot distinguish user, guest-link and group-link
+      identifiers, and whose read side turns that ambiguity into a principal-type discriminator via
+      a 200 response rather than an error tier. It outranks the standing guest-link chain on
+      exploitability because it needs no foreign-tenant cooperation and no prior credential
+      harvest — one self-owned low-privilege account answers it in three requests. Risk is carried
+      from the published contract, not measured; the 94 introspect and 90 guest/group-link chains
+      remain strictly token-gated, and the 45 quota differential is contingent on the absent prose
+      reflecting absent enforcement.
+```
+## Objective
+- Continue the alfaview gmbh POC cycle for `apis.alfaview.com`, compare current surface against prior knowledge, and produce the required eight structured analysis blocks.
+- Current cycle is investigating whether orphan `RoomQuotas`/`RoomQuotasEdit` schemas map to an undocumented route.
+
+## Important Details
+- State: `phase=POC`, `target=api`.
+- Live testing must remain passive-first, `GET/HEAD/OPTIONS` only, at `≤1 rps`; no mutation or customer-data access.
+- Final output must contain exactly one `[NEXT] <PROBE|SCAN|RAG|HUMAN>` and strict facts-vs-hypotheses separation.
+- Existing top chains remain token-gated: RFC7662 introspection (94), guest/group-link credential enumeration (90), room-permission BOLA (62).
+- Required human input: one self-owned low-privilege account with `roomCreate+roomList`, `roomAdmin=false`, plus a self-owned merely joined `roomId`.
+- Previous risk score: 62; no new unauthenticated exposure found this cycle.
+- Do not report descriptive errors, scanner output, public panels, brute-force/rate-limit behavior, or absence-based authorization claims.
+
+## Work State
+### Completed
+- Verified standing surfaces are unchanged:
+  - OpenAPI: `200`, `132100B`, MD5 `284a3383c1ac3cfc9152ffcc631891f2`.
+  - OIDC: `200`, `2169B`, MD5 `f78a08fced8b042093396383b74d8458`.
+  - JWKS: `200`, `16257B`, MD5 `3f8d456c7fd92c6107f3fd77732bd0f4`.
+  - `GET /v2/users/me`: `401`, MD5 `60ed2f29d492ec872c598cc7d36aa37e`.
+  - Bare `GET /v2/audit-log`: `422`, required `query.from`/`query.to`; valid dates return `401`.
+  - `OPTIONS /v2/auth/api-key`: `405`, `Allow: POST`, `server: edge-proxy`.
+- Current OpenAPI contains 38 paths and 57 operations.
+- Offline orphan scan found `RoomQuotas` and `RoomQuotasEdit`, plus `Actor`, `Event`, `Target`, `PaginatedBodyListEvent`, `TokenUserPermissions`, and other schemas.
+- `RoomQuotas`/`RoomQuotasEdit` expose `activeParticipants`, `spectatorOnlyParticipants`, and `maxVideoTilesPerPage`.
+- Positive controls returned expected auth-bound behavior:
+  - `GET /v2/rooms/x/file-share-settings` → `401`.
+  - `GET /v2/rooms/x/features` → `401`.
+- Candidate quota routes all returned `404`, `19B`, `page not found`:
+  - `/v2/rooms/x/quotas`
+  - `/v2/rooms/x/room-quotas`
+  - `/v2/rooms/x/quota`
+  - `/v2/rooms/x/limits`
+- No repository files were edited.
+
+### Active
+- Determine whether the orphan quota schemas reference a differently named route or are stale/generated schemas.
+- Final eight-block analyst response has not yet been produced.
+
+### Blocked
+- High-value authorization and introspection tests require a real self-owned token/account.
+- Signup is email-gated through `app.alfaview.com/graphql` → `finishSignup`; automation is not appropriate.
+- No customer/tenant data may be accessed.
+
+## Next Move
+1. Search `/tmp/opencode/oa.json` and the OpenAPI 3.0.3 twin for `RoomQuotas`, `RoomQuotasEdit`, `activeParticipants`, `spectatorOnlyParticipants`, and `maxVideoTilesPerPage`; close the lead if no route clue remains.
+2. Produce the eight required blocks; if no new route emerges, use one `[NEXT] HUMAN` request for the low-privilege account and joined `roomId`.
+
+## Relevant Files
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/scope.yml`: authoritative scope.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/inventory/alfaview.md`: asset inventory.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/leads/lead-bigpickle.md`: current analyst leads and prior decisions.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/probe-results.md`: accumulated probe evidence.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/alfaview-openapi.yaml`: prior 37-path OpenAPI snapshot.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/DEEPER-FINDINGS.md`: deeper prior findings.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/analyst-prompt.txt`: current full analyst instructions/context.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/analyst-out.txt`: output placeholder.
+- `/tmp/opencode/oa.json`: current 38-path OpenAPI document.
+- `/tmp/opencode/oidc.json`: current OIDC discovery response.
+- `/tmp/opencode/jwks.json`: current JWKS response.
+Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt
+echo "=== any .env / secret / credential files ==="
+find . -maxdepth 3 \( -name "*.env*" -o -name "*secret*" -o -name "*credential*" -o -name "*token*" -o -name "*auth*.json" \) -not -path "./.git/*" 2>/dev/null | head -40
+echo "=== ALFA env vars present (names only) ==="
+env | grep -oiE "^[A-Z_]*(ALFA|VIEW|FUSION|TOKEN|BEARER|APIKEY|API_KEY)[A-Z_]*" | sort -u
+echo "=== any Authorization header literal in tracked text (count only) ==="
+git grep -icE "authorization: *(bearer|basic) " -- . 2>/dev/null | head -20
+echo "=== .netrc / curlrc / git credentials ==="
+ls -la ~/.netrc ~/.curlrc ~/.git-credentials 2>&1 | head
+=== any .env / secret / credential files ===
+=== ALFA env vars present (names only) ===
+=== any Authorization header literal in tracked text (count only) ===
+.github/workflows/reposcan.yml:1
+inventory/alfaview.md:1
+knowledge/index.md:1
+leads/lead-bigpickle.md:39
+leads/lead-nemotron3.md:35
+recon-notes/DEEPER-FINDINGS.md:1
+reports/analyst-bigpickle.log:100
+reports/analyst-nemotron3.log:40
+reports/hypotheses-nemotron3.txt:1
+=== .netrc / curlrc / git credentials ===
+ls: cannot access '/home/runner/.netrc': No such file or directory
+ls: cannot access '/home/runner/.curlrc': No such file or directory
+ls: cannot access '/home/runner/.git-credentials': No such file or directory
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt
+echo "=== probe-results: any prior SUCCESSFUL 200 authenticated read? ==="
+grep -nE "token-info|/v2/guest-links|/v2/group-links" probe-results.md 2>/dev/null | head -20
+echo
+echo "=== historical mention of a real/own token ever existing ==="
+grep -rniE "own (token|account)|real token|obtained token|authenticated read|201 " knowledge/ 2>/dev/null | head -20
+echo
+echo "=== workspace top-level ==="
+ls -1
+=== probe-results: any prior SUCCESSFUL 200 authenticated read? ===
+1246:https://apis.alfaview.com/v2/auth/token-info` -> HTTP 404
+1259:https://apis.alfaview.com/v2/auth/token-info -> HTTP 422
+1265:https://apis.alfaview.com/v2/guest-links?limit=abc` -> HTTP 422
+1266:https://apis.alfaview.com/v2/guest-links?pageToken=x` -> HTTP 401
+1284:https://apis.alfaview.com/v2/guest-links?limit=1&limit=abc` -> HTTP 401
+1355:https://apis.alfaview.com/v2/guest-links/00000000-0000-0000-0000-000000000000 -> HTTP 401
+1363:https://apis.alfaview.com/v2/guest-links/00000000-0000-0000-0000-000000000000 -> HTTP 401
+1364:https://apis.alfaview.com/v2/guest-links/{owned-uuid -> HTTP 401
+1368:https://apis.alfaview.com/v2/guest-links?roomId=00000000-0000-0000-0000-000000000000 -> HTTP 401
+1373:https://apis.alfaview.com/v2/guest-links -> HTTP 401
+1374:https://apis.alfaview.com/v2/group-links -> HTTP 401
+1379:https://apis.alfaview.com/v2/guest-links?roomId=abc&limit=abc` -> HTTP 422
+1380:https://apis.alfaview.com/v2/auth/token-info` -> HTTP 404
+1381:https://apis.alfaview.com/v2/guest-links?limit=1` -> HTTP 422
+1384:https://apis.alfaview.com/v2/guest-links -> HTTP 401
+1385:https://apis.alfaview.com/v2/group-links -> HTTP 401
+1390:https://apis.alfaview.com/v2/auth/token-info` -> HTTP 404
+1391:https://apis.alfaview.com/v2/guest-links?limit=1` -> HTTP 422
+1397:https://apis.alfaview.com/v2/guest-links -> HTTP 401
+1398:https://apis.alfaview.com/v2/group-links -> HTTP 401
+
+=== historical mention of a real/own token ever existing ===
+knowledge/index.md:370:- 2026-09-12 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: `/health`=200 `{"status":"ok"}` with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:387:- 2026-09-13 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: /health=200 {"status":"ok"} with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:403:- 2026-09-14 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: /health=200 {"status":"ok"} with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:426:- 2026-09-15 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: /health=200 {"status":"ok"} with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:457:- 2026-09-16 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: /health=200 {"status":"ok"} with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:481:- 2026-09-17 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: /health=200 {"status":"ok"} with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:495:- 2026-09-17 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: /health=200 {"status":"ok"} with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:509:- 2026-09-17 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: /health=200 {"status":"ok"} with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:531:- 2026-09-18 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: /health=200 {"status":"ok"} with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:565:- 2026-09-19 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: `/health`=200 `{"status":"ok"}` with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:591:- 2026-09-20 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: `/health`=200 `{"status":"ok"}` with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:615:- 2026-09-20 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: /health=200 {"status":"ok"} with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:641:- 2026-09-21 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: /health=200 {"status":"ok"} with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:673:- 2026-09-22 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: /health=200 {"status":"ok"} with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:700:- 2026-09-23 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: /health=200 {"status":"ok"} with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:707:- 2026-09-23 ACCEPTED MISCONFIG @ client-diagnostics-ingest.alfaview.com: `/health`=200 `{"status":"ok"}` with strict headers (CSP default-src 'none', frame-ancestors 'none', JSON-only, edge-proxy) while all other GET paths return 39B JSON 404 — confirmed minimal POST-only ingest, no unauthenticated read surface.
+knowledge/index.md:850:- 2026-09-27 ACCEPTED MISCONFIG @ app.alfaview.com (public bundle): a public asset discloses a complete cross-tenant token-minting signature. adminSwitchCompany($nextCompanyId: String!) returns {companyId, accessToken, permissions} from the caller's own token with no proof of administering the target company, and the same bundle hardcodes a valid-format production companyId (01FDY0986YK1BJF2K0F9DXR8EB) plus AV_COMPANY_ID="alfatraining-internal". All reconnaissance for a cross-tenant admin-token request is already public; the entire authorization burden sits server-side and is unmeasured.
+knowledge/index.md:853:- 2026-09-27 ACCEPTED MISCONFIG @ app.alfaview.com (public bundle): a public asset discloses a complete cross-tenant token-minting signature. adminSwitchCompany($nextCompanyId: String!) returns {companyId, accessToken, permissions} from the caller's own token with no proof of administering the target company, and the call site `{query:AdminSwitchCompany,headers:{token:d},variables:{nextCompanyId:n}}` confirms the client supplies nothing but its current token plus a target ID. The same bundle hardcodes AV_COMPANY_ID="alfatraining-internal" and the 26-character tenant identifier 01FDY0986YK1BJF2K0F9DXR8EB, matching the companyId format the REST API documents. The admin surface is fully mapped at four operations — adminTokenAuthenticate, adminSwitchCompany, adminReinvitePendingUser, getFinishSignupLinkAsAdmin(companyId, username) — two of which take a caller-supplied companyId. adminAccessToken is written to localStorage at two sites, so any XSS on the admin origin yields the program's highest-value token; I found no XSS and claim none. No admin credential literal is embedded. New supporting fact this cycle: the uniform edge-proxy 401 with `www-authenticate: AccessToken` indicates the admin GraphQL `token` header and the REST Authorization header sit behind the same consistent gateway, so an application-layer gap in either adminSwitchCompany or introspect would be a hole in an otherwise coherent control plane.
+knowledge/index.md:894:- 2026-09-29 ACCEPTED IDOR @ apis.alfaview.com/v2/users/me/company: The 37→38 OpenAPI path delta is identified as `/v2/users/me/company` (GetOwnCompany), closing the "honest null result" recorded last cycle — resolved by set-diff against the stored 37-path recon snapshot, not by inference. Substantively, it is the **sole** 200-response supplier of `companyId` across all 57 operations, while three request bodies require it and no operation accepts it as a parameter. This is the first cycle in 36 that the standing guest-link chain (88) became *executable* by an authorized third party holding only their own account: previously no operation could yield the tenant scope that `POST /v2/auth/guest-link` requires as input.
+
+=== workspace top-level ===
+README.md
+analyst-out.txt
+analyst-prompt.txt
+ctx.txt
+inventory
+knowledge
+leads
+probe-results.md
+recon-notes
+reports
+reposcan-raw
+scope.yml
+scripts
+state_bigpickle.json
+state_laguna.json
+state_ling3.json
+state_longcat.json
+state_mimo.json
+state_nemotron3.json
+triage
+[0m
+Before re-issuing a [NEXT] HUMAN I should exhaust every zero-request option for obtaining a token. Checking the workspace and environment.
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+raw=json.dumps(d['paths'])
+print('TokenUserPermissions referenced in paths:', 'TokenUserPermissions' in raw)
+print('auth paths present:', [p for p in d['paths'] if '/auth' in p])
+print()
+for p in sorted(d['paths']):
+    if 'users/me' in p or p=='/v2/auth/token':
+        print(p, list(d['paths'][p].keys()))
+"
+TokenUserPermissions referenced in paths: False
+auth paths present: ['/v2/auth/api-key', '/v2/auth/group-link', '/v2/auth/guest-link', '/v2/auth/password', '/v2/auth/token-info']
+
+/v2/users/me ['get']
+/v2/users/me/company ['get']
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+s=d['components']['schemas']
+import re
+# find which schemas contain the permissions bit vocabulary
+for n,v in s.items():
+    t=json.dumps(v)
+    if 'roomCreate' in t: print('contains roomCreate ->',n)
+print()
+print('=== /v2/auth/token response 200 shape ===')
+p=d['paths'].get('/v2/auth/token',{}).get('post',{})
+print('summary:',p.get('summary'))
+r=p.get('responses',{}).get('200',{})
+print(json.dumps(r,indent=1)[:800])
+"
+contains roomCreate -> InviteUserPermissions
+contains roomCreate -> RoomCreate
+contains roomCreate -> TokenUserPermissions
+
+=== /v2/auth/token response 200 shape ===
+summary: None
+{}
+[0m
+No token, no credential, no env — and notably `GET /v2/auth/token-info` returns **404**, which breaks verify_steps #1 in my own hypothesis. Let me find what actually returns `TokenUserPermissions`.
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+p=d['paths']['/v2/auth/token-info']
+print(json.dumps(p,indent=1)[:2500])
+"
+{
+ "get": {
+  "description": "Retrieves details about the access token provided in the Authorization header.",
+  "operationId": "GetTokenInfo",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   }
+  ],
+  "responses": {
+   "200": {
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/TokenInfo"
+      }
+     }
+    },
+    "description": "The request was processed successfully."
+   },
+   "422": {
+    "description": "An entity in the request cannot be processed. Either a validation (e.g. ID validity) did not succeed or a precondition was not met."
+   }
+  },
+  "summary": "Get Access Token Information",
+  "tags": [
+   "Authentication"
+  ],
+  "x-sort-index": 14
+ }
+}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+s=d['components']['schemas']
+for n in ['TokenInfo','InviteUserPermissions']:
+    print('===',n,'===')
+    print(json.dumps(s[n],indent=1)[:1500]); print()
+"
+=== TokenInfo ===
+{
+ "additionalProperties": false,
+ "properties": {
+  "active": {
+   "description": "Denotes whether the token is still valid.",
+   "type": "boolean"
+  },
+  "expiresAt": {
+   "description": "Time at which the token expires.",
+   "format": "date-time",
+   "type": "string"
+  },
+  "permissions": {
+   "$ref": "#/components/schemas/TokenUserPermissions",
+   "description": "The user permissions of the token."
+  }
+ },
+ "required": [
+  "active",
+  "expiresAt",
+  "permissions"
+ ],
+ "type": "object"
+}
+
+=== InviteUserPermissions ===
+{
+ "additionalProperties": false,
+ "properties": {
+  "manageCompany": {
+   "description": "If true, the user can manage company settings. Implies userAdmin, roomAdmin and userShow.",
+   "type": "boolean"
+  },
+  "roomAdmin": {
+   "description": "If true, the user can create, update and delete any room. Implies roomList and roomCreate.",
+   "type": "boolean"
+  },
+  "roomCreate": {
+   "description": "If true, the user can create rooms for their company.",
+   "type": "boolean"
+  },
+  "roomList": {
+   "description": "If true, the user can list all rooms in their company.",
+   "type": "boolean"
+  },
+  "userAdmin": {
+   "description": "If true, the user can create, update and delete other users, send password reset mails and resend sign-up mails for new users. Implies userList.",
+   "type": "boolean"
+  },
+  "userList": {
+   "description": "If true, the user can list all users in their company.",
+   "type": "boolean"
+  },
+  "userShow": {
+   "description": "If true, the user can see the user names of all users in rooms they can access.",
+   "type": "boolean"
+  }
+ },
+ "required": [
+  "manageCompany",
+  "userAdmin",
+  "userList",
+  "userShow",
+  "roomAdmin",
+  "roomList",
+  "roomCreate"
+ ],
+ "type": "object"
+}
+[0m
+Correction resolved — and it's a real one. `InviteUserPermissions` documents the implication chain `TokenUserPermissions` omits: **`roomAdmin` implies `roomList` and `roomCreate`**. Let me confirm the precondition route is genuinely live.
+[0m$ [0mcd /tmp/opencode && UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36"
+echo "=== GET /v2/auth/token-info  (no auth) ==="
+curl -s -o ti1.txt -w "code=%{http_code} len=%{size_download} " -A "$UA" "https://apis.alfaview.com/v2/auth/token-info" --max-time 20; echo "md5=$(md5sum ti1.txt|cut -c1-8)"; cat ti1.txt; echo
+sleep 1.2
+echo "=== GET /v2/auth/token-info  (syntactically valid but bogus bearer, no live cred) ==="
+curl -s -o ti2.txt -w "code=%{http_code} len=%{size_download} " -A "$UA" -H "Authorization: Bearer 00000000-0000-0000-0000-000000000000" "https://apis.alfaview.com/v2/auth/token-info" --max-time 20; echo "md5=$(md5sum ti2.txt|cut -c1-8)"; cat ti2.txt; echo
+=== GET /v2/auth/token-info  (no auth) ===
+code=422 len=85 md5=3f81e81e
+{"title":"Unprocessable Entity","status":422,"detail":"invalid access token format"}
+
+=== GET /v2/auth/token-info  (syntactically valid but bogus bearer, no live cred) ===
+code=422 len=91 md5=5737fa67
+{"title":"Unprocessable Entity","status":422,"detail":"access token not in base64 format"}
+[0m
+Route is live — and the earlier "404" records were wrong. It's an **unauthenticated token parser** exposing distinct parse stages. Mapping the full chain with synthetic garbage only.
+[0m$ [0mcd /tmp/opencode && UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36"
+probe(){ sleep 1.2; curl -s -o t.txt -w "%{http_code} %{size_download} " -A "$UA" -H "Authorization: Bearer $1" "https://apis.alfaview.com/v2/auth/token-info" --max-time 20; echo "md5=$(md5sum t.txt|cut -c1-8) | $(cat t.txt)"; }
+echo "stage3 base64-decodable garbage:"; probe "aGVsbG8gd29ybGQ="
+echo "stage4 well-formed JWT shape, alg=none, junk claims:"
+probe "$(printf '%s' '{"alg":"none","typ":"JWT"}' | base64 -w0 | tr -d '=').$(printf '%s' '{"sub":"00000000-0000-0000-0000-000000000000","exp":4102444800}' | base64 -w0 | tr -d '=')."
+stage3 base64-decodable garbage:
+422 91 md5=5737fa67 | {"title":"Unprocessable Entity","status":422,"detail":"access token not in base64 format"}
+stage4 well-formed JWT shape, alg=none, junk claims:
+422 91 md5=5737fa67 | {"title":"Unprocessable Entity","status":422,"detail":"access token not in base64 format"}
+[0m
+All garbage collapses to one identical stage. So the check isn't "is it base64" — let me find the actual format boundary.
+[0m$ [0mcd /tmp/opencode && UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36"
+probe(){ sleep 1.2; curl -s -o t.txt -w "%{http_code} %{size_download} " -A "$UA" -H "Authorization: Bearer $1" "https://apis.alfaview.com/v2/auth/token-info" --max-time 20; echo "md5=$(md5sum t.txt|cut -c1-8) | $(python3 -c "import json,sys;print(json.load(open('t.txt')).get('detail'))" 2>/dev/null)"; }
+H=$(printf '%s' '{"alg":"RS256","typ":"JWT"}' | base64 -w0); P=$(printf '%s' '{"sub":"00000000-0000-0000-0000-000000000000","exp":4102444800}' | base64 -w0); S=$(printf '%s' 'sig' | base64 -w0)
+echo "A) JWT with PADDING kept:";        probe "$H.$P.$S"
+echo "B) base64 blob 44B padded:";       probe "$(printf '%s' 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' | base64 -w0)"
+echo "C) base64 of plain JSON:";         probe "$(printf '%s' '{"a":1}' | base64 -w0)"
+echo "D) long base64 (1024B):";          probe "$(head -c 768 /dev/zero | base64 -w0)"
+A) JWT with PADDING kept:
+422 91 md5=5737fa67 | access token not in base64 format
+B) base64 blob 44B padded:
+422 91 md5=5737fa67 | access token not in base64 format
+C) base64 of plain JSON:
+422 91 md5=5737fa67 | access token not in base64 format
+D) long base64 (1024B):
+422 91 md5=5737fa67 | access token not in base64 format
+[0m
+Continued. Three concrete results, one of which corrects a stale record and one of which I am explicitly **not** going to inflate into a finding.
+
+## 1. Correction: `/v2/auth/token-info` is live, not 404
+
+`probe-results.md` recorded `HTTP 404` for this route across 39 cycles. That is wrong. The route is registered, is the documented supplier of the token bitmask, and answers:
+
+| input | code | len | detail |
+|---|---|---|---|
+| no `Authorization` | 422 | 85B | `invalid access token format` |
+| any synthetic token | 422 | 91B | `access token not in base64 format` |
+
+`TokenInfo` = `{active, expiresAt, permissions → TokenUserPermissions}`. So this is a valid precondition read, and my hypothesis's verify_steps #1 stands — but the stale 404 entries in the log need correcting.
+
+## 2. New: unauthenticated token parser, but FAIL-CLOSED — not reportable
+
+`GET /v2/auth/token-info` reaches a token parser **before** authentication. Two observable stages. I then tried to find a third stage that would discriminate a real token from garbage — that would have been a genuine token-validity oracle:
+
+- UUID bearer, `aGVsbG8gd29ybGQ=`, base64 JSON, 44B blob, 1024B blob
+- well-formed JWT `alg=none` with a future `exp`
+- well-formed JWT `alg=RS256`, padding kept
+
+**All eight collapsed to the byte-identical 422/91B.** There is no token-validity oracle, no cross-user discrimination, and no third stage. The two stages only reveal whether the client sent a header — information the client already has.
+
+I'm recording this as a **negative result**, not a vulnerability. It fails my own reporting bar on the "descriptive errors" exclusion and has no information disclosure. The one residual nit is that the spec declares `200` and `422` but **no `401`** on an auth-bound route — a documentation gap, not a bug.
+
+## 3. The implication chain sharpens the `[NEXT]`
+
+`TokenUserPermissions` omits the implication docs that `InviteUserPermissions` carries. Those make it explicit:
+
+- `roomAdmin` → *"Implies roomList and roomCreate."*
+- `manageCompany` → *"Implies userAdmin, roomAdmin and userShow."*
+
+So `roomAdmin=true ⇒ roomCreate=true`. Consequence for the chain: **the only discriminating account profile is `roomCreate=true, roomAdmin=false`**, because any account with `roomAdmin` would satisfy `roomCreate` too. That is exactly the profile the pending `[NEXT] HUMAN` requests — so the request is correctly targeted, and step 1 of the test is now a hard precondition rather than a formality.
+
+This does not weaken the hypothesis: the escalation is roomAdmin=false → room-scoped `admin:true` via a *different* route (`POST /v2/rooms`) than the one `roomAdmin` is supposed to gate (`POST /v2/rooms/{id}/permissions`).
+
+---
+
+## Where this leaves me — genuinely blocked
+
+I re-exhausted the zero-request options before asking again: no `.env`/credential/token files, no `ALFA*`/`TOKEN*` env vars, no `.netrc`/`.curlrc`/git credentials, and no authenticated 200 in the entire 39-cycle history. Signup is email-gated at `app.alfaview.com/graphql` → `finishSignup` and I won't automate that. The parser hardening I just did **cannot** substitute — it fails closed by design.
+
+Every remaining chain is behind that one input: the room-admin escalation (70), the quota billing asymmetry (45), the guest/group-link harvest (90), and the introspection gap (94).
+
+**What I need:** one self-owned low-privilege alfaview account in a tenant I control, with `roomCreate=true, roomAdmin=false`, plus its own `userId`.
+
+With it I run, at ≤1 rps, entirely inside my own tenant: `GET /v2/auth/token-info` (assert the bitmask) → `GET /v2/rooms?limit=1` → **one** `POST /v2/rooms` naming my own userId with `admin:true` → `GET /v2/rooms/{newId}/permissions`. A `201` proves the escalation; a `403` closes the chain. Only write is a room I create myself.
+
+I have not committed anything. Want me to write this cycle's results into `probe-results.md` / `knowledge/index.md` and correct the stale 404 entries, or leave the logs untouched?

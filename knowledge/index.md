@@ -948,3 +948,7 @@
 - 2026-10-01 REJECTED AUTH @ apis.alfaview.com/v2/auth/{guest,group}-link: NO accessKey existence oracle — well-formed synthetic triple returns 422/88B ACTION_INVALID byte-identical to traversal key; taxonomy exactly two tiers (schema 422, business 422)
 - 2026-10-01 REJECTED MISCONFIG @ apis.alfaview.com: 403-declaration asymmetry not behaviorally load-bearing — /v2/permission-groups returns 401 while declaring no 401; whole authenticated surface returns uniform 401
 - 2026-10-01 ACCEPTED MISCONFIG @ apis.alfaview.com: Pre-auth query-parameter binder is unauthenticated parameter-enumeration oracle (9 of 26 GET ops); append wrong-typed value → 422 with location: query.<param>; unrecognized → 401
+- 2026-10-01 ACCEPTED IDOR @ apis.alfaview.com POST /v2/rooms: a public, unauthenticated-to-read contract
+- 2026-10-01 ACCEPTED BUSLOGIC @ apis.alfaview.com PATCH /v2/rooms/{id}: a documentation differential on
+- 2026-10-01 REJECTED MISCONFIG @ apis.alfaview.com (orphan quota route): an orphan-schema diff scoped to
+- 2026-10-01 NO_DELTA @ apis/sso standing surface: OpenAPI 200/132100B md5 284a3383 (38 paths, 57 ops),

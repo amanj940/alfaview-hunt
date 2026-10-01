@@ -1279,3 +1279,20 @@ www.alfaview.com
 - CHANGED Inventory 100% probed — 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain
 
 ## 2026-10-01 02:49:03 UTC
+
+## 2026-10-01 09:36:49 UTC
+- NEW apis.alfaview.com POST /v2/rooms — contract read this cycle reveals RoomCreate.permissions
+- NEW apis.alfaview.com — participantId namespace collision, proven from contract, zero
+- NEW apis.alfaview.com RoomPermissions (GET /v2/rooms/{roomId}/permissions 200 shape)
+- NEW apis.alfaview.com PATCH /v2/rooms/{id} — RoomUpdate.quotas description is bare
+- CHANGED my own method, corrected mid-cycle: I ran an orphan-schema diff searching only the
+- NEW OpenAPI spec at apis.alfaview.com/v2/docs/openapi.json stable at MD5 284a3383 (38 paths, 57 ops) for 3+ cycles; byte-identical on beta-apis.alfaview.com
+- NEW sso.alfaview.com OIDC metadata stable: issuer=acme.com, JWKS 7 RSA keys (MD5 3f8d456c), introspection_endpoint absent from discovery while /oauth2/introspect live (OPTIONS 405), 30+ cycles
+- NEW app.alfaview.com public bundle stable at app.min.67e8a68d4318b34ca241.js (MD5 2cb9128353b1f7444e222b4f61e4ffa5) carrying adminSwitchCompany mutation + hardcoded tenant IDs
+- NEW tools.alfaview.com/whiteboard/ second RPC backend confirmed (47B gRPC envelope vs poll's 45B jsonpb); staging mirror byte-identical; zero client references in bundle
+- NEW apis.alfaview.com: validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI components.securitySchemes={}, security=null
+- NEW apis.alfaview.com/v2/users/invitation{,s}: OpenAPI declares POST only; live server advertises Allow: DELETE,POST and DELETE-only on undocumented plural; both Go router, both 405 before 401
+- NEW test.alfaview.com: alfacheck v483102 (4 platforms) unsigned; index page no sha256/signatures
+- CHANGED apis.alfaview.com/v2/users/me/company (GetOwnCompany) identified as 38th path — sole 200-response supplier of companyId across 57 ops
+- CHANGED apis.alfaview.com/v2/audit-log live undocumented 39th path; pre-auth query binder complete (10 GET ops now validate pre-auth)
+- CHANGED apis.alfaview.com/v2/auth/api-key — 4th unauthenticated credential endpoint (HEAD→405 allow:POST, OPTIONS→405/19B); declares unique 403 account-status tier
