@@ -62752,3 +62752,39 @@ ACCEPTED SURFACE @ apis.alfaview.com /v2/audit-log: live undocumented endpoint, 
 [RISK]
 
 alfaview gmbh: 62. Up 1 from 61. No unauthenticated exposure found — all probes this cycle were auth-bound or validation-first (GET/HEAD/OPTIONS only, <=1 rps). Increase reflects an unmeasured BOLA chain on room-permission write (minting admin) with contract-level contradiction; 94 introspect and 90 guest/group-link chains remain strictly token-gated. Risk carried, not yet measured with live token.
+===== ANALYST bigpickle 2026-10-01 21:29:48 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mfor u in "https://apis.alfaview.com/v2/docs/openapi.json" "https://sso.alfaview.com/.well-known/openid-configuration" "https://sso.alfaview.com/.well-known/jwks.json"; do printf "%s " "$u"; curl -s -o /tmp/o.$$ -w "%{http_code} %{size_download}\n" -m 12 "$u"; md5sum /tmp/o.$$ 2>/dev/null | cut -d' ' -f1; done
+https://apis.alfaview.com/v2/docs/openapi.json 200 132100
+284a3383c1ac3cfc9152ffcc631891f2
+https://sso.alfaview.com/.well-known/openid-configuration 200 2169
+f78a08fced8b042093396383b74d8458
+https://sso.alfaview.com/.well-known/jwks.json 200 16257
+3f8d456c7fd92c6107f3fd77732bd0f4
+[0m
+[93m[1m! [0mpermission requested: external_directory (/tmp/*); auto-rejecting
+[0m✗ [0mcd /tmp && curl -s -m 20 -o oa.json https://apis.alfaview.com/v2/docs/openapi.json && python3 - <<'EOF'
+import json
+d=json.load(open('oa.json'))
+print("TOP-LEVEL KEYS:", sorted(d.keys()))
+for k in ('openapi','info','servers','externalDocs','security','tags','webhooks','jsonSchemaDialect'):
+    if k in d: print(f"--- {k}: {json.dumps(d[k])[:1200]}")
+comps=d.get('components',{})
+print("--- component groups:", sorted(comps.keys()), {g:len(v) for g,v in comps.items()})
+# all x- extensions anywhere
+import collections
+x=collections.Counter(); loc=collections.defaultdict(set)
+def walk(o,p=""):
+    if isinstance(o,dict):
+        for k,v in o.items():
+            if isinstance(k,str) and k.startswith("x-"): x[k]+=1; loc[k].add(p.split('/')[2] if len(p.split('/'))>2 else p)
+            walk(v,p+"/"+str(k))
+    elif isinstance(o,list):
+        for i,v in enumerate(o): walk(v,p+"/[]")
+walk(d)
+print("--- x- extensions:", dict(x))
+for k,v in loc.items(): print("   ",k,"->",sorted(v)[:8])
+EOF failed
+[91m[1mError: [0mThe user rejected permission to use this specific tool call.
