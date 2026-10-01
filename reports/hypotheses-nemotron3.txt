@@ -1,21 +1,25 @@
-## 2026-10-01 09:36:00 UTC [target] (model nemotron3)
-[NEW] OpenAPI spec at apis.alfaview.com/v2/docs/openapi.json stable at MD5 284a3383 (38 paths, 57 ops) for 3+ cycles; byte-identical on beta-apis.alfaview.com
-[NEW] sso.alfaview.com OIDC metadata stable: issuer=acme.com, JWKS 7 RSA keys (MD5 3f8d456c), introspection_endpoint absent from discovery while /oauth2/introspect live (OPTIONS 405), 30+ cycles
-[NEW] app.alfaview.com public bundle stable at app.min.67e8a68d4318b34ca241.js (MD5 2cb9128353b1f7444e222b4f61e4ffa5) carrying adminSwitchCompany mutation + hardcoded tenant IDs
-[NEW] tools.alfaview.com/whiteboard/ second RPC backend confirmed (47B gRPC envelope vs poll's 45B jsonpb); staging mirror byte-identical; zero client references in bundle
-[NEW] apis.alfaview.com: validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI components.securitySchemes={}, security=null
-[NEW] apis.alfaview.com/v2/users/invitation{,s}: OpenAPI declares POST only; live server advertises Allow: DELETE,POST and DELETE-only on undocumented plural; both Go router, both 405 before 401
-[NEW] test.alfaview.com: alfacheck v483102 (4 platforms) unsigned; index page no sha256/signatures
-[CHANGED] apis.alfaview.com/v2/users/me/company (GetOwnCompany) identified as 38th path — sole 200-response supplier of companyId across 57 ops
-[CHANGED] apis.alfaview.com/v2/audit-log live undocumented 39th path; pre-auth query binder complete (10 GET ops now validate pre-auth)
-[CHANGED] apis.alfaview.com/v2/auth/api-key — 4th unauthenticated credential endpoint (HEAD→405 allow:POST, OPTIONS→405/19B); declares unique 403 account-status tier
+## 2026-10-01 16:44:58 UTC [target] (model nemotron3)
+[NEW] apis.alfaview.com POST /v2/rooms — RoomCreate.permissions exposed in contract; participantId namespace collision proven from schema (RoomCreate.permissions.participantId vs RoomPermissions.participantId)
+[NEW] apis.alfaview.com PATCH /v2/rooms/{id} — RoomUpdate.quotas description bare ("The quotas for the room"), no enum/constraints; mass-assignment surface on quota fields undocumented
+[NEW] apis.alfaview.com GET /v2/audit-log — live undocumented 39th path; pre-auth query binder complete (10 GET ops now validate pre-auth); mirrors GraphQL ListAuditEvents(flag:companyId,pageToken,limit,from,to,eventTypes[])
+[NEW] apis.alfaview.com/v2/auth/api-key — 4th unauthenticated credential endpoint (HEAD→405 allow:POST, OPTIONS→405/19B text/plain); declares unique 403 account-status tier ("account is inactive") absent from guest-link/group-link/password
+[CHANGED] apis.alfaview.com/v2/users/me/company (GetOwnCompany) — identified as 38th OpenAPI path; sole 200-response supplier of companyId across 57 operations; enables guest-link chain execution by authorized tester
+[CHANGED] apis.alfaview.com OpenAPI md5 stable at 284a3383 (38 paths, 57 ops) for 3+ cycles; byte-identical on beta-apis.alfaview.com
+[CHANGED] sso.alfaview.com OIDC metadata stable: issuer=acme.com, JWKS 7 RSA keys (MD5 3f8d456c), introspection_endpoint absent from discovery while /oauth2/introspect live (OPTIONS 405), 30+ cycles
+[CHANGED] app.alfaview.com public bundle stable at app.min.67e8a68d4318b34ca241.js (MD5 2cb9128353b1f7444e222b4f61e4ffa5) carrying adminSwitchCompany mutation + hardcoded tenant IDs
+[CHANGED] tools.alfaview.com/whiteboard/ second RPC backend confirmed (47B gRPC envelope vs poll's 45B jsonpb); staging mirror byte-identical; zero client references in bundle
+[CHANGED] apis.alfaview.com: validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI components.securitySchemes={}, security=null
+[CHANGED] apis.alfaview.com/v2/users/invitation{,s}: OpenAPI declares POST only; live server advertises Allow: DELETE,POST and DELETE-only on undocumented plural; both Go router, both 405 before 401
+[CHANGED] test.alfaview.com: alfacheck v483102 (4 platforms) unsigned; index page no sha256/signatures
 [PRIO] apis.alfaview.com/v2/guest-links,8.65,attack_surface=9 business_value=9 tech_exposure=8 gate_ease=1 cloud_surface=8 freshness=10
 [PRIO] app.alfaview.com/graphql (adminSwitchCompany),8.55,attack_surface=8 business_value=10 tech_exposure=9 gate_ease=1 cloud_surface=8 freshness=10
 [PRIO] sso.alfaview.com/oauth2/introspect,7.90,attack_surface=8 business_value=8 tech_exposure=9 gate_ease=1 cloud_surface=7 freshness=9
 [PRIO] apis.alfaview.com/v2/auth/api-key,7.75,attack_surface=8 business_value=8 tech_exposure=8 gate_ease=1 cloud_surface=8 freshness=10
 [PRIO] apis.alfaview.com/v2/users/me/company,7.40,attack_surface=7 business_value=9 tech_exposure=7 gate_ease=1 cloud_surface=8 freshness=10
 [PRIO] apis.alfaview.com/v2/audit-log,7.10,attack_surface=7 business_value=7 tech_exposure=7 gate_ease=1 cloud_surface=7 freshness=10
+[PRIO] apis.alfaview.com POST /v2/rooms,6.95,attack_surface=7 business_value=7 tech_exposure=8 gate_ease=1 cloud_surface=7 freshness=10
 [PRIO] tools.alfaview.com/whiteboard/,6.80,attack_surface=7 business_value=6 tech_exposure=8 gate_ease=1 cloud_surface=7 freshness=8
+[PRIO] apis.alfaview.com PATCH /v2/rooms/{id},6.50,attack_surface=6 business_value=6 tech_exposure=7 gate_ease=1 cloud_surface=7 freshness=10
 [HYP] Company-wide guest-link/group-link enumeration yields live join credentials without expressible authorization check
 class: IDOR
 asset: apis.alfaview.com/v2/guest-links, apis.alfaview.com/v2/group-links
@@ -47,6 +51,8 @@ testability: AUTH_HELPED
 [PARKED] Validation-before-auth on query-param routes: Informational only — reproduces public OpenAPI schema, no data exposure, no auth bypass; downgraded from standalone finding
 [PARKED] Undeclared DELETE on /v2/users/invitation{,s}: Single isolated route, not systemic; 405 before 401 means auth still enforced; no exploit path without token
 [PARKED] 2FA enforcement asymmetry (SSO vs native): No exploitation path without credentialed accounts on both paths; program prohibits brute-force/credential testing
+[PARKED] POST /v2/rooms RoomCreate.permissions mass-assignment: Contract shows nested permissions array with participantId; requires authenticated company context to test; no unauthenticated vector
+[PARKED] PATCH /v2/rooms/{id} RoomUpdate.quotas: Documentation gap only; requires authenticated room ownership to test; no evidence of over-permissive write
 [FINAL] Ranked survivors:
 [NEXT] HUMAN: Execute unauthenticated signup flow at app.alfaview.com/graphql (mutation Signup → email → FinishSignup) to obtain a valid bearer token; then test introspect with real token (POST /oauth2/introspect token=<token>&client_id=fake-123) and test guest-links enumeration (GET /v2/guest-links with Authorization header). All HIGH-value chains gate on this single token acquisition.
 [LEARN] ACCEPTED IDOR @ apis.alfaview.com: Company-wide guest-link list un-narrowable and credential-bearing; TokenUserPermissions has no guest-link axis; RoomPermissions proves guest links are permission-bearing principals
@@ -60,4 +66,7 @@ testability: AUTH_HELPED
 [LEARN] REJECTED AUTH @ apis.alfaview.com/v2/auth/{guest,group}-link: NO accessKey existence oracle — well-formed synthetic triple returns 422/88B ACTION_INVALID byte-identical to traversal key; taxonomy exactly two tiers (schema 422, business 422)
 [LEARN] REJECTED MISCONFIG @ apis.alfaview.com: 403-declaration asymmetry not behaviorally load-bearing — /v2/permission-groups returns 401 while declaring no 401; whole authenticated surface returns uniform 401
 [LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com: Pre-auth query-parameter binder is unauthenticated parameter-enumeration oracle (9 of 26 GET ops); append wrong-typed value → 422 with location: query.<param>; unrecognized → 401
+[LEARN] ACCEPTED IDOR @ apis.alfaview.com POST /v2/rooms: a public, unauthenticated-to-read contract
+[LEARN] ACCEPTED BUSLOGIC @ apis.alfaview.com PATCH /v2/rooms/{id}: a documentation differential on RoomUpdate.quotas
+[LEARN] REJECTED MISCONFIG @ apis.alfaview.com (orphan quota route): an orphan-schema diff scoped to
 [RISK] alfaview: 88/100. Broad scope (55 dedicated hosts + 6 main domains + ~110 CT subdomains, 100% probed). Production APIs auth-gated (401 opaque tokens). Critical IDOR: company-wide guest-link/group-link lists return live credentials under token vocabulary with no expressible permission; unscoped update mutations (PATCH /v2/guest-links/{id}, /v2/group-links/{id}) enable credential rebinding + permissionGroupId escalation. OAuth/SSO: sso.alfaview.com (FusionAuth 1.63.0) exposes OIDC metadata with issuer=acme.com misconfiguration, implicit flow, HS256/384/512/ES256/384/512 support vs JWKS RSA-only, /oauth2/introspect client auth fully unenforced (30+ cycles), JWKS oscillates (404↔200), introspection_endpoint advertisement oscillates, password grant (ROPC) advertised alongside non-licensed client_credentials. app.alfaview.com primary client: GraphQL schema fully leaked, inconsistent resolver auth, divergent guest path (no accessKey), passwordless magic-token auth-gated, admin surface in public bundle (adminSwitchCompany cross-tenant minting with hardcoded tenant IDs). test.alfaview.com distributes unsigned binaries v483102. tools.alfaview.com exposes verb-based JSON RPC with custom gRPC-metadata auth; second unmapped RPC mount at /whiteboard/* proven. 31 hosts exhausted. Realistic path: obtain dev account via HUMAN signup → test IDOR cross-tenant guest enumeration + adminSwitchCompany cross-tenant minting + introspect token metadata disclosure + poll/whiteboard BOLA.

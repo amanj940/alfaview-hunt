@@ -59359,3 +59359,3396 @@ Every remaining chain is behind that one input: the room-admin escalation (70), 
 With it I run, at ≤1 rps, entirely inside my own tenant: `GET /v2/auth/token-info` (assert the bitmask) → `GET /v2/rooms?limit=1` → **one** `POST /v2/rooms` naming my own userId with `admin:true` → `GET /v2/rooms/{newId}/permissions`. A `201` proves the escalation; a `403` closes the chain. Only write is a room I create myself.
 
 I have not committed anything. Want me to write this cycle's results into `probe-results.md` / `knowledge/index.md` and correct the stale 404 entries, or leave the logs untouched?
+===== ANALYST bigpickle 2026-10-01 16:48:55 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mls -la /home/runner/work/alfaview-hunt/alfaview-hunt 2>/dev/null | head -50
+total 964
+drwxr-xr-x 12 runner runner   4096 Oct  1 16:40 .
+drwxr-xr-x  3 runner runner   4096 Oct  1 16:40 ..
+drwxr-xr-x  7 runner runner   4096 Oct  1 16:40 .git
+drwxr-xr-x  3 runner runner   4096 Oct  1 16:40 .github
+-rw-r--r--  1 runner runner   1883 Oct  1 16:40 README.md
+-rw-r--r--  1 runner runner     32 Oct  1 16:40 analyst-out.txt
+-rw-r--r--  1 runner runner 407849 Oct  1 16:40 analyst-prompt.txt
+-rw-r--r--  1 runner runner 403939 Oct  1 16:40 ctx.txt
+drwxr-xr-x  2 runner runner   4096 Oct  1 16:40 inventory
+drwxr-xr-x  2 runner runner   4096 Oct  1 16:40 knowledge
+drwxr-xr-x  2 runner runner   4096 Oct  1 16:40 leads
+-rw-r--r--  1 runner runner  76653 Oct  1 16:40 probe-results.md
+drwxr-xr-x  2 runner runner   4096 Oct  1 16:40 recon-notes
+drwxr-xr-x  2 runner runner   4096 Oct  1 16:40 reports
+drwxr-xr-x  2 runner runner   4096 Oct  1 16:40 reposcan-raw
+-rw-r--r--  1 runner runner   3323 Oct  1 16:40 scope.yml
+drwxr-xr-x  2 runner runner   4096 Oct  1 16:40 scripts
+-rw-r--r--  1 runner runner     33 Oct  1 16:40 state_bigpickle.json
+-rw-r--r--  1 runner runner     33 Oct  1 16:40 state_laguna.json
+-rw-r--r--  1 runner runner     33 Oct  1 16:40 state_ling3.json
+-rw-r--r--  1 runner runner     33 Oct  1 16:40 state_longcat.json
+-rw-r--r--  1 runner runner     33 Oct  1 16:40 state_mimo.json
+-rw-r--r--  1 runner runner     33 Oct  1 16:40 state_nemotron3.json
+drwxr-xr-x  2 runner runner  12288 Oct  1 16:40 triage
+[0m
+[0m$ [0mfind /home/runner/work/alfaview-hunt/alfaview-hunt -maxdepth 2 -type d 2>/dev/null | head -40
+/home/runner/work/alfaview-hunt/alfaview-hunt
+/home/runner/work/alfaview-hunt/alfaview-hunt/leads
+/home/runner/work/alfaview-hunt/alfaview-hunt/.git
+/home/runner/work/alfaview-hunt/alfaview-hunt/.git/objects
+/home/runner/work/alfaview-hunt/alfaview-hunt/.git/refs
+/home/runner/work/alfaview-hunt/alfaview-hunt/.git/hooks
+/home/runner/work/alfaview-hunt/alfaview-hunt/.git/logs
+/home/runner/work/alfaview-hunt/alfaview-hunt/.git/info
+/home/runner/work/alfaview-hunt/alfaview-hunt/reports
+/home/runner/work/alfaview-hunt/alfaview-hunt/.github
+/home/runner/work/alfaview-hunt/alfaview-hunt/.github/workflows
+/home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes
+/home/runner/work/alfaview-hunt/alfaview-hunt/scripts
+/home/runner/work/alfaview-hunt/alfaview-hunt/knowledge
+/home/runner/work/alfaview-hunt/alfaview-hunt/reposcan-raw
+/home/runner/work/alfaview-hunt/alfaview-hunt/inventory
+/home/runner/work/alfaview-hunt/alfaview-hunt/triage
+[0m
+[0m$ [0mls -la /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes /home/runner/work/alfaview-hunt/alfaview-hunt/leads /home/runner/work/alfaview-hunt/alfaview-hunt/reports /home/runner/work/alfaview-hunt/alfaview-hunt/scripts
+/home/runner/work/alfaview-hunt/alfaview-hunt/leads:
+total 3124
+drwxr-xr-x  2 runner runner    4096 Oct  1 16:40 .
+drwxr-xr-x 12 runner runner    4096 Oct  1 16:40 ..
+-rw-r--r--  1 runner runner 1190076 Oct  1 16:40 lead-bigpickle.md
+-rw-r--r--  1 runner runner    9435 Oct  1 16:40 lead-laguna.md
+-rw-r--r--  1 runner runner    9250 Oct  1 16:40 lead-ling3.md
+-rw-r--r--  1 runner runner    9620 Oct  1 16:40 lead-longcat.md
+-rw-r--r--  1 runner runner      18 Oct  1 16:40 lead-mimo.md
+-rw-r--r--  1 runner runner 1924504 Oct  1 16:40 lead-nemotron3.md
+-rw-r--r--  1 runner runner   28887 Oct  1 16:40 reposcan-alfaview.md
+
+/home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes:
+total 192
+drwxr-xr-x  2 runner runner   4096 Oct  1 16:40 .
+drwxr-xr-x 12 runner runner   4096 Oct  1 16:40 ..
+-rw-r--r--  1 runner runner   4789 Oct  1 16:40 CORPUS-ALFAVIEW.md
+-rw-r--r--  1 runner runner   3624 Oct  1 16:40 DEDICATED-DEEP.md
+-rw-r--r--  1 runner runner   7833 Oct  1 16:40 DEEPER-FINDINGS.md
+-rw-r--r--  1 runner runner   6061 Oct  1 16:40 SCOPE-CONFIRMATION.md
+-rw-r--r--  1 runner runner 159550 Oct  1 16:40 alfaview-openapi.yaml
+
+/home/runner/work/alfaview-hunt/alfaview-hunt/reports:
+total 9416
+drwxr-xr-x  2 runner runner    4096 Oct  1 16:40 .
+drwxr-xr-x 12 runner runner    4096 Oct  1 16:40 ..
+-rw-r--r--  1 runner runner 4591622 Oct  1 16:40 analyst-bigpickle.log
+-rw-r--r--  1 runner runner   40145 Oct  1 16:40 analyst-laguna.log
+-rw-r--r--  1 runner runner   39960 Oct  1 16:40 analyst-ling3.log
+-rw-r--r--  1 runner runner   40330 Oct  1 16:40 analyst-longcat.log
+-rw-r--r--  1 runner runner 4242442 Oct  1 16:40 analyst-nemotron3.log
+-rw-r--r--  1 runner runner   15757 Oct  1 16:40 hypotheses-bigpickle.txt
+-rw-r--r--  1 runner runner      51 Oct  1 16:40 hypotheses-laguna.txt
+-rw-r--r--  1 runner runner      50 Oct  1 16:40 hypotheses-ling3.txt
+-rw-r--r--  1 runner runner      52 Oct  1 16:40 hypotheses-longcat.txt
+-rw-r--r--  1 runner runner   12466 Oct  1 16:40 hypotheses-nemotron3.txt
+-rw-r--r--  1 runner runner  612440 Oct  1 16:40 hypotheses.md
+-rw-r--r--  1 runner runner    9922 Oct  1 16:40 valid-bugs.md
+
+/home/runner/work/alfaview-hunt/alfaview-hunt/scripts:
+total 28
+drwxr-xr-x  2 runner runner  4096 Oct  1 16:40 .
+drwxr-xr-x 12 runner runner  4096 Oct  1 16:40 ..
+-rw-r--r--  1 runner runner 16987 Oct  1 16:40 sync-issues.py
+[0m
+[0m$ [0mcat /home/runner/work/alfaview-hunt/alfaview-hunt/scope.yml; echo ---; cat /home/runner/work/alfaview-hunt/alfaview-hunt/state_bigpickle.json
+programs:
+  alfaview:
+    name: alfaview gmbh Bug Bounty
+    disclosure_policy: via bugs.olivermaicher.eu (Oliver Maicher private program) - report + PoC + contact + payment
+    assets:
+      - name: "All company-owned infrastructure, alfaview web and desktop applications, mobile applications, APIs, backend systems, support systems, customer portals, websites, and domains operated by alfaview gmbh, including alfaview.com and company-operated subdomains"
+        priority: In
+    out_of_scope:
+- "Network level Denial of Service attacks"
+      - "Application Denial of Service by locking user accounts"
+      - "Descriptive error messages or headers (e.g. Stack Traces, banner grabbing)"
+      - "Disclosure of known public files or directories (e.g. robots.txt)"
+      - "Outdated software / library versions"
+      - "OPTIONS / TRACE HTTP method enabled"
+      - "CSRF on logout"
+      - "CSRF on forms that are available to anonymous users"
+      - "Cookies that lack HTTP Only or Secure settings for non-sensitive data"
+      - "Self-XSS and issues exploitable only through Self-XSS"
+      - "Reports resulting from automated scanning utilities without additional details or a POC demonstrating a specific exploit"
+      - "Attacks requiring physical access to a user's device"
+      - "Attacks dependent upon social engineering of employees or vendors"
+      - "Username enumeration based on login or forgot password pages"
+      - "Enforcement policies for brute force, rate limiting, or account lockout"
+      - "SSL/TLS best practices"
+      - "SSL attacks such as BEAST, BREACH, Renegotiation attack"
+      - "Clickjacking, without additional details demonstrating a specific exploit"
+      - "Mail configuration issues including SPF, DKIM, DMARC settings"
+      - "Use of a known-vulnerable library without a description of an exploit specific to our implementation"
+      - "Password and account recovery policies"
+      - "Presence of autocomplete functionality in form fields"
+      - "Publicly accessible login panels"
+      - "Lack of email address verification during account registration or account invitation"
+      - "Lack of email address verification password restore"
+      - "Session control during email/password changes"
+      - "Social engineering, physical attacks, and DoS/DDoS testing (per program notes)"
+      - "Exposure of customer/employee/financial/authentication data during testing (per program notes)"
+    github_orgs:
+      - none-configured
+
+rules:
+  passive_first: false          # deep-hunt agent: active probes allowed when scoped
+  max_requests_per_second: 1    # never hammer live infra
+  no_doom: true                 # no DoS/DDoS, no account-lockout attacks
+  account_creation: restricted  # only on test/sandbox assets, never live customer data
+  no_data_modification: true    # no writes/deletes on live customer data
+  no_pre_disclosure: true       # never disclose before program response
+  poc_required: true            # scanner output alone is REJECTED
+  redact_secrets_in_commits: true
+
+models:
+  - { id: opencode/big-pickle, name: bigpickle }
+  - { id: opencode/nemotron-3-ultra-free, name: nemotron3 }
+  - { id: opencode/longcat-2.0-free, name: longcat }
+  - { id: opencode/ling-3.0-flash-free, name: ling3 }
+  - { id: opencode/laguna-s-2.1-free, name: laguna }
+---
+{"phase": "POC", "target": "api"}
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes && python3 -c "
+import yaml,json
+d=yaml.safe_load(open('alfaview-openapi.yaml'))
+print('openapi',d.get('openapi'))
+print('paths',len(d['paths']))
+ops=[]
+for p,v in d['paths'].items():
+    for m,o in v.items():
+        if m in ('get','post','patch','put','delete'):
+            ops.append((m.upper(),p,o.get('operationId'),o.get('x-sort-index')))
+for x in sorted(ops,key=lambda t:(t[3] if t[3] is not None else 999)):
+    print(x)
+print('ops',len(ops))
+"
+openapi 3.1.0
+paths 37
+('POST', '/v2/auth/api-key', 'AuthenticateAPIKey', 0)
+('GET', '/v2/guest-links', 'ListGuestLinks', 0)
+('GET', '/v2/meetings', 'ListOwnMeetings', 0)
+('GET', '/v2/rooms', 'ListRooms', 0)
+('GET', '/v2/stats', 'ListStatistics', 0)
+('POST', '/v2/users/invitation', 'InviteUser', 0)
+('POST', '/v2/auth/password', 'AuthenticatePassword', 1)
+('GET', '/v2/meetings/{id}', 'GetOwnMeeting', 1)
+('GET', '/v2/rooms/{id}', 'GetRoom', 1)
+('GET', '/v2/rooms/{roomId}/attendances', 'ListAttendances', 1)
+('GET', '/v2/rooms/{roomId}/guest-links', 'ListGuestLinksForRoom', 1)
+('GET', '/v2/users', 'ListUsers', 1)
+('GET', '/v2/guest-links/{id}', 'GetGuestLink', 2)
+('POST', '/v2/meetings', 'CreateMeeting', 2)
+('POST', '/v2/rooms', 'CreateRoom', 2)
+('GET', '/v2/users/me', 'GetOwnUser', 2)
+('PATCH', '/v2/meetings/{id}', 'UpdateMeeting', 3)
+('PATCH', '/v2/rooms/{id}', 'UpdateRoom', 3)
+('POST', '/v2/rooms/{roomId}/guest-links', 'CreateGuestLinks', 3)
+('PATCH', '/v2/users', 'UpdateUser', 3)
+('PATCH', '/v2/guest-links/{id}', 'UpdateGuestLink', 4)
+('POST', '/v2/meetings/{id}/cancellation', 'CancelMeeting', 4)
+('DELETE', '/v2/rooms/{id}', 'DeleteRoom', 4)
+('DELETE', '/v2/users/{id}', 'DeleteUser', 4)
+('DELETE', '/v2/rooms/{roomId}/guest-links/{id}', 'DeleteGuestLink', 5)
+('GET', '/v2/rooms/{roomId}/subrooms', 'ListSubrooms', 5)
+('POST', '/v2/auth/guest-link', 'AuthenticateGuestLink', 6)
+('GET', '/v2/group-links', 'ListGroupLinks', 6)
+('POST', '/v2/rooms/{roomId}/subrooms', 'CreateSubroom', 6)
+('GET', '/v2/rooms/{roomId}/group-links', 'ListGroupLinksForRoom', 7)
+('PATCH', '/v2/rooms/{roomId}/subrooms/{subroomId}', 'UpdateSubroom', 7)
+('GET', '/v2/group-links/{id}', 'GetGroupLink', 8)
+('DELETE', '/v2/rooms/{roomId}/subrooms/{subroomId}', 'DeleteSubroom', 8)
+('GET', '/v2/rooms/{roomId}/features', 'GetRoomFeatures', 9)
+('POST', '/v2/rooms/{roomId}/group-links', 'CreateGroupLink', 9)
+('PATCH', '/v2/group-links/{id}', 'UpdateGroupLink', 10)
+('PATCH', '/v2/rooms/{roomId}/features', 'UpdateRoomFeatures', 10)
+('DELETE', '/v2/rooms/{roomId}/features', 'DeleteRoomFeatures', 11)
+('DELETE', '/v2/rooms/{roomId}/group-links/{id}', 'DeleteGroupLink', 11)
+('GET', '/v2/room-types', 'ListRoomTypes', 12)
+('POST', '/v2/auth/group-link', 'AuthenticateGroupLink', 13)
+('GET', '/v2/permission-groups', 'ListPermissionGroups', 13)
+('GET', '/v2/auth/token-info', 'GetTokenInfo', 14)
+('GET', '/v2/rooms/{roomId}/permissions', 'ListPermissions', 14)
+('POST', '/v2/rooms/{roomId}/permissions', 'CreatePermissions', 15)
+('PATCH', '/v2/rooms/{roomId}/permissions/{userId}', 'UpdatePermissions', 16)
+('DELETE', '/v2/rooms/{roomId}/permissions/{userId}', 'DeletePermissions', 17)
+('GET', '/v2/rooms/{id}/participants', 'ListParticipants', 18)
+('GET', '/v2/rooms/{roomId}/language-settings', 'GetLanguageSettings', 19)
+('PATCH', '/v2/rooms/{roomId}/language-settings', 'UpdateLanguageSettings', 20)
+('GET', '/v2/languages', 'ListAvailableLanguages', 21)
+('POST', '/v2/rooms/{roomId}/passcode', 'RegeneratePasscode', 22)
+('GET', '/v2/rooms/{roomId}/passcode', 'GetPasscode', 23)
+('GET', '/v2/rooms/{roomId}/file-share-settings', 'GetRoomFileShareSettings', 27)
+('PATCH', '/v2/rooms/{roomId}/file-share-settings', 'UpdateRoomFileShareSettings', 28)
+('GET', '/v2/rooms/{roomId}/file-share-limits', 'GetRoomFileShareLimits', 29)
+ops 56
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes && python3 -c "
+import yaml,json
+d=yaml.safe_load(open('alfaview-openapi.yaml'))
+S=d['components']['schemas']
+for k in ['RoomLanguageSettings','RoomLanguageSettingsEdit','Passcode','RoomFileShareSettings','RoomFileShareSettingsEdit','RoomFileShareLimits','RoomLimits','RoomLimitsEdit','RoomSettingsUpdate','RoomSettings','RoomType','PermissionGroup','RoomFeaturesEdit','Subroom','SubroomEdit','RoomPermissions','PermissionsEdit','ParticipantPermissions']:
+    if k in S: print('===',k); print(json.dumps(S[k],indent=1)[:1800])
+    else: print('=== MISSING',k)
+"
+=== MISSING RoomLanguageSettings
+=== MISSING RoomLanguageSettingsEdit
+=== Passcode
+{
+ "additionalProperties": false,
+ "properties": {
+  "passcode": {
+   "description": "The passcode for a room.",
+   "type": "string"
+  },
+  "required": {
+   "description": "If true, a passcode is required to enter the room.",
+   "type": "boolean"
+  }
+ },
+ "required": [
+  "passcode",
+  "required"
+ ],
+ "type": "object"
+}
+=== MISSING RoomFileShareSettings
+=== MISSING RoomFileShareSettingsEdit
+=== MISSING RoomFileShareLimits
+=== RoomLimits
+{
+ "additionalProperties": false,
+ "properties": {
+  "maxFiles": {
+   "description": "The maximum file count in a room.",
+   "format": "int32",
+   "type": "integer"
+  },
+  "maxTotalBytes": {
+   "description": "The maximum total size of all files in a room.",
+   "format": "int64",
+   "type": "integer"
+  },
+  "remainingFiles": {
+   "description": "The remaining allowed file count in a room.",
+   "format": "int32",
+   "type": "integer"
+  },
+  "remainingTotalBytes": {
+   "description": "The remaining allowed total file size in a room.",
+   "format": "int64",
+   "type": "integer"
+  }
+ },
+ "required": [
+  "maxTotalBytes",
+  "maxFiles",
+  "remainingTotalBytes",
+  "remainingFiles"
+ ],
+ "type": "object"
+}
+=== MISSING RoomLimitsEdit
+=== RoomSettingsUpdate
+{
+ "additionalProperties": false,
+ "properties": {
+  "defaultAccessLevel": {
+   "description": "The default access level for new files.",
+   "enum": [
+    "hidden",
+    "visible",
+    "downloadable"
+   ],
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "enabled": {
+   "description": "If true, the file share feature is enabled in the room. This setting can be set regardless of whether the feature is activated in the company, but the feature activation can still be overruled by the company file share settings. Those are only accessible via the admin web application.",
+   "type": "boolean"
+  },
+  "participantsCanUpload": {
+   "description": "If true, participants are allowed to upload files.",
+   "type": "boolean"
+  }
+ },
+ "type": "object"
+}
+=== RoomSettings
+{
+ "additionalProperties": false,
+ "properties": {
+  "defaultAccessLevel": {
+   "description": "The default access level for new files.",
+   "enum": [
+    "hidden",
+    "visible",
+    "downloadable"
+   ],
+   "type": "string"
+  },
+  "enabled": {
+   "description": "If true, the file share feature is enabled in the room. This setting can be set regardless if the feature is activated in the company. If the feature is deactivated company-wide, the feature will not be available for rooms which have the feature enabled.",
+   "type": "boolean"
+  },
+  "participantsCanUpload": {
+   "description": "If true, participants are allowed to upload files.",
+   "type": "boolean"
+  }
+ },
+ "required": [
+  "enabled",
+  "defaultAccessLevel",
+  "participantsCanUpload"
+ ],
+ "type": "object"
+}
+=== MISSING RoomType
+=== PermissionGroup
+{
+ "additionalProperties": false,
+ "properties": {
+  "id": {
+   "description": "The permission group ID.",
+   "examples": [
+    "00000000-0000-0000-0000-000000000000"
+   ],
+   "type": "string"
+  },
+  "name": {
+   "description": "The name of the permission group.",
+   "examples": [
+    "Admin"
+   ],
+   "type": "string"
+  },
+  "permissions": {
+   "$ref": "#/components/schemas/Permissions",
+   "description": "The attached permissions."
+  }
+ },
+ "required": [
+  "id",
+  "name",
+  "permissions"
+ ],
+ "type": "object"
+}
+=== RoomFeaturesEdit
+{
+ "additionalProperties": false,
+ "properties": {
+  "allowCopyRoomInfo": {
+   "description": "Allows moderators to copy the contents of the participant list to the clipboard.",
+   "enum": [
+    "enabled",
+    "disabled",
+    "default"
+   ],
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "blockWebclient": {
+   "description": "Prevents the button to join via browser from being displayed on the guest join page.",
+   "enum": [
+    "enabled",
+    "disabled",
+    "default"
+   ],
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "centeredVideoGrid": {
+   "description": "Centers participant videos on the stage.",
+   "enum": [
+    "enabled",
+    "disabled",
+    "default"
+   ],
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "disableCameraOff": {
+   "description": "Prevents the camera from being turned off.",
+   "enum": [
+    "enabled",
+    "disabled",
+    "default"
+   ],
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "disableJoinAndLeaveNotifications": {
+   "description": "Disables notifications when users join or leave the room.",
+   "enum": [
+    "enabled",
+    "disabled",
+    "default"
+   ],
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "disableMiniWindow": {
+   "description": "Prevents the displaying of the floating mini window when the alfaview window is minimized.",
+   "enum": [
+    "enabled",
+    "disabled",
+    "default"
+   ],
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "examScreenshare": {
+   "description": "All monitors of all participants in this room are shared with the moderators. Users with an incompatible version are not able to join the room. Linux users can always join the room due to technical limitations on Linux systems with this feature.",
+   "enum": [
+    "enabled",
+    "disabled",
+    "default"
+   ],
+   "type": [
+    "string",
+    "null"
+=== Subroom
+{
+ "additionalProperties": false,
+ "properties": {
+  "displayName": {
+   "description": "The name that is displayed in UIs. If left empty, generic localized names with incremental numbers will be used in the alfaview client (e.g., 'Group 1', 'Group 2', etc.).",
+   "type": "string"
+  },
+  "id": {
+   "description": "The subroom ID.",
+   "examples": [
+    "00000000-0000-0000-0000-000000000000"
+   ],
+   "type": "string"
+  },
+  "sort": {
+   "description": "A sorting number that determines the position of the subroom in UI room lists.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "id",
+  "sort"
+ ],
+ "type": "object"
+}
+=== SubroomEdit
+{
+ "additionalProperties": false,
+ "properties": {
+  "displayName": {
+   "description": "The name that is displayed in UIs. If left empty, generic localized names with incremental numbers will be used in the alfaview client (e.g., 'Group 1', 'Group 2', etc.).",
+   "type": [
+    "string",
+    "null"
+   ]
+  }
+ },
+ "type": "object"
+}
+=== RoomPermissions
+{
+ "additionalProperties": false,
+ "properties": {
+  "groupLinkPermissions": {
+   "description": "The permissions of group links for this room.",
+   "items": {
+    "$ref": "#/components/schemas/ParticipantPermissions"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  },
+  "guestLinkPermissions": {
+   "description": "The permissions of guest links for this room.",
+   "items": {
+    "$ref": "#/components/schemas/ParticipantPermissions"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  },
+  "userPermissions": {
+   "description": "The permissions of users for this room.",
+   "items": {
+    "$ref": "#/components/schemas/ParticipantPermissions"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  }
+ },
+ "type": "object"
+}
+=== PermissionsEdit
+{
+ "additionalProperties": false,
+ "properties": {
+  "admin": {
+   "description": "Permission to act as an administrator. Administrators are allowed to edit or delete rooms, change room settings or features and manage guests in the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "chat": {
+   "description": "Permission to chat in the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "join": {
+   "description": "Permission to join the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "promote": {
+   "description": "Permission to promote permissions for other users for the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "screen": {
+   "description": "Permission to share the screen in the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "upload": {
+   "description": "Permission to upload files in the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "video": {
+   "description": "Permission to stream video input in the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "vip": {
+   "description": "Permission to mark users as VIP in the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "voice": {
+   "description": "Permission to speak in the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  }
+ },
+ "type": "object"
+}
+=== ParticipantPermissions
+{
+ "additionalProperties": false,
+ "properties": {
+  "participantId": {
+   "description": "The user ID / guest link ID / group link ID to which the permissions apply.",
+   "type": "string"
+  },
+  "permissions": {
+   "$ref": "#/components/schemas/Permissions",
+   "description": "The assigned permissions."
+  }
+ },
+ "required": [
+  "participantId",
+  "permissions"
+ ],
+ "type": "object"
+}
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes && python3 -c "
+import yaml,json
+d=yaml.safe_load(open('alfaview-openapi.yaml'))
+S=d['components']['schemas']
+print('ALL SCHEMAS:',len(S))
+print(sorted(S))
+"
+ALL SCHEMAS: 64
+['APICredentials', 'AccessToken', 'Attendance', 'AuthenticateGroupLinkRequestBody', 'AuthenticateGuestLinkRequestBody', 'CreateGroupLinksRequestBody', 'CreateGuestLinksRequestBody', 'ErrorDetail', 'ErrorModel', 'GroupLink', 'GroupLinkAuthenticationInfo', 'GroupLinkCreate', 'GroupLinkUpdate', 'GuestLink', 'GuestLinkAuthenticationInfo', 'GuestLinkCreate', 'GuestLinkUpdate', 'ID', 'InviteUserPermissions', 'LanguageSettings', 'LanguageSettingsEdit', 'Languages', 'Meeting', 'MeetingCancellation', 'MeetingCreate', 'MeetingUpdate', 'PaginatedBodyListGroupLink', 'PaginatedBodyListGuestLink', 'PaginatedBodyListRoom', 'Participant', 'ParticipantPermissions', 'Passcode', 'PasswordCredentials', 'PermissionGroup', 'Permissions', 'PermissionsEdit', 'Room', 'RoomCreate', 'RoomFeatures', 'RoomFeaturesEdit', 'RoomLimits', 'RoomPermissions', 'RoomQuotas', 'RoomQuotasEdit', 'RoomSettings', 'RoomSettingsUpdate', 'RoomTypeData', 'RoomUpdate', 'Stats', 'StatsPeriod', 'Subroom', 'SubroomCreateListItem', 'SubroomEdit', 'SubroomEditListItem', 'SubroomParticipants', 'TokenInfo', 'TokenUserPermissions', 'Translation', 'User', 'UserAttendances', 'UserInformation', 'UserInvitation', 'UserProfile', 'UserUpdate']
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes && python3 -c "
+import yaml,json
+d=yaml.safe_load(open('alfaview-openapi.yaml'))
+for p in ['/v2/rooms/{roomId}/passcode','/v2/rooms/{roomId}/language-settings','/v2/rooms/{roomId}/file-share-settings','/v2/rooms/{roomId}/file-share-limits','/v2/rooms/{roomId}/permissions','/v2/rooms/{roomId}/permissions/{userId}']:
+    print('==========',p)
+    print(json.dumps(d['paths'][p],indent=1)[:2600])
+"
+========== /v2/rooms/{roomId}/passcode
+{
+ "get": {
+  "description": "Gets the passcode for a room. Passcodes can be set regardless of whether a passcode is required for the room.",
+  "operationId": "GetPasscode",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   },
+   {
+    "description": "The room ID.",
+    "in": "path",
+    "name": "roomId",
+    "required": true,
+    "schema": {
+     "description": "The room ID.",
+     "examples": [
+      "00000000-0000-0000-0000-000000000000"
+     ],
+     "type": "string"
+    }
+   }
+  ],
+  "responses": {
+   "200": {
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Passcode"
+      }
+     }
+    },
+    "description": "The request was processed successfully."
+   },
+   "401": {
+    "description": "The 'Authorization' header did not contain a valid API token."
+   },
+   "403": {
+    "description": "The requesting user does not have the necessary permissions."
+   },
+   "404": {
+    "description": "Room was not found or has no passcode set."
+   },
+   "422": {
+    "description": "An entity in the request cannot be processed. Either a validation (e.g. ID validity) did not succeed or a precondition was not met."
+   }
+  },
+  "summary": "Get Passcode",
+  "tags": [
+   "Rooms"
+  ],
+  "x-sort-index": 23
+ },
+ "post": {
+  "description": "Generates a new passcode for a room. Passcodes are always generated, regardless of whether a passcode is required for the room. To require a passcode for a room, update the room.",
+  "operationId": "RegeneratePasscode",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   },
+   {
+    "description": "The room ID.",
+    "in": "path",
+    "name": "roomId",
+    "required": true,
+    "schema": {
+     "description": "The room ID.",
+     "examples": [
+      "00000000-0000-0000-0000-000000000000"
+     ],
+     "type": "string"
+    }
+   }
+  ],
+  "responses": {
+   "200": {
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Passcode"
+      }
+     }
+    },
+    "description": "The request was processed successfully."
+   },
+   "401": {
+    "description": "The 'Authorization' header did not contain a valid API to
+========== /v2/rooms/{roomId}/language-settings
+{
+ "get": {
+  "description": "Gets the language settings of a room.",
+  "operationId": "GetLanguageSettings",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   },
+   {
+    "description": "The room ID.",
+    "in": "path",
+    "name": "roomId",
+    "required": true,
+    "schema": {
+     "description": "The room ID.",
+     "examples": [
+      "00000000-0000-0000-0000-000000000000"
+     ],
+     "type": "string"
+    }
+   }
+  ],
+  "responses": {
+   "200": {
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/LanguageSettings"
+      }
+     }
+    },
+    "description": "The request was processed successfully."
+   },
+   "401": {
+    "description": "The 'Authorization' header did not contain a valid API token."
+   },
+   "404": {
+    "description": "Room was not found."
+   },
+   "422": {
+    "description": "An entity in the request cannot be processed. Either a validation (e.g. ID validity) did not succeed or a precondition was not met."
+   }
+  },
+  "summary": "Get Language Settings",
+  "tags": [
+   "Rooms"
+  ],
+  "x-sort-index": 19
+ },
+ "patch": {
+  "description": "Updates the language settings of a room.",
+  "operationId": "UpdateLanguageSettings",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   },
+   {
+    "description": "The room ID.",
+    "in": "path",
+    "name": "roomId",
+    "required": true,
+    "schema": {
+     "description": "The room ID.",
+     "examples": [
+      "00000000-0000-0000-0000-000000000000"
+     ],
+     "type": "string"
+    }
+   }
+  ],
+  "requestBody": {
+   "content": {
+    "application/json": {
+     "schema": {
+      "$ref": "#/components/schemas/LanguageSettingsEdit"
+     }
+    }
+   },
+   "description": "The updated settings for the transcription and translation features.",
+   "required": true
+  },
+  "responses": {
+   "204": {
+    "description": "The request was processed successfully."
+   },
+   "400": {
+    "description": "The request was not valid."
+   },
+   "401": {
+    "description": "The 'Authorization' header did not contain a valid API token."
+   },
+   "403": {
+    "description": "The requesting user does not have the necessary permis
+========== /v2/rooms/{roomId}/file-share-settings
+{
+ "get": {
+  "description": "Gets the file share settings of a room.",
+  "operationId": "GetRoomFileShareSettings",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   },
+   {
+    "description": "The room ID.",
+    "in": "path",
+    "name": "roomId",
+    "required": true,
+    "schema": {
+     "description": "The room ID.",
+     "examples": [
+      "00000000-0000-0000-0000-000000000000"
+     ],
+     "type": "string"
+    }
+   }
+  ],
+  "responses": {
+   "200": {
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/RoomSettings"
+      }
+     }
+    },
+    "description": "The request was processed successfully."
+   },
+   "401": {
+    "description": "The 'Authorization' header did not contain a valid API token."
+   },
+   "403": {
+    "description": "The requesting user does not have the necessary permissions."
+   },
+   "422": {
+    "description": "An entity in the request cannot be processed. Either a validation (e.g. ID validity) did not succeed or a precondition was not met."
+   }
+  },
+  "summary": "Get file share settings",
+  "tags": [
+   "Rooms",
+   "Files"
+  ],
+  "x-sort-index": 27
+ },
+ "patch": {
+  "description": "Updates the file share settings of a room.",
+  "operationId": "UpdateRoomFileShareSettings",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   },
+   {
+    "description": "The room ID.",
+    "in": "path",
+    "name": "roomId",
+    "required": true,
+    "schema": {
+     "description": "The room ID.",
+     "examples": [
+      "00000000-0000-0000-0000-000000000000"
+     ],
+     "type": "string"
+    }
+   }
+  ],
+  "requestBody": {
+   "content": {
+    "application/json": {
+     "schema": {
+      "$ref": "#/components/schemas/RoomSettingsUpdate"
+     }
+    }
+   },
+   "description": "The updated file share settings.",
+   "required": true
+  },
+  "responses": {
+   "204": {
+    "description": "The request was processed successfully."
+   },
+   "400": {
+    "description": "The request was not valid."
+   },
+   "401": {
+    "description": "The 'Authorization' header did not contain a valid API token."
+   },
+   "403": {
+    "description": "The requesting user does no
+========== /v2/rooms/{roomId}/file-share-limits
+{
+ "get": {
+  "description": "Gets the storage limits for file sharing in a room.",
+  "operationId": "GetRoomFileShareLimits",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   },
+   {
+    "description": "The room ID.",
+    "in": "path",
+    "name": "roomId",
+    "required": true,
+    "schema": {
+     "description": "The room ID.",
+     "examples": [
+      "00000000-0000-0000-0000-000000000000"
+     ],
+     "type": "string"
+    }
+   }
+  ],
+  "responses": {
+   "200": {
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/RoomLimits"
+      }
+     }
+    },
+    "description": "The request was processed successfully."
+   },
+   "401": {
+    "description": "The 'Authorization' header did not contain a valid API token."
+   },
+   "403": {
+    "description": "The requesting user does not have the necessary permissions."
+   },
+   "422": {
+    "description": "An entity in the request cannot be processed. Either a validation (e.g. ID validity) did not succeed or a precondition was not met."
+   }
+  },
+  "summary": "Get file share limits",
+  "tags": [
+   "Rooms",
+   "Files"
+  ],
+  "x-sort-index": 29
+ }
+}
+========== /v2/rooms/{roomId}/permissions
+{
+ "get": {
+  "description": "Lists permissions applied in a room.",
+  "operationId": "ListPermissions",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   },
+   {
+    "description": "The room ID.",
+    "in": "path",
+    "name": "roomId",
+    "required": true,
+    "schema": {
+     "description": "The room ID.",
+     "examples": [
+      "00000000-0000-0000-0000-000000000000"
+     ],
+     "type": "string"
+    }
+   }
+  ],
+  "responses": {
+   "200": {
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/RoomPermissions"
+      }
+     }
+    },
+    "description": "The request was processed successfully."
+   },
+   "401": {
+    "description": "The 'Authorization' header did not contain a valid API token."
+   },
+   "404": {
+    "description": "Room was not found."
+   },
+   "422": {
+    "description": "An entity in the request cannot be processed. Either a validation (e.g. ID validity) did not succeed or a precondition was not met."
+   }
+  },
+  "summary": "List Room Permissions",
+  "tags": [
+   "Rooms",
+   "Permissions"
+  ],
+  "x-sort-index": 14
+ },
+ "post": {
+  "description": "Creates permissions for a user that are applied in a room.",
+  "operationId": "CreatePermissions",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   },
+   {
+    "description": "The room ID.",
+    "in": "path",
+    "name": "roomId",
+    "required": true,
+    "schema": {
+     "description": "The room ID.",
+     "examples": [
+      "00000000-0000-0000-0000-000000000000"
+     ],
+     "type": "string"
+    }
+   }
+  ],
+  "requestBody": {
+   "content": {
+    "application/json": {
+     "schema": {
+      "$ref": "#/components/schemas/ParticipantPermissions"
+     }
+    }
+   },
+   "description": "The permissions to apply.",
+   "required": true
+  },
+  "responses": {
+   "204": {
+    "description": "The request was processed successfully."
+   },
+   "400": {
+    "description": "The request was not valid."
+   },
+   "401": {
+    "description": "The 'Authorization' header did not contain a valid API token."
+   },
+   "403": {
+    "description": "The requesting user does not have the necessary permissions."
+   },
+   
+========== /v2/rooms/{roomId}/permissions/{userId}
+{
+ "delete": {
+  "description": "Deletes permissions of a user that are applied in a room.",
+  "operationId": "DeletePermissions",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   },
+   {
+    "description": "The room ID.",
+    "in": "path",
+    "name": "roomId",
+    "required": true,
+    "schema": {
+     "description": "The room ID.",
+     "examples": [
+      "00000000-0000-0000-0000-000000000000"
+     ],
+     "type": "string"
+    }
+   },
+   {
+    "description": "The user ID.",
+    "in": "path",
+    "name": "userId",
+    "required": true,
+    "schema": {
+     "description": "The user ID.",
+     "examples": [
+      "00000000-0000-0000-0000-000000000000"
+     ],
+     "type": "string"
+    }
+   }
+  ],
+  "responses": {
+   "204": {
+    "description": "The request was processed successfully."
+   },
+   "401": {
+    "description": "The 'Authorization' header did not contain a valid API token."
+   },
+   "403": {
+    "description": "The requesting user does not have the necessary permissions."
+   },
+   "404": {
+    "description": "Room was not found."
+   },
+   "422": {
+    "description": "An entity in the request cannot be processed. Either a validation (e.g. ID validity) did not succeed or a precondition was not met."
+   }
+  },
+  "summary": "Delete Room Permissions",
+  "tags": [
+   "Rooms",
+   "Permissions"
+  ],
+  "x-sort-index": 17
+ },
+ "patch": {
+  "description": "Updates permissions of a user that are applied in a room.",
+  "operationId": "UpdatePermissions",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   },
+   {
+    "description": "The room ID.",
+    "in": "path",
+    "name": "roomId",
+    "required": true,
+    "schema": {
+     "description": "The room ID.",
+     "examples": [
+      "00000000-0000-0000-0000-000000000000"
+     ],
+     "type": "string"
+    }
+   },
+   {
+    "description": "The user ID.",
+    "in": "path",
+    "name": "userId",
+    "required": true,
+    "schema": {
+     "description": "The user ID.",
+     "examples": [
+      "00000000-0000-0000-0000-000000000000"
+     ],
+     "type": "string"
+    }
+   }
+  ],
+  "requestBody": {
+   "content": {
+    "application/json": {
+     "schema": {
+      "
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes && python3 -c "
+import yaml,json,re
+d=yaml.safe_load(open('alfaview-openapi.yaml'))
+S=d['components']['schemas']
+txt=open('alfaview-openapi.yaml').read()
+refs={}
+for k in S:
+    # find refs outside the schema definition block: count occurrences of \"#/components/schemas/<k>\"
+    n=txt.count('\"#/components/schemas/%s\"'%k)
+    refs[k]=n
+orph=[k for k,v in refs.items() if v==0]
+print('ORPHAN SCHEMAS (0 refs anywhere):',orph)
+print()
+low=[(k,v) for k,v in refs.items() if v==1]
+print('SCHEMAS WITH ONLY THEIR OWN DEFINITION REF (1):',low)
+"
+ORPHAN SCHEMAS (0 refs anywhere): ['ErrorModel']
+
+SCHEMAS WITH ONLY THEIR OWN DEFINITION REF (1): [('APICredentials', 1), ('Attendance', 1), ('AuthenticateGroupLinkRequestBody', 1), ('AuthenticateGuestLinkRequestBody', 1), ('CreateGroupLinksRequestBody', 1), ('CreateGuestLinksRequestBody', 1), ('ErrorDetail', 1), ('GroupLinkAuthenticationInfo', 1), ('GroupLinkUpdate', 1), ('GuestLinkAuthenticationInfo', 1), ('GuestLinkUpdate', 1), ('InviteUserPermissions', 1), ('LanguageSettings', 1), ('LanguageSettingsEdit', 1), ('Languages', 1), ('MeetingCancellation', 1), ('MeetingCreate', 1), ('MeetingUpdate', 1), ('PaginatedBodyListRoom', 1), ('Participant', 1), ('PasswordCredentials', 1), ('PermissionGroup', 1), ('PermissionsEdit', 1), ('RoomCreate', 1), ('RoomLimits', 1), ('RoomPermissions', 1), ('RoomQuotas', 1), ('RoomSettings', 1), ('RoomSettingsUpdate', 1), ('RoomTypeData', 1), ('RoomUpdate', 1), ('StatsPeriod', 1), ('SubroomCreateListItem', 1), ('SubroomEditListItem', 1), ('SubroomParticipants', 1), ('TokenInfo', 1), ('TokenUserPermissions', 1), ('Translation', 1), ('User', 1), ('UserAttendances', 1), ('UserInformation', 1), ('UserInvitation', 1), ('UserProfile', 1), ('UserUpdate', 1)]
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes && python3 -c "
+import yaml,json
+d=yaml.safe_load(open('alfaview-openapi.yaml'))
+S=d['components']['schemas']
+targets=['RoomQuotas','RoomQuotasEdit','SubroomParticipants','Translation','Languages','RoomTypeData','Attendance','UserAttendances','MeetingCancellation','Stats','StatsPeriod','GuestLink','GroupLink','GroupLinkCreate','GuestLinkCreate','UserInvitation','CreateGuestLinksRequestBody','CreateGroupLinksRequestBody']
+for t in targets:
+    hits=[]
+    for p,v in d['paths'].items():
+        for m,o in v.items():
+            if m not in ('get','post','patch','put','delete'): continue
+            s=json.dumps(o)
+            if t in s: hits.append(m.upper()+' '+p+' ('+o.get('operationId','')+')')
+    print(t,'->',hits)
+"
+RoomQuotas -> []
+RoomQuotasEdit -> []
+SubroomParticipants -> ['GET /v2/rooms/{id}/participants (ListParticipants)']
+Translation -> []
+Languages -> ['GET /v2/languages (ListAvailableLanguages)']
+RoomTypeData -> ['GET /v2/room-types (ListRoomTypes)']
+Attendance -> ['GET /v2/rooms/{roomId}/attendances (ListAttendances)']
+UserAttendances -> ['GET /v2/rooms/{roomId}/attendances (ListAttendances)']
+MeetingCancellation -> ['POST /v2/meetings/{id}/cancellation (CancelMeeting)']
+Stats -> ['GET /v2/stats (ListStatistics)']
+StatsPeriod -> ['GET /v2/stats (ListStatistics)']
+GuestLink -> ['POST /v2/auth/guest-link (AuthenticateGuestLink)', 'GET /v2/guest-links (ListGuestLinks)', 'GET /v2/guest-links/{id} (GetGuestLink)', 'PATCH /v2/guest-links/{id} (UpdateGuestLink)', 'GET /v2/rooms/{roomId}/guest-links (ListGuestLinksForRoom)', 'POST /v2/rooms/{roomId}/guest-links (CreateGuestLinks)', 'DELETE /v2/rooms/{roomId}/guest-links/{id} (DeleteGuestLink)']
+GroupLink -> ['POST /v2/auth/group-link (AuthenticateGroupLink)', 'GET /v2/group-links (ListGroupLinks)', 'GET /v2/group-links/{id} (GetGroupLink)', 'PATCH /v2/group-links/{id} (UpdateGroupLink)', 'GET /v2/rooms/{roomId}/group-links (ListGroupLinksForRoom)', 'POST /v2/rooms/{roomId}/group-links (CreateGroupLink)', 'DELETE /v2/rooms/{roomId}/group-links/{id} (DeleteGroupLink)']
+GroupLinkCreate -> []
+GuestLinkCreate -> []
+UserInvitation -> ['POST /v2/users/invitation (InviteUser)']
+CreateGuestLinksRequestBody -> ['POST /v2/rooms/{roomId}/guest-links (CreateGuestLinks)']
+CreateGroupLinksRequestBody -> ['POST /v2/rooms/{roomId}/group-links (CreateGroupLink)']
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes && python3 -c "
+import yaml,json
+d=yaml.safe_load(open('alfaview-openapi.yaml'))
+S=d['components']['schemas']
+for k in ['CreateGuestLinksRequestBody','CreateGroupLinksRequestBody','GuestLinkCreate','GroupLinkCreate','GuestLinkUpdate','GroupLinkUpdate','InviteUserPermissions','UserInvitation','LanguageSettings','LanguageSettingsEdit','RoomTypeData','Stats','StatsPeriod']:
+    print('=====',k); print(json.dumps(S[k],indent=1))
+"
+===== CreateGuestLinksRequestBody
+{
+ "additionalProperties": false,
+ "properties": {
+  "create": {
+   "description": "The guest links.",
+   "items": {
+    "$ref": "#/components/schemas/GuestLinkCreate"
+   },
+   "minItems": 1,
+   "type": [
+    "array",
+    "null"
+   ]
+  },
+  "origin": {
+   "description": "Specifies the creator or reason for the creation of the guest links (e.g., 'my external tool' or 'initial meeting delayed').",
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "timezone": {
+   "description": "The time zone to use in the notification emails. Can be 'UTC', 'Local' or a TZ identifier from the IANA time zone database. If empty, the default is 'Europe/Berlin'.",
+   "examples": [
+    "Europe/Berlin"
+   ],
+   "type": [
+    "string",
+    "null"
+   ]
+  }
+ },
+ "required": [
+  "create"
+ ],
+ "type": "object"
+}
+===== CreateGroupLinksRequestBody
+{
+ "additionalProperties": false,
+ "properties": {
+  "create": {
+   "description": "The group links.",
+   "items": {
+    "$ref": "#/components/schemas/GroupLinkCreate"
+   },
+   "minItems": 1,
+   "type": [
+    "array",
+    "null"
+   ]
+  },
+  "origin": {
+   "description": "Specifies the creator or reason for the creation of the group links (e.g., 'my external tool' or 'initial meeting delayed').",
+   "type": [
+    "string",
+    "null"
+   ]
+  }
+ },
+ "required": [
+  "create"
+ ],
+ "type": "object"
+}
+===== GuestLinkCreate
+{
+ "additionalProperties": false,
+ "properties": {
+  "dialInAllowed": {
+   "description": "If true, the guest link is allowed to be used via dial-in.",
+   "type": "boolean"
+  },
+  "displayName": {
+   "description": "The name of the guest that is displayed in UIs.",
+   "type": "string"
+  },
+  "emailAddress": {
+   "description": "The email address associated with the guest link.",
+   "format": "email",
+   "type": "string"
+  },
+  "locale": {
+   "description": "The locale settings (e.g., UI language) for the guest link.",
+   "enum": [
+    "de-DE",
+    "en-US"
+   ],
+   "type": "string"
+  },
+  "permissionGroupId": {
+   "description": "The permission group ID.",
+   "examples": [
+    "00000000-0000-0000-0000-000000000000"
+   ],
+   "type": "string"
+  },
+  "sendEmail": {
+   "description": "If true, an information email with the guest link will be sent to the associated email address.",
+   "type": "boolean"
+  },
+  "validFrom": {
+   "description": "The guest link is valid from this point in time.",
+   "examples": [
+    "2024-09-22T12:34:56Z"
+   ],
+   "format": "date-time",
+   "type": "string"
+  },
+  "validUntil": {
+   "description": "The guest link is valid until this point in time.",
+   "examples": [
+    "2024-09-23T12:34:56Z"
+   ],
+   "format": "date-time",
+   "type": "string"
+  }
+ },
+ "required": [
+  "emailAddress",
+  "displayName",
+  "locale",
+  "permissionGroupId",
+  "dialInAllowed"
+ ],
+ "type": "object"
+}
+===== GroupLinkCreate
+{
+ "additionalProperties": false,
+ "properties": {
+  "description": {
+   "description": "The group link description.",
+   "type": "string"
+  },
+  "dialInAllowed": {
+   "description": "If true, the group link is allowed to be used via dial-in.",
+   "type": "boolean"
+  },
+  "permissionGroupId": {
+   "description": "The permission group ID.",
+   "examples": [
+    "00000000-0000-0000-0000-000000000000"
+   ],
+   "type": "string"
+  },
+  "validFrom": {
+   "description": "The group link is valid from this point in time.",
+   "examples": [
+    "2024-09-22T12:34:56Z"
+   ],
+   "format": "date-time",
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "validUntil": {
+   "description": "The group link is valid until this point in time.",
+   "examples": [
+    "2024-09-23T12:34:56Z"
+   ],
+   "format": "date-time",
+   "type": [
+    "string",
+    "null"
+   ]
+  }
+ },
+ "required": [
+  "description",
+  "permissionGroupId",
+  "dialInAllowed"
+ ],
+ "type": "object"
+}
+===== GuestLinkUpdate
+{
+ "additionalProperties": false,
+ "properties": {
+  "dialInAllowed": {
+   "description": "If true, the guest link is allowed to be used via dial-in.",
+   "type": "boolean"
+  },
+  "displayName": {
+   "description": "The name of the guest that is displayed in UIs.",
+   "type": "string"
+  },
+  "emailAddress": {
+   "description": "The email address associated with the guest link.",
+   "format": "email",
+   "type": "string"
+  },
+  "locale": {
+   "description": "The locale settings (e.g., UI language) for the guest link.",
+   "enum": [
+    "de-DE",
+    "en-US"
+   ],
+   "type": "string"
+  },
+  "permissionGroupId": {
+   "description": "The permission group ID.",
+   "examples": [
+    "00000000-0000-0000-0000-000000000000"
+   ],
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "sendEmail": {
+   "description": "If true, an information email with the updated guest link information will be sent to the associated email address.",
+   "type": "boolean"
+  },
+  "timezone": {
+   "description": "The time zone to use in the notification emails. Can be 'UTC', 'Local' or a TZ identifier from the IANA time zone database. If empty, the default is 'Europe/Berlin'.",
+   "examples": [
+    "Europe/Berlin"
+   ],
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "validFrom": {
+   "description": "The guest link is valid from this point in time.",
+   "examples": [
+    "2024-09-22T12:34:56Z"
+   ],
+   "format": "date-time",
+   "type": "string"
+  },
+  "validUntil": {
+   "description": "The guest link is valid until this point in time.",
+   "examples": [
+    "2024-09-23T12:34:56Z"
+   ],
+   "format": "date-time",
+   "type": "string"
+  }
+ },
+ "required": [
+  "displayName",
+  "sendEmail"
+ ],
+ "type": "object"
+}
+===== GroupLinkUpdate
+{
+ "additionalProperties": false,
+ "properties": {
+  "description": {
+   "description": "The group link description.",
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "dialInAllowed": {
+   "description": "If true, the group link is allowed to be used via dial-in.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "permissionGroupId": {
+   "description": "The permission group ID.",
+   "examples": [
+    "00000000-0000-0000-0000-000000000000"
+   ],
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "validFrom": {
+   "description": "The group link is valid from this point in time.",
+   "examples": [
+    "2024-09-22T12:34:56Z"
+   ],
+   "format": "date-time",
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "validUntil": {
+   "description": "The group link is valid until this point in time.",
+   "examples": [
+    "2024-09-23T12:34:56Z"
+   ],
+   "format": "date-time",
+   "type": [
+    "string",
+    "null"
+   ]
+  }
+ },
+ "type": "object"
+}
+===== InviteUserPermissions
+{
+ "additionalProperties": false,
+ "properties": {
+  "manageCompany": {
+   "description": "If true, the user can manage company settings. Implies userAdmin, roomAdmin and userShow.",
+   "type": "boolean"
+  },
+  "roomAdmin": {
+   "description": "If true, the user can create, update and delete any room. Implies roomList and roomCreate.",
+   "type": "boolean"
+  },
+  "roomCreate": {
+   "description": "If true, the user can create rooms for their company.",
+   "type": "boolean"
+  },
+  "roomList": {
+   "description": "If true, the user can list all rooms in their company.",
+   "type": "boolean"
+  },
+  "userAdmin": {
+   "description": "If true, the user can create, update and delete other users, send password reset mails and resend sign-up mails for new users. Implies userList.",
+   "type": "boolean"
+  },
+  "userList": {
+   "description": "If true, the user can list all users in their company.",
+   "type": "boolean"
+  },
+  "userShow": {
+   "description": "If true, the user can see the user names of all users in rooms they can access.",
+   "type": "boolean"
+  }
+ },
+ "required": [
+  "manageCompany",
+  "userAdmin",
+  "userList",
+  "userShow",
+  "roomAdmin",
+  "roomList",
+  "roomCreate"
+ ],
+ "type": "object"
+}
+===== UserInvitation
+{
+ "additionalProperties": false,
+ "properties": {
+  "permissions": {
+   "$ref": "#/components/schemas/InviteUserPermissions",
+   "description": "The user permissions."
+  },
+  "user": {
+   "$ref": "#/components/schemas/UserInformation",
+   "description": "Data about the invited user."
+  }
+ },
+ "required": [
+  "user",
+  "permissions"
+ ],
+ "type": "object"
+}
+===== LanguageSettings
+{
+ "additionalProperties": false,
+ "properties": {
+  "defaultSpokenLanguage": {
+   "description": "The default spoken language.",
+   "type": "string"
+  },
+  "targetTranscriptionLanguages": {
+   "description": "The languages that the translation feature is translating the spoken words to. The translation into all of these languages is happening permanently as long as the feature is enabled, even if no participant has selected that language. To get the available transcription languages, refer to the 'List Available Languages' endpoint.",
+   "items": {
+    "type": "string"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  },
+  "transcriptionEnabled": {
+   "description": "If true, the transcription feature is enabled in this room.",
+   "type": "boolean"
+  },
+  "transcriptionType": {
+   "description": "The type of transcription as selectable for room administrators in the client.",
+   "enum": [
+    "simple_transcription",
+    "digital_interpreter"
+   ],
+   "type": "string"
+  }
+ },
+ "required": [
+  "transcriptionEnabled",
+  "transcriptionType"
+ ],
+ "type": "object"
+}
+===== LanguageSettingsEdit
+{
+ "additionalProperties": false,
+ "properties": {
+  "defaultSpokenLanguage": {
+   "description": "The default spoken language.",
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "targetTranscriptionLanguages": {
+   "description": "The languages that the spoken words are translated into. The translation into all of these languages is happening continuously as long as the feature is enabled, even if no participant has selected that language. To get the available transcription languages, refer to the 'List Available Languages' endpoint.",
+   "items": {
+    "type": "string"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  },
+  "transcriptionEnabled": {
+   "description": "If true, the transcription feature is enabled in this room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "transcriptionType": {
+   "description": "The type of transcription as selectable for room administrators in the client.",
+   "enum": [
+    "simple_transcription",
+    "digital_interpreter"
+   ],
+   "type": [
+    "string",
+    "null"
+   ]
+  }
+ },
+ "type": "object"
+}
+===== RoomTypeData
+{
+ "additionalProperties": false,
+ "properties": {
+  "maxActiveParticipants": {
+   "description": "The maximum number of active participants.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "maxSpectatorOnlyParticipants": {
+   "description": "The maximum number of spectator-only participants.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "maxSubRooms": {
+   "description": "The maximum number of subrooms.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "name": {
+   "description": "The room type name.",
+   "type": "string"
+  },
+  "total": {
+   "description": "The total quota of this room type.",
+   "format": "int64",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "used": {
+   "description": "The number of existing rooms using this room type.",
+   "format": "int64",
+   "minimum": 0,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "name",
+  "maxActiveParticipants",
+  "maxSpectatorOnlyParticipants",
+  "maxSubRooms",
+  "total",
+  "used"
+ ],
+ "type": "object"
+}
+===== Stats
+{
+ "additionalProperties": false,
+ "properties": {
+  "activeCount": {
+   "description": "The number of rooms with active users.",
+   "format": "int64",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "roomOnlineSeconds": {
+   "description": "The total duration of rooms having at least one person connected in seconds.",
+   "format": "int64",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "sessionCount": {
+   "description": "The number of active sessions. A session is a contiguous period of time the user was in the room (beginning with either a join or the start of the time period (if the user had joined before the start of the time period) and ending with a leave or the end of the time period (if the user was still in the room at the end of the time period).",
+   "format": "int64",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "usersOnlineSeconds": {
+   "description": "The total duration of users being connected to a room in seconds.",
+   "format": "int64",
+   "minimum": 0,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "activeCount",
+  "sessionCount",
+  "roomOnlineSeconds",
+  "usersOnlineSeconds"
+ ],
+ "type": "object"
+}
+===== StatsPeriod
+{
+ "additionalProperties": false,
+ "properties": {
+  "from": {
+   "description": "The start time of the considered time period.",
+   "examples": [
+    "2024-09-22T11:00:00Z"
+   ],
+   "format": "date-time",
+   "type": "string"
+  },
+  "meetings": {
+   "$ref": "#/components/schemas/Stats",
+   "description": "Statistics for meetings."
+  },
+  "rooms": {
+   "$ref": "#/components/schemas/Stats",
+   "description": "Statistics for rooms."
+  },
+  "to": {
+   "description": "The end time of the considered time period.",
+   "examples": [
+    "2024-09-22T12:00:00Z"
+   ],
+   "format": "date-time",
+   "type": "string"
+  }
+ },
+ "required": [
+  "from",
+  "to",
+  "rooms",
+  "meetings"
+ ],
+ "type": "object"
+}
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && grep -c "InviteUser" leads/lead-bigpickle.md; grep -n "InviteUser\|manageCompany" leads/lead-bigpickle.md | tail -20
+8
+6557:[NEW] apis.alfaview.com TokenUserPermissions is a CLOSED vocabulary: additionalProperties:false, all 7 fields required = manageCompany, roomAdmin, roomCreate, roomList, userAdmin, userList, userShow. There is no guest-link or group-link axis. InviteUserPermissions is the identical 7-field set. The platform's own convention is that a company-wide list gets a named permission (roomList="list all rooms in their company", userList="list all users in their company") — the guest-link list is the one company-wide read whose sensitivity exceeds any published permission, and GET /v2/guest-links nevertheless declares 403 "The requesting user does not have the necessary permissions" while GET /v2/group-links does not.
+6576:reasoning: GET /v2/guest-links declares only pageToken and limit — no roomId, no companyId, no filter — while the room-scoped sibling /v2/rooms/{roomId}/guest-links exists separately, so the unscoped list is a strict superset with no narrowing parameter. Every listed object is a GuestLink whose required fields include accessKey, joinUrl, dialInCode, emailAddress and roomId. The only documented mechanism for gating a company-wide read is the token's TokenUserPermissions, which is additionalProperties:false with all 7 fields required (manageCompany, roomAdmin, roomCreate, roomList, userAdmin, userList, userShow); no guest-link axis exists, and InviteUserPermissions is the identical 7-field set. The platform does gate its other company-wide lists by name in exactly this vocabulary (roomList = "list all rooms in their company", userList = "list all users in their company"), so the convention exists and is not applied here. Guest links are otherwise permission-bearing principals: RoomPermissions carries guestLinkPermissions[] and groupLinkPermissions[] of ParticipantPermissions, and PermissionsEdit.admin is "manage guests in the room" — so the read that discloses the credential behind those principals is gated by nothing expressible. The credential is directly redeemable: POST /v2/auth/guest-link takes {companyId, roomId, accessKey} (displayName not required, server-confirmed) and returns GuestLinkAuthenticationInfo, whose accessToken field is documented as empty only when the link is "not yet / no longer valid"; the handler demonstrably performs the lookup, returning the post-lookup business tier 422/88B ACTION_INVALID for well-formed synthetic values. Every probe in this cycle returned 401/107B pre-auth, so no authorization behavior is claimed. The spec's declaration of 403 on GET /v2/guest-links (absent on GET /v2/group-links) shows a check is contemplated, but a declared response code is not a named permission and I proved this cycle that this spec under-declares auth codes.
+6616:[LEARN] ACCEPTED IDOR @ apis.alfaview.com: the company-wide guest-link list is un-narrowable and credential-bearing, and the published contract contains no permission able to express the check. Two independent halves, both now fully specified. (a) Scope: ListGuestLinks takes only pageToken and limit, the room-scoped sibling /v2/rooms/{roomId}/guest-links exists separately, so the unscoped list is a strict superset with no filter, and its 12 required fields include accessKey, joinUrl, dialInCode and guest emailAddress. (b) Authority: the only documented gate is TokenUserPermissions, additionalProperties:false with all 7 fields required (manageCompany, roomAdmin, roomCreate, roomList, userAdmin, userList, userShow) — no guest-link axis, and InviteUserPermissions is the identical 7-field set. The platform does name a permission for every other company-wide list it documents (roomList = "list all rooms in their company", userList = "list all users in their company"), so the convention exists and is not applied to the one read that returns live join credentials. Guest links are otherwise first-class permission-bearing principals: RoomPermissions carries guestLinkPermissions[] and groupLinkPermissions[] of ParticipantPermissions, and PermissionsEdit.admin is "edit or delete rooms, change room settings or features and manage guests in the room". The credential is directly redeemable — POST /v2/auth/guest-link takes {companyId, roomId, accessKey}, displayName not required (server-confirmed 422/171B differential), and GuestLinkAuthenticationInfo.accessToken is documented as empty only when the link is "not yet / no longer valid"; the handler demonstrably performs its lookup, returning the post-lookup business tier 422/88B ACTION_INVALID for well-formed synthetic values. Both halves are provable from the published contract with zero credentials. Neither is proven on the wire: this cycle established that the edge proxy makes the question unreachable without a token, so authorization behaviour is entirely unmeasured, and the server may enforce an undeclared check or the live token-info response may carry fields the spec omits.
+6629:reasoning: Two independently sufficient halves, both now exact. Scope: ListGuestLinks declares parameters Authorization, pageToken, limit(int32, default 100, max 500) and nothing else — no roomId, no companyId, no filter, no sort — while the room-scoped sibling /v2/rooms/{roomId}/guest-links exists separately, so the unscoped list is a strict superset that cannot be narrowed through the documented contract. Its envelope PaginatedBodyListGuestLink is additionalProperties:false, required:[data], {data: GuestLink[]|null, nextPageToken}, with no totalCount, so the company cannot even be sized from outside. Payload: GuestLink is additionalProperties:false with 12 of 15 fields required — id, roomId, createdBy, createdAt, permissionGroupId, accessKey, emailAddress, locale, origin, dialInAllowed, dialInCode, joinUrl — so a 200 is contractually guaranteed to carry the join credential and the guest's email address for every object returned, and cannot omit them as a naive implementation would. GroupLink is the same shape at 12 of 14 with joinLink added and emailAddress absent, confirming shared non-per-guest links. dialInCode is required unconditionally beside the required boolean dialInAllowed, so the telephony PIN is returned even for links where dialing is switched off. Authority: the only documented gate is TokenUserPermissions, additionalProperties:false with all 7 fields required — manageCompany, roomAdmin, roomCreate, roomList, userAdmin, userList, userShow — containing no guest-link or group-link axis, and InviteUserPermissions is the identical 7-field set. The convention is not absent: roomList is documented as "list all rooms in their company" and userList as "list all users in their company", so every other company-wide read in this API is name-gated and this one is not. Guest links are nonetheless first-class permission-bearing principals — RoomPermissions carries guestLinkPermissions[] and groupLinkPermissions[] of ParticipantPermissions{participantId, permissions}, and PermissionsEdit.admin covers "manage guests in the room" — so the read that discloses the credential behind those principals is gated by nothing expressible. Redemption completes the chain: POST /v2/auth/guest-link takes {companyId, roomId, accessKey} and, unlike its group-link sibling, does not require displayName (server-confirmed via 422/171B vs 422/88B differential), and GuestLinkAuthenticationInfo.accessToken is documented as empty only when the link is "not yet / no longer valid"; the handler demonstrably performs the lookup, returning the post-lookup business tier 422/88B ACTION_INVALID for well-formed synthetic triples. This cycle established the boundary of what can be known: the edge proxy rejects before query and path validation, proven by roomId=abc and /v2/rooms/abc/guest-links both returning the identical 401/107B as the well-formed control, with ?bogusParam=abc confirming no parameter discrimination. Therefore a hidden-but-accepted filter is unknowable without a token, and authorization behaviour is entirely unmeasured. A 403 declared on ListGuestLinks and absent on ListGroupLinks shows a check is contemplated, but declarations here are demonstrably not behaviourally load-bearing.
+6688:reasoning: The contract half is unchanged and exact: `ListGuestLinks` declares parameters `Authorization` (header), `pageToken` (string) and `limit` (int32, default 100, max 500) and nothing else, no filter, no sort, no include; the room-scoped sibling `/v2/rooms/{roomId}/guest-links` exists separately, so the unscoped list is a strict superset; the envelope `PaginatedBodyListGuestLink` is `additionalProperties:false`, `required:[data]`, shaped `{data, nextPageToken}` with no `totalCount`, so the company cannot even be sized from outside. The payload half: `GuestLink` is `additionalProperties:false` with 12 of 15 fields required including `accessKey`, `joinUrl`, `dialInCode` and `emailAddress`; `dialInCode` is required unconditionally beside the required boolean `dialInAllowed`, so a dialing-disabled link still returns its telephony PIN. **New this cycle, the behavioural half.** `/v2/guest-links?roomId=abc&limit=abc` → 422/141B and `?companyId=abc&limit=abc` → 422/141B, both md5 `551221c3`, each returning an `errors` array with exactly one entry, `query.limit`. Because that array is a complete per-parameter enumerator — proven by `?limit=abc` alone producing the same single entry, and by `/v2/rooms?roomTypes=abc` producing a correctly indexed `query.roomTypes[0]` — the absence of a `roomId` and a `companyId` entry is positive evidence that the server does not bind them, not merely evidence that the docs omit them. The authority half is unchanged: `TokenUserPermissions` is `additionalProperties:false` with all seven fields required — `manageCompany`, `roomAdmin`, `roomCreate`, `roomList`, `userAdmin`, `userList`, `userShow` — and has no guest-link or group-link axis, while `roomList` and `userList` are each documented as "list all rooms/users in their company", so the naming convention exists and is applied to every other company-wide read but not to the one that returns live join credentials. `ListGuestLinks` declares 403, `ListGroupLinks` does not. Redemption is the documented unauthenticated `POST /v2/auth/guest-link` taking `{companyId, roomId, accessKey}` with `displayName` not required, and the handler demonstrably performs its lookup, returning the post-lookup 422/88B `ACTION_INVALID` tier for well-formed synthetic values.
+6859:asset: apis.alfaview.com — `InviteUserPermissions` (body of `POST /v2/users/invitation`) vs `TokenUserPermissions` (200 of `GET /v2/auth/token-info`)
+6861:reasoning: Verified programmatically. Both schemas have **exactly identical field sets** — 7 booleans, all required, `additionalProperties:false` — {manageCompany, roomAdmin, roomCreate, roomList, userAdmin, userList, userShow}. Descriptions diverge: `InviteUserPermissions` documents three implications; `TokenUserPermissions` documents **none** (zero "Implies" occurrences). `InviteUserPermissions` is referenced exactly once in the whole contract, as `UserInvitation.permissions`; `TokenUserPermissions` exactly once, as `TokenInfo.permissions` — and is **never** accepted as a request body, so no API exposes writing a token's permission set. The platform can therefore *express* `{manageCompany: true, userShow: false}` at invitation time (the implication is prose, not a schema constraint) and *observe* it via token-info, with the enforcement layer's interpretation undocumented. This also sharpens the standing `userShow` hypothesis: `userShow` is the only field whose documented meaning is participant-identity disclosure, and it is one of the three `manageCompany` is documented to imply — so the two documented resolution rules disagree about whether it is independently controllable. That disagreement is exactly what a per-field gate on `GET /v2/rooms/{id}/participants` must adjudicate.
+6863:verify_steps: HUMAN_ONLY for the decisive step; passive portion complete. Read-only: `GET https://apis.alfaview.com/v2/docs/openapi.json`, diff the `description` strings of `components.schemas.InviteUserPermissions` and `TokenUserPermissions`, confirm zero "Implies" in the latter (done). Decisive, for a human with a test tenant: invite via `POST /v2/users/invitation` with all 7 booleans and `{"manageCompany": true, "userShow": false}`; as that user call `GET /v2/auth/token-info` recording `permissions` verbatim, then `GET /v2/rooms/<own-room-id>/participants` recording status only. A 200 with `userShow:false` confirms the divergence is behaviourally live. Count only, never read identity values.
+6864:impact: If enforcement resolves implications from `TokenUserPermissions` (which documents none) rather than `InviteUserPermissions` (which documents three), a user the invitation layer treats as a full company manager may be denied participant-identity reads — or, damagingly, a narrowly-granted user may inherit the participant list through an implication applied opposite to the one the invitation schema documents. The asset at risk is `GET /v2/rooms/{id}/participants`, whose payload is the internal `userId` UUID that `DELETE /v2/users/{id}` and `PATCH /v2/rooms/{roomId}/permissions/{userId}` consume as their sole input. MEDIUM and honestly speculative: this is a documentation-semantics divergence, not a demonstrated defect, and it is entirely plausible the server treats the 7 booleans as independent, in which case nothing is wrong.
+6940:verify_steps: Passive portion complete. Decisive, for a human with a test tenant: (1) invite via `POST /v2/users/invitation` with all 7 booleans and `{"manageCompany": true, "userShow": false}` — a write, needs sign-off. (2) as that user `GET /v2/auth/token-info`, record `permissions` verbatim. (3) `GET /v2/rooms/<own-room>/participants` — record status only, count entries, never read identity values. A 200 under `userShow:false` confirms the gate is not enforced.
+7101:evidence_needed: One self-owned low-privilege token (e.g. a room participant without manageCompany) on a
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes && python3 -c "
+import yaml,json
+d=yaml.safe_load(open('alfaview-openapi.yaml'))
+print(json.dumps(d['paths']['/v2/users/invitation'],indent=1))
+print('=== UserInformation'); print(json.dumps(d['components']['schemas']['UserInformation'],indent=1))
+print('=== TokenUserPermissions'); print(json.dumps(d['components']['schemas']['TokenUserPermissions'],indent=1))
+"
+{
+ "post": {
+  "description": "Invites a user to the company of the requester.",
+  "operationId": "InviteUser",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   }
+  ],
+  "requestBody": {
+   "content": {
+    "application/json": {
+     "schema": {
+      "$ref": "#/components/schemas/UserInvitation"
+     }
+    }
+   },
+   "description": "The user to invite.",
+   "required": true
+  },
+  "responses": {
+   "202": {
+    "description": "The invitation request was successful. Note that the user might not be available immediately after the response was sent. This can take up to a few minutes."
+   },
+   "400": {
+    "description": "The request was not valid."
+   },
+   "401": {
+    "description": "The 'Authorization' header did not contain a valid API token."
+   },
+   "403": {
+    "description": "The requesting user does not have the necessary permissions."
+   },
+   "422": {
+    "description": "An entity in the request cannot be processed. Either a validation (e.g. ID validity) did not succeed or a precondition was not met."
+   }
+  },
+  "summary": "Invite User",
+  "tags": [
+   "Users"
+  ],
+  "x-sort-index": 0
+ }
+}
+=== UserInformation
+{
+ "additionalProperties": false,
+ "properties": {
+  "emailAddress": {
+   "description": "The email address.",
+   "examples": [
+    "user@provider.com"
+   ],
+   "format": "email",
+   "type": "string"
+  },
+  "firstName": {
+   "description": "The first name.",
+   "type": "string"
+  },
+  "lastName": {
+   "description": "The last name.",
+   "type": "string"
+  },
+  "locale": {
+   "description": "The locale settings (e.g., UI language) for the user.",
+   "enum": [
+    "de-DE",
+    "en-US"
+   ],
+   "type": "string"
+  },
+  "title": {
+   "description": "The title.",
+   "examples": [
+    "Dr."
+   ],
+   "type": "string"
+  }
+ },
+ "required": [
+  "emailAddress",
+  "firstName",
+  "lastName"
+ ],
+ "type": "object"
+}
+=== TokenUserPermissions
+{
+ "additionalProperties": false,
+ "properties": {
+  "manageCompany": {
+   "description": "If true, the user can manage company settings.",
+   "type": "boolean"
+  },
+  "roomAdmin": {
+   "description": "If true, the user can create, update and delete any room.",
+   "type": "boolean"
+  },
+  "roomCreate": {
+   "description": "If true, the user can create rooms for their company.",
+   "type": "boolean"
+  },
+  "roomList": {
+   "description": "If true, the user can list all rooms in their company.",
+   "type": "boolean"
+  },
+  "userAdmin": {
+   "description": "If true, the user can create, update and delete other users, send password reset mails and resend sign-up mails for new users.",
+   "type": "boolean"
+  },
+  "userList": {
+   "description": "If true, the user can list all users in their company.",
+   "type": "boolean"
+  },
+  "userShow": {
+   "description": "If true, the user can see the user names of all users in rooms they can access.",
+   "type": "boolean"
+  }
+ },
+ "required": [
+  "manageCompany",
+  "userAdmin",
+  "userList",
+  "userShow",
+  "roomAdmin",
+  "roomList",
+  "roomCreate"
+ ],
+ "type": "object"
+}
+[0m
+## Objective
+- Continue the alfaview gmbh bug-bounty analysis in `POC` phase against `apis.alfaview.com`, compare current surface with stored knowledge, and produce the user-mandated structured DELTA/PRIORITIZE/HYPOTHESES/decision blocks.
+- Prioritize IDOR/BOLA, auth, and business-logic flaws while keeping live verification passive-first and non-destructive.
+
+## Important Details
+- State: `{"phase":"POC","target":"api"}`; report channel: `bugs.olivermaicher.eu`.
+- Scope includes company-owned APIs, applications, backend systems, and `alfaview.com` subdomains.
+- Final response must contain only the required structured blocks: `[DELTA]`, `[PRIO]`, up to three strict-schema `[HYP]` blocks, `[PARKED]/[FINAL]`, exactly one `[NEXT]`, `[LEARN]`, and `[RISK]`.
+- Live probes: passive-first, `<=1 rps`, only `GET/HEAD/OPTIONS`; no live mutation or customer-data access.
+- Avoid rejected classes: descriptive errors, scanner-only output, brute force/rate limiting, username enumeration, public login panels, clickjacking without exploit, known-library-only findings, and inference from absent spec declarations.
+- Latest known live OpenAPI: `https://apis.alfaview.com/v2/docs/openapi.json`, MD5 `284a3383c1ac3cfc9152ffcc631891f2`, `132100B`, `38 paths`, `57 operations`, byte-identical on `beta-apis.alfaview.com`.
+- Local `recon-notes/alfaview-openapi.yaml` is stale at `37 paths` and lacks `/v2/users/me/company`; live `/v2/audit-log` is a separate undocumented 39th path.
+- Standing high-value chains:
+  - `POST /oauth2/introspect`: client authentication bypass, confidence `94`, needs one real token to measure impact.
+  - `GET /v2/guest-links` + `GET /v2/group-links`: company-wide credential-bearing lists, confidence `90`, token-gated.
+  - `GET/POST /v2/rooms/{roomId}/permissions`: possible low-privilege room-admin escalation, confidence `62`, behavior unmeasured.
+  - `POST /v2/rooms`: caller may grant `permissions.admin` to arbitrary principals at creation, confidence `70`.
+  - `PATCH /v2/rooms/{id}` quota-update differential, confidence `45`.
+- Correct prior wording: `PATCH /v2/rooms/{roomId}/permissions/{userId}` is room-scoped; the live hypothesis concerns company-scope authorization, not a missing `roomId`.
+- REST `POST /v2/auth/guest-link` requires `{accessKey,companyId,roomId}`; `displayName` is optional. GraphQL guest mutations remain accessKey-less.
+- Signup at `app.alfaview.com/graphql` is anonymous-reachable but email-gated; obtaining a self-owned low-privilege account is `HUMAN_ONLY`.
+- Do not use response body length as sameness evidence for API 401s; MD5 is stable and header presence creates distinct tiers.
+- Pre-auth query binding exposes only already-public OpenAPI constraints; it must not be overstated as new sensitive disclosure.
+
+## Work State
+### Completed
+- Inspected repository structure and confirmed no files have been modified.
+- Read `scope.yml` and `state_bigpickle.json`.
+- Loaded the local OpenAPI and confirmed it is OpenAPI `3.1.0` with `37 paths`.
+- Identified that the local contract is stale relative to the live `38-path/57-operation` document.
+- Reviewed prior findings around `POST /v2/rooms`, `PATCH /v2/rooms/{id}`, participant IDs, and room-permission read/write behavior.
+- Began structural inspection of:
+  - `GET/POST /v2/rooms/{roomId}/passcode`
+  - `GET /v2/rooms/{roomId}/permissions`
+  - `GET/PATCH/DELETE /v2/rooms/{roomId}/permissions/{userId}`
+  - `Passcode`, `RoomLimits`, `RoomSettingsUpdate`, and related schemas
+- Confirmed `Passcode` is `additionalProperties:false` with required `passcode` and `required`; `GET` returns a room-entry secret and `POST` regenerates it.
+- No live delta probes were run in the current turn yet.
+
+### Active
+- Evaluating whether low-privilege room membership or `roomCreate` permits reading/regenerating passcodes or granting arbitrary room-admin permissions.
+- Finishing contract extraction for `RoomCreate.permissions`, `Permissions`, `ParticipantPermissions`, passcode operations, and the room-permission response/write shapes.
+- Determining which top-three hypotheses can receive passive or exact read-only verification before the required final structured output.
+
+### Blocked
+- Behavioral verification of the standing IDOR/BOLA chains requires one self-owned low-privilege alfaview account and one self-owned room where `roomAdmin=false`.
+- Signup completion requires access to an email activation token and cannot be automated under the current `HUMAN_ONLY` constraint.
+- No current command errors or failing probes.
+
+## Next Move
+1. Finish local schema extraction for `/v2/rooms/{roomId}/passcode`, `/v2/rooms/{roomId}/permissions`, and `/v2/rooms/{roomId}/permissions/{userId}`, including `RoomCreate`, `Permissions`, `ParticipantPermissions`, and `Passcode`.
+2. Run a passive delta check against `GET https://apis.alfaview.com/v2/docs/openapi.json` at `<=1 rps`, compare against MD5 `284a3383c1ac3cfc9152ffcc631891f2`, then emit the mandated blocks with exactly one `[NEXT]` action.
+
+## Relevant Files
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/scope.yml`: authoritative program scope and exclusions.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/alfaview-openapi.yaml`: local 37-path OpenAPI snapshot; stale but useful for schema analysis.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/inventory/alfaview.md`: alfaview asset inventory and reconnaissance history.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/probe-results.md`: accumulated HTTP probe results.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/leads/lead-nemotron3.md`: latest high-priority guest/group-link and room-permission leads.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/reports/hypotheses-nemotron3.txt`: ranked standing hypotheses.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/reports/hypotheses-bigpickle.txt`: current ranked hypothesis snapshot.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/state_nemotron3.json`: analyst state.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/analyst-prompt.txt`: full prior prompt/context.
+- `/home/runner/work/alfaview-hunt/alfaview-hunt/ctx.txt`: consolidated state, leads, hypotheses, and inventory context.
+Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes && python3 -c "
+import yaml,json
+d=yaml.safe_load(open('alfaview-openapi.yaml'))
+S=d['components']['schemas']
+def refs(o,acc):
+    if isinstance(o,dict):
+        for k,v in o.items():
+            if k=='\$ref' and isinstance(v,str) and v.startswith('#/components/schemas/'):
+                acc.add(v.rsplit('/',1)[-1])
+            else: refs(v,acc)
+    elif isinstance(o,list):
+        for i in o: refs(i,acc)
+reach=set()
+refs({'paths':d['paths']},reach)
+orph=sorted(k for k in S if k not in reach)
+print('TRULY UNREFERENCED BY ANY PATH (%d):'%len(orph))
+for k in orph: print('  ',k)
+print()
+for k in ['Translation','RoomQuotas','RoomQuotasEdit','ErrorModel','LanguageSettings','LanguageSettingsEdit']:
+    if k in S: print('=====',k); print(json.dumps(S[k],indent=1))
+"
+TRULY UNREFERENCED BY ANY PATH (16):
+   Attendance
+   ErrorDetail
+   ErrorModel
+   GroupLinkCreate
+   GuestLinkCreate
+   InviteUserPermissions
+   Participant
+   Permissions
+   RoomQuotas
+   RoomQuotasEdit
+   Stats
+   SubroomCreateListItem
+   SubroomEditListItem
+   TokenUserPermissions
+   Translation
+   UserInformation
+
+===== Translation
+{
+ "additionalProperties": false,
+ "properties": {
+  "in": {
+   "description": "The spoken language that should be translated.",
+   "type": "string"
+  },
+  "out": {
+   "description": "The available languages the translation feature can translate the spoken language into.",
+   "items": {
+    "type": "string"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  }
+ },
+ "required": [
+  "in",
+  "out"
+ ],
+ "type": "object"
+}
+===== RoomQuotas
+{
+ "additionalProperties": false,
+ "properties": {
+  "activeParticipants": {
+   "description": "The number of allowed active participants.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "maxVideoTilesPerPage": {
+   "description": "The number of allowed video tiles displayed per page. If this value mismatches the defined options in the alfaview client, the next lower value will be chosen.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "spectatorOnlyParticipants": {
+   "description": "The number of allowed spectator-only participants.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "activeParticipants",
+  "spectatorOnlyParticipants",
+  "maxVideoTilesPerPage"
+ ],
+ "type": "object"
+}
+===== RoomQuotasEdit
+{
+ "additionalProperties": false,
+ "properties": {
+  "activeParticipants": {
+   "description": "The maximum number of active participants.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "maxVideoTilesPerPage": {
+   "description": "The maximum number of video tiles displayed per page. If this value mismatches the defined options in the alfaview client, the next lower value will be chosen.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  },
+  "spectatorOnlyParticipants": {
+   "description": "The maximum number of spectator-only participants.",
+   "format": "int32",
+   "minimum": 0,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "activeParticipants",
+  "spectatorOnlyParticipants",
+  "maxVideoTilesPerPage"
+ ],
+ "type": "object"
+}
+===== ErrorModel
+{
+ "additionalProperties": false,
+ "properties": {
+  "detail": {
+   "description": "A human-readable explanation specific to this occurrence of the problem.",
+   "examples": [
+    "Property foo is required but is missing."
+   ],
+   "type": "string"
+  },
+  "errors": {
+   "description": "Optional list of individual error details",
+   "items": {
+    "$ref": "#/components/schemas/ErrorDetail"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  },
+  "instance": {
+   "description": "A URI reference that identifies the specific occurrence of the problem.",
+   "examples": [
+    "https://example.com/error-log/abc123"
+   ],
+   "format": "uri",
+   "type": "string"
+  },
+  "status": {
+   "description": "HTTP status code",
+   "examples": [
+    400
+   ],
+   "format": "int64",
+   "type": "integer"
+  },
+  "title": {
+   "description": "A short, human-readable summary of the problem type. This value should not change between occurrences of the error.",
+   "examples": [
+    "Bad Request"
+   ],
+   "type": "string"
+  },
+  "type": {
+   "default": "about:blank",
+   "description": "A URI reference to human-readable documentation for the error.",
+   "examples": [
+    "https://example.com/errors/example"
+   ],
+   "format": "uri",
+   "type": "string"
+  }
+ },
+ "type": "object"
+}
+===== LanguageSettings
+{
+ "additionalProperties": false,
+ "properties": {
+  "defaultSpokenLanguage": {
+   "description": "The default spoken language.",
+   "type": "string"
+  },
+  "targetTranscriptionLanguages": {
+   "description": "The languages that the translation feature is translating the spoken words to. The translation into all of these languages is happening permanently as long as the feature is enabled, even if no participant has selected that language. To get the available transcription languages, refer to the 'List Available Languages' endpoint.",
+   "items": {
+    "type": "string"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  },
+  "transcriptionEnabled": {
+   "description": "If true, the transcription feature is enabled in this room.",
+   "type": "boolean"
+  },
+  "transcriptionType": {
+   "description": "The type of transcription as selectable for room administrators in the client.",
+   "enum": [
+    "simple_transcription",
+    "digital_interpreter"
+   ],
+   "type": "string"
+  }
+ },
+ "required": [
+  "transcriptionEnabled",
+  "transcriptionType"
+ ],
+ "type": "object"
+}
+===== LanguageSettingsEdit
+{
+ "additionalProperties": false,
+ "properties": {
+  "defaultSpokenLanguage": {
+   "description": "The default spoken language.",
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "targetTranscriptionLanguages": {
+   "description": "The languages that the spoken words are translated into. The translation into all of these languages is happening continuously as long as the feature is enabled, even if no participant has selected that language. To get the available transcription languages, refer to the 'List Available Languages' endpoint.",
+   "items": {
+    "type": "string"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  },
+  "transcriptionEnabled": {
+   "description": "If true, the transcription feature is enabled in this room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "transcriptionType": {
+   "description": "The type of transcription as selectable for room administrators in the client.",
+   "enum": [
+    "simple_transcription",
+    "digital_interpreter"
+   ],
+   "type": [
+    "string",
+    "null"
+   ]
+  }
+ },
+ "type": "object"
+}
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes && python3 -c "
+import yaml,json
+d=yaml.safe_load(open('alfaview-openapi.yaml'))
+S=d['components']['schemas']
+def refs(o,acc):
+    if isinstance(o,dict):
+        for k,v in o.items():
+            if k=='\$ref' and isinstance(v,str) and v.startswith('#/components/schemas/'):
+                acc.add(v.rsplit('/',1)[-1])
+            else: refs(v,acc)
+    elif isinstance(o,list):
+        for i in o: refs(i,acc)
+seed=set(); refs({'paths':d['paths']},seed)
+reach=set()
+def walk(name,seen):
+    if name in seen: return
+    seen.add(name); reach.add(name)
+    a=set(); refs(S.get(name,{}),a); [walk(x,seen) for x in a]
+seen=set(); [walk(n,seen) for n in seed]
+orph=sorted(k for k in S if k not in reach)
+print('UNREACHABLE FROM PATHS (%d of %d):'%(len(orph),len(S)))
+for k in orph:
+    who=[n for n in S if k in json.dumps(S[n])]
+    print('  ',k,'| referenced by schemas:',who)
+"
+UNREACHABLE FROM PATHS (2 of 64):
+   ErrorDetail | referenced by schemas: ['ErrorModel']
+   ErrorModel | referenced by schemas: []
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import urllib.request,hashlib,time
+req=urllib.request.Request('https://apis.alfaview.com/v2/docs/openapi.json',headers={'User-Agent':'Mozilla/5.0'})
+r=urllib.request.urlopen(req,timeout=30); b=r.read()
+open('live.json','wb').write(b)
+print(r.status,len(b),hashlib.md5(b).hexdigest())
+PY
+200 132100 284a3383c1ac3cfc9152ffcc631891f2
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import yaml,json
+live=json.load(open('live.json'))
+loc=yaml.safe_load(open('/home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/alfaview-openapi.yaml'))
+lp,ll=set(live['paths']),set(loc['paths'])
+print('live paths',len(lp),'ops',sum(1 for p in lp for m in live['paths'][p] if m in('get','post','patch','put','delete')))
+print('NEW in live:',sorted(lp-ll))
+print('GONE vs local:',sorted(ll-lp))
+# operation-level diff on shared paths
+for p in sorted(lp&ll):
+    lm={m for m in live['paths'][p] if m in('get','post','patch','put','delete')}
+    lom={m for m in loc['paths'][p] if m in('get','post','patch','put','delete')}
+    if lm!=lom: print('METHOD DIFF',p,'local',sorted(lom),'live',sorted(lm))
+ls,vs=set(loc['components']['schemas']),set(live['components']['schemas'])
+print('NEW schemas:',sorted(vs-ls))
+print('REMOVED schemas:',sorted(ls-vs))
+for k in sorted(vs&ls):
+    if loc['components']['schemas'][k]!=live['components']['schemas'][k]:
+        print('SCHEMA CHANGED:',k)
+PY
+live paths 38 ops 57
+NEW in live: ['/v2/users/me/company']
+GONE vs local: []
+NEW schemas: ['Actor', 'Company', 'Event', 'PaginatedBodyListEvent', 'Target']
+REMOVED schemas: []
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import json
+d=json.load(open('live.json'))
+print(json.dumps(d['paths']['/v2/users/me/company'],indent=1))
+for k in ['Company','Actor','Event','Target','PaginatedBodyListEvent']:
+    print('=====',k); print(json.dumps(d['components']['schemas'][k],indent=1))
+PY
+{
+ "get": {
+  "description": "Returns the company of the requester.",
+  "operationId": "GetOwnCompany",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   }
+  ],
+  "responses": {
+   "200": {
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/Company"
+      }
+     }
+    },
+    "description": "The request was processed successfully."
+   },
+   "401": {
+    "description": "The 'Authorization' header did not contain a valid API token."
+   },
+   "422": {
+    "description": "An entity in the request cannot be processed. Either a validation (e.g. ID validity) did not succeed or a precondition was not met."
+   }
+  },
+  "summary": "Get own company",
+  "tags": [
+   "Users"
+  ],
+  "x-sort-index": 32
+ }
+}
+===== Company
+{
+ "additionalProperties": false,
+ "properties": {
+  "companyId": {
+   "description": "The ID.",
+   "examples": [
+    "0123456789ABCDEFGHIJKLMNOP"
+   ],
+   "type": "string"
+  },
+  "createdAt": {
+   "description": "The time at which the company was created.",
+   "examples": [
+    "2026-09-01T10:00:00Z"
+   ],
+   "format": "date-time",
+   "type": "string"
+  },
+  "displayName": {
+   "description": "The display name.",
+   "type": "string"
+  }
+ },
+ "required": [
+  "companyId",
+  "displayName",
+  "createdAt"
+ ],
+ "type": "object"
+}
+===== Actor
+{
+ "additionalProperties": false,
+ "properties": {
+  "systemName": {
+   "description": "The name of the acting service. Set if the actor type is 'system'.",
+   "type": "string"
+  },
+  "type": {
+   "description": "The type of actor.",
+   "enum": [
+    "user",
+    "support",
+    "system",
+    "async_task"
+   ],
+   "type": "string"
+  },
+  "userId": {
+   "description": "The ID of the acting user. Set if the actor type is 'user', 'support' or 'async_task'.",
+   "examples": [
+    "00000000-0000-0000-0000-000000000000"
+   ],
+   "type": "string"
+  }
+ },
+ "required": [
+  "type"
+ ],
+ "type": "object"
+}
+===== Event
+{
+ "additionalProperties": false,
+ "properties": {
+  "action": {
+   "description": "The audited action in the format 'domain.object.action'. Empty if 'checksumValid' is false.",
+   "examples": [
+    "room.room.create"
+   ],
+   "type": "string"
+  },
+  "actionType": {
+   "description": "Signals whether the action was reading or a writing operation.",
+   "enum": [
+    "read",
+    "write"
+   ],
+   "type": "string"
+  },
+  "actor": {
+   "$ref": "#/components/schemas/Actor",
+   "description": "The user or internal event that triggered the audited action."
+  },
+  "checksum": {
+   "description": "The checksum that the audit log service stored with the event.",
+   "type": "string"
+  },
+  "checksumValid": {
+   "description": "If false, the stored event does not match its checksum and its fields cannot be trusted.",
+   "type": "boolean"
+  },
+  "correlationId": {
+   "description": "The ID that groups all audit events of the same request.",
+   "examples": [
+    "00000000-0000-0000-0000-000000000000"
+   ],
+   "type": "string"
+  },
+  "details": {
+   "additionalProperties": {},
+   "description": "Details about the audited action, (e.g., 'before' and 'after' comparison).",
+   "type": "object"
+  },
+  "id": {
+   "description": "The audit event ID.",
+   "examples": [
+    "00000000-0000-0000-0000-000000000000"
+   ],
+   "type": "string"
+  },
+  "metadata": {
+   "additionalProperties": {
+    "type": "string"
+   },
+   "description": "The metadata attributes of the audit event. To get the available keys, refer to the 'List Searchable metadata attributes' endpoint.",
+   "type": "object"
+  },
+  "occurredAt": {
+   "description": "The time at which the audited action happened.",
+   "examples": [
+    "2026-09-01T10:00:00Z"
+   ],
+   "format": "date-time",
+   "type": "string"
+  },
+  "outcome": {
+   "description": "The result of the audited action.",
+   "enum": [
+    "success",
+    "failure",
+    "denied"
+   ],
+   "type": "string"
+  },
+  "parentEventId": {
+   "description": "The ID of the audit event that caused this one.",
+   "examples": [
+    "00000000-0000-0000-0000-000000000000"
+   ],
+   "type": "string"
+  },
+  "targets": {
+   "description": "The affected resources.",
+   "items": {
+    "$ref": "#/components/schemas/Target"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  }
+ },
+ "required": [
+  "id",
+  "occurredAt",
+  "actor",
+  "action",
+  "targets",
+  "actionType",
+  "outcome",
+  "checksum",
+  "checksumValid"
+ ],
+ "type": "object"
+}
+===== Target
+{
+ "additionalProperties": false,
+ "properties": {
+  "id": {
+   "description": "The resource ID.",
+   "examples": [
+    "00000000-0000-0000-0000-000000000000"
+   ],
+   "type": "string"
+  },
+  "type": {
+   "description": "The type of resource the audited action was applied to.",
+   "examples": [
+    "room"
+   ],
+   "type": "string"
+  }
+ },
+ "required": [
+  "type",
+  "id"
+ ],
+ "type": "object"
+}
+===== PaginatedBodyListEvent
+{
+ "additionalProperties": false,
+ "properties": {
+  "data": {
+   "description": "The actual data for a paginated request.",
+   "items": {
+    "$ref": "#/components/schemas/Event"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  },
+  "nextPageToken": {
+   "description": "A token that can be used to obtain the next page of the requested data.",
+   "type": "string"
+  }
+ },
+ "required": [
+  "data"
+ ],
+ "type": "object"
+}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import json,re
+raw=open('live.json').read()
+for kw in ['audit','Audit','metadata attributes','checksum','support','async_task','systemName']:
+    print('---',kw)
+    for m in re.finditer(kw,raw):
+        s=max(0,m.start()-90); print('   ...',raw[s:m.start()+90].replace('\n',' '))
+PY
+--- audit
+   ... object"},"Event":{"additionalProperties":false,"properties":{"action":{"description":"The audited action in the format 'domain.object.action'. Empty if 'checksumValid' is false.","
+   ... "#/components/schemas/Actor","description":"The user or internal event that triggered the audited action."},"checksum":{"description":"The checksum that the audit log service store
+   ... ent that triggered the audited action."},"checksum":{"description":"The checksum that the audit log service stored with the event.","type":"string"},"checksumValid":{"description":
+   ... not be trusted.","type":"boolean"},"correlationId":{"description":"The ID that groups all audit events of the same request.","examples":["00000000-0000-0000-0000-000000000000"],"ty
+   ... "],"type":"string"},"details":{"additionalProperties":{},"description":"Details about the audited action, (e.g., 'before' and 'after' comparison).","type":"object"},"id":{"descript
+   ... tion, (e.g., 'before' and 'after' comparison).","type":"object"},"id":{"description":"The audit event ID.","examples":["00000000-0000-0000-0000-000000000000"],"type":"string"},"met
+   ... ":{"additionalProperties":{"type":"string"},"description":"The metadata attributes of the audit event. To get the available keys, refer to the 'List Searchable metadata attributes'
+   ... ttributes' endpoint.","type":"object"},"occurredAt":{"description":"The time at which the audited action happened.","examples":["2026-09-01T10:00:00Z"],"format":"date-time","type":
+   ... 0:00Z"],"format":"date-time","type":"string"},"outcome":{"description":"The result of the audited action.","enum":["success","failure","denied"],"type":"string"},"parentEventId":{"
+   ... ccess","failure","denied"],"type":"string"},"parentEventId":{"description":"The ID of the audit event that caused this one.","examples":["00000000-0000-0000-0000-000000000000"],"ty
+   ... 0000-0000-000000000000"],"type":"string"},"type":{"description":"The type of resource the audited action was applied to.","examples":["room"],"type":"string"}},"required":["type","
+--- Audit
+--- metadata attributes
+   ... ,"type":"string"},"metadata":{"additionalProperties":{"type":"string"},"description":"The metadata attributes of the audit event. To get the available keys, refer to the 'List Sear
+   ... a attributes of the audit event. To get the available keys, refer to the 'List Searchable metadata attributes' endpoint.","type":"object"},"occurredAt":{"description":"The time at 
+--- checksum
+   ... ction":{"description":"The audited action in the format 'domain.object.action'. Empty if 'checksumValid' is false.","examples":["room.room.create"],"type":"string"},"actionType":{"
+   ... as/Actor","description":"The user or internal event that triggered the audited action."},"checksum":{"description":"The checksum that the audit log service stored with the event.",
+   ... ser or internal event that triggered the audited action."},"checksum":{"description":"The checksum that the audit log service stored with the event.","type":"string"},"checksumVali
+   ... ption":"The checksum that the audit log service stored with the event.","type":"string"},"checksumValid":{"description":"If false, the stored event does not match its checksum and 
+   ... ":"string"},"checksumValid":{"description":"If false, the stored event does not match its checksum and its fields cannot be trusted.","type":"boolean"},"correlationId":{"descriptio
+   ... null"]}},"required":["id","occurredAt","actor","action","targets","actionType","outcome","checksum","checksumValid"],"type":"object"},"GroupLink":{"additionalProperties":false,"pro
+   ... equired":["id","occurredAt","actor","action","targets","actionType","outcome","checksum","checksumValid"],"type":"object"},"GroupLink":{"additionalProperties":false,"properties":{"
+--- support
+   ... is 'system'.","type":"string"},"type":{"description":"The type of actor.","enum":["user","support","system","async_task"],"type":"string"},"userId":{"description":"The ID of the ac
+   ... g"},"userId":{"description":"The ID of the acting user. Set if the actor type is 'user', 'support' or 'async_task'.","examples":["00000000-0000-0000-0000-000000000000"],"type":"str
+   ... se actions.\nFor further information please refer to the [room permissions section in the support center](https://support.alfaview.com/en/administration/general/room-permissions/).
+   ...  information please refer to the [room permissions section in the support center](https://support.alfaview.com/en/administration/general/room-permissions/).\n\n### User permissions
+   ... ific rooms.\nFor further information please refer to the [user permissions section in the support center](https://support.alfaview.com/en/administration/general/user-permissions/).
+   ...  information please refer to the [user permissions section in the support center](https://support.alfaview.com/en/administration/general/user-permissions/).\n","title":"alfaview","
+   ... ription":"Authenticates via an API key and returns an access token. Refer to the [related support article](https://support.alfaview.com/en/developers/request-your-api-credentials/)
+   ... ia an API key and returns an access token. Refer to the [related support article](https://support.alfaview.com/en/developers/request-your-api-credentials/) to generate API keys.","
+--- async_task
+   ... ":"string"},"type":{"description":"The type of actor.","enum":["user","support","system","async_task"],"type":"string"},"userId":{"description":"The ID of the acting user. Set if t
+   ... {"description":"The ID of the acting user. Set if the actor type is 'user', 'support' or 'async_task'.","examples":["00000000-0000-0000-0000-000000000000"],"type":"string"}},"requi
+--- systemName
+   ... ed":["accessToken"],"type":"object"},"Actor":{"additionalProperties":false,"properties":{"systemName":{"description":"The name of the acting service. Set if the actor type is 'syst
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import urllib.request,urllib.error,hashlib,time
+UA={'User-Agent':'Mozilla/5.0','Accept':'application/json'}
+def p(url,method='GET'):
+    r=urllib.request.Request(url,headers=UA,method=method)
+    try:
+        resp=urllib.request.urlopen(r,timeout=25); st=resp.status; b=resp.read()
+    except urllib.error.HTTPError as e:
+        st=e.code; b=e.read()
+    except Exception as e:
+        return url,method,'ERR',str(e)[:60],0,''
+    return url,method,st,len(b),hashlib.md5(b).hexdigest(),b[:260].decode('utf8','replace').replace('\n',' ')
+urls=['https://apis.alfaview.com/v2/audit-log',
+      'https://apis.alfaview.com/v2/audit-log/metadata-attributes',
+      'https://apis.alfaview.com/v2/users/me/company']
+for i,u in enumerate(urls):
+    o=p(u)
+    print('%-58s %s  %s  len=%s md5=%s' % (u.split('alfaview.com')[1], o[1], o[2], o[3], o[4]))
+    print('    ', o[5][:250])
+    if i<len(urls)-1: time.sleep(1.4)
+PY
+/v2/audit-log                                              GET  422  len=232 md5=b4adcd157348f493646c0196c185bd34
+     {"title":"Unprocessable Entity","status":422,"detail":"validation failed","errors":[{"message":"required query parameter is missing","location":"query.from"},{"message":"required query parameter is missing","location":"query.to"}]} 
+/v2/audit-log/metadata-attributes                          GET  404  len=19 md5=595e88012a6521aae3e12cbebe76eb9e
+     404 page not found 
+/v2/users/me/company                                       GET  401  len=107 md5=60ed2f29d492ec872c598cc7d36aa37e
+     {"title":"Unauthorized","status":401,"detail":"No access token was provided in the Authorization header."}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import urllib.request,urllib.error,hashlib,time,json
+UA={'User-Agent':'Mozilla/5.0','Accept':'application/json'}
+def p(u,label=''):
+    try:
+        resp=urllib.request.urlopen(urllib.request.Request(u,headers=UA),timeout=25); st=resp.status; b=resp.read()
+    except urllib.error.HTTPError as e: st=e.code; b=e.read()
+    except Exception as e: return print(u,'ERR',e)
+    print('%-72s %s len=%s md5=%s'%(u.split('alfaview.com')[1][:72],st,len(b),hashlib.md5(b).hexdigest()))
+    try: print('   ',json.dumps(json.loads(b))[:600])
+    except: print('   ',b[:200])
+B='https://apis.alfaview.com/v2/audit-log'
+tests=[
+ B+'?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z',
+ B+'?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&bogusParam=abc',
+ B+'?from=abc&to=2026-01-02T00:00:00Z',
+ B+'?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&action=room.room.create',
+ B+'?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&actorType=support',
+ B+'?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&limit=abc',
+]
+for i,u in enumerate(tests):
+    p(u)
+    if i<len(tests)-1: time.sleep(1.4)
+PY
+/v2/audit-log?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z          401 len=107 md5=60ed2f29d492ec872c598cc7d36aa37e
+    {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+/v2/audit-log?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&bogusPar 401 len=107 md5=60ed2f29d492ec872c598cc7d36aa37e
+    {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+/v2/audit-log?from=abc&to=2026-01-02T00:00:00Z                           422 len=189 md5=fc2dfb0e2617807fa9ad7d380a1cd52f
+    {"title": "Unprocessable Entity", "status": 422, "detail": "validation failed", "errors": [{"message": "invalid date/time for format 2006-01-02T15:04:05.999999999Z07:00", "location": "query.from"}]}
+/v2/audit-log?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&action=r 401 len=107 md5=60ed2f29d492ec872c598cc7d36aa37e
+    {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+/v2/audit-log?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&actorTyp 401 len=107 md5=60ed2f29d492ec872c598cc7d36aa37e
+    {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+/v2/audit-log?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&limit=ab 422 len=141 md5=551221c34e3ac8d9daf04e75f9855263
+    {"title": "Unprocessable Entity", "status": 422, "detail": "validation failed", "errors": [{"message": "invalid integer", "location": "query.limit"}]}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import urllib.request,urllib.error,hashlib,time,json
+UA={'User-Agent':'Mozilla/5.0','Accept':'application/json'}
+B='https://apis.alfaview.com/v2/audit-log'
+cands=['from','to','limit','pageToken','offset','page','pageSize','sort','sortOrder','orderBy',
+ 'action','actionType','outcome','actorType','actorId','userId','companyId','actor',
+ 'checksumValid','correlationId','parentEventId','occurredAt','occurredAfter','occurredBefore',
+ 'actionTypeIn','actions','outcomeIn','actorTypes','metadata','targetType','targetId','roomId','eventId','id']
+q='&'.join('%s=abc'%c for c in cands)
+u=B+'?from=abc&to=abc&'+q
+try:
+    resp=urllib.request.urlopen(urllib.request.Request(u,headers=UA),timeout=25); st=resp.status; b=resp.read()
+except urllib.error.HTTPError as e: st=e.code; b=e.read()
+d=json.loads(b)
+print(st, 'entries:',len(d.get('errors',[])))
+for e in d.get('errors',[]): print('  ',e.get('location'),'|',e.get('message'))
+PY
+422 entries: 4
+   query.from | invalid date/time for format 2006-01-02T15:04:05.999999999Z07:00
+   query.to | invalid date/time for format 2006-01-02T15:04:05.999999999Z07:00
+   query.actionType | expected value to be one of "read, write"
+   query.limit | invalid integer
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import urllib.request,urllib.error,time,json
+UA={'User-Agent':'Mozilla/5.0','Accept':'application/json'}
+B='https://apis.alfaview.com/v2/audit-log'
+F='from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z'
+tests=[
+ B+'?'+F+'&limit=0',
+ B+'?'+F+'&limit=-1',
+ B+'?'+F+'&limit=99999',
+ B+'?'+F+'&actionType=read',
+ B+'?'+F+'&outcome=abc',
+ B+'?'+F+'&actorType=abc',
+ B+'?'+F+'&actor=abc',
+ B+'?'+F+'&action=abc.def.ghi',
+ B+'?'+F+'&pageToken=abc',
+ B+'?'+F+'&companyId=abc',
+ B+'?'+F+'&to=2025-01-01T00:00:00Z',
+ B+'?'+F+'&from=2030-01-01T00:00:00Z',
+ B+'?from=2026-01-01T00:00:00Z&to=2030-01-01T00:00:00Z',
+]
+for i,u in enumerate(tests):
+    try:
+        resp=urllib.request.urlopen(urllib.request.Request(u,headers=UA),timeout=25); st=resp.status; b=resp.read()
+    except urllib.error.HTTPError as e: st=e.code; b=e.read()
+    try: j=json.loads(b); s=json.dumps(j)[:230]
+    except: s=b[:120].decode('utf8','replace')
+    print('%-78s %s %s'%(u.split('audit-log')[1][:78],st,s))
+    if i<len(tests)-1: time.sleep(1.4)
+PY
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&limit=0                     422 {"title": "Unprocessable Entity", "status": 422, "detail": "validation failed", "errors": [{"message": "expected number >= 1", "location": "query.limit"}]}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&limit=-1                    422 {"title": "Unprocessable Entity", "status": 422, "detail": "validation failed", "errors": [{"message": "invalid integer", "location": "query.limit"}]}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&limit=99999                 422 {"title": "Unprocessable Entity", "status": 422, "detail": "validation failed", "errors": [{"message": "expected number <= 50", "location": "query.limit"}]}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&actionType=read             401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&outcome=abc                 401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&actorType=abc               401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&actor=abc                   401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&action=abc.def.ghi          401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&pageToken=abc               401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&companyId=abc               401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&to=2025-01-01T00:00:00Z     401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&from=2030-01-01T00:00:00Z   401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+?from=2026-01-01T00:00:00Z&to=2030-01-01T00:00:00Z                             401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import urllib.request,urllib.error,time,json
+UA={'User-Agent':'Mozilla/5.0','Accept':'application/json'}
+def g(u):
+    try:
+        r=urllib.request.urlopen(urllib.request.Request(u,headers=UA),timeout=25); return r.status,r.read()
+    except urllib.error.HTTPError as e: return e.code,e.read()
+    except Exception as e: return 'ERR',str(e).encode()
+tests=[
+ 'https://apis.alfaview.com/v2/rooms?limit=abc',
+ 'https://apis.alfaview.com/v2/rooms?roomTypes=abc',
+ 'https://apis.alfaview.com/v2/audit-log-metadata-attributes',
+ 'https://apis.alfaview.com/v2/audit-log/metadata',
+ 'https://apis.alfaview.com/v2/metadata-attributes',
+ 'https://apis.alfaview.com/v2/audit-log?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&limit=50&actionType=write&actionType=read',
+]
+for i,u in enumerate(tests):
+    st,b=g(u)
+    try: s=json.dumps(json.loads(b))[:240]
+    except: s=b[:150].decode('utf8','replace')
+    print('%-60s %s %s'%(u.split('alfaview.com')[1][:60],st,s))
+    if i<len(tests)-1: time.sleep(1.4)
+PY
+/v2/rooms?limit=abc                                          422 {"title": "Unprocessable Entity", "status": 422, "detail": "validation failed", "errors": [{"message": "invalid integer", "location": "query.limit"}]}
+/v2/rooms?roomTypes=abc                                      422 {"title": "Unprocessable Entity", "status": 422, "detail": "validation failed", "errors": [{"message": "expected value to be one of \"department, room, meeting\"", "location": "query.roomTypes[0]"}]}
+/v2/audit-log-metadata-attributes                            404 404 page not found
+
+/v2/audit-log/metadata                                       404 404 page not found
+
+/v2/metadata-attributes                                      404 404 page not found
+
+/v2/audit-log?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00: 401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import json
+d=json.load(open('live.json'))
+S=d['components']['schemas']
+def refs(o,acc):
+    if isinstance(o,dict):
+        for k,v in o.items():
+            if k=='$ref' and isinstance(v,str) and v.startswith('#/components/schemas/'): acc.add(v.rsplit('/',1)[-1])
+            else: refs(v,acc)
+    elif isinstance(o,list):
+        for i in o: refs(i,acc)
+reach=set()
+def walk(n,seen):
+    if n in seen: return
+    seen.add(n); reach.add(n)
+    a=set(); refs(S.get(n,{}),a)
+    for x in a: walk(x,seen)
+seed=set(); refs({'paths':d['paths']},seed); seen=set()
+for n in seed: walk(n,seen)
+print('UNREACHABLE FROM PATHS:')
+for k in sorted(set(S)-reach): print('  ',k)
+print()
+# who references Event / Company
+for t in ['Event','Company','Actor','Target']:
+    print(t,'<- referenced by:',[n for n in S if '#/components/schemas/%s"'%t in json.dumps(S[n])])
+print()
+print('paths mentioning audit:',[p for p in d['paths'] if 'audit' in p.lower()])
+print('all paths:')
+for p in sorted(d['paths']): print('   ',p)
+PY
+UNREACHABLE FROM PATHS:
+   Actor
+   ErrorDetail
+   ErrorModel
+   Event
+   PaginatedBodyListEvent
+   Target
+
+Event <- referenced by: ['PaginatedBodyListEvent']
+Company <- referenced by: []
+Actor <- referenced by: ['Event']
+Target <- referenced by: ['Event']
+
+paths mentioning audit: []
+all paths:
+    /v2/auth/api-key
+    /v2/auth/group-link
+    /v2/auth/guest-link
+    /v2/auth/password
+    /v2/auth/token-info
+    /v2/group-links
+    /v2/group-links/{id}
+    /v2/guest-links
+    /v2/guest-links/{id}
+    /v2/languages
+    /v2/meetings
+    /v2/meetings/{id}
+    /v2/meetings/{id}/cancellation
+    /v2/permission-groups
+    /v2/room-types
+    /v2/rooms
+    /v2/rooms/{id}
+    /v2/rooms/{id}/participants
+    /v2/rooms/{roomId}/attendances
+    /v2/rooms/{roomId}/features
+    /v2/rooms/{roomId}/file-share-limits
+    /v2/rooms/{roomId}/file-share-settings
+    /v2/rooms/{roomId}/group-links
+    /v2/rooms/{roomId}/group-links/{id}
+    /v2/rooms/{roomId}/guest-links
+    /v2/rooms/{roomId}/guest-links/{id}
+    /v2/rooms/{roomId}/language-settings
+    /v2/rooms/{roomId}/passcode
+    /v2/rooms/{roomId}/permissions
+    /v2/rooms/{roomId}/permissions/{userId}
+    /v2/rooms/{roomId}/subrooms
+    /v2/rooms/{roomId}/subrooms/{subroomId}
+    /v2/stats
+    /v2/users
+    /v2/users/invitation
+    /v2/users/me
+    /v2/users/me/company
+    /v2/users/{id}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import urllib.request,urllib.error,time,json
+UA={'User-Agent':'Mozilla/5.0','Accept':'application/json'}
+def go(u,m='GET'):
+    try:
+        r=urllib.request.urlopen(urllib.request.Request(u,headers=UA,method=m),timeout=25); return r.status,dict(r.headers),r.read()
+    except urllib.error.HTTPError as e: return e.code,dict(e.headers),e.read()
+    except Exception as e: return 'ERR',{},str(e).encode()
+B='https://apis.alfaview.com/v2/audit-log'
+F='?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z'
+seq=[(B,'OPTIONS'),(B,'HEAD'),(B+'/00000000-0000-0000-0000-000000000000','GET'),
+     ('https://apis.alfaview.com/v2/audit-logs','GET'),
+     ('https://apis.alfaview.com/v2/audit-log/searchable-metadata-attributes','GET'),
+     (B+F+'&actionType=read&actionType=write','GET')]
+for i,(u,m) in enumerate(seq):
+    st,h,b=go(u,m)
+    allow=h.get('Allow') or h.get('allow') or ''
+    try: s=json.dumps(json.loads(b))[:200]
+    except: s=b[:110].decode('utf8','replace')
+    print('%-7s %-64s %s allow=%s %s'%(m,u.split('alfaview.com')[1][:64],st,allow,s))
+    if i<len(seq)-1: time.sleep(1.4)
+PY
+OPTIONS /v2/audit-log                                                    405 allow=GET, HEAD Method Not Allowed
+
+HEAD    /v2/audit-log                                                    422 allow= 
+GET     /v2/audit-log/00000000-0000-0000-0000-000000000000               404 allow= 404 page not found
+
+GET     /v2/audit-logs                                                   404 allow= 404 page not found
+
+GET     /v2/audit-log/searchable-metadata-attributes                     401 allow= {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+GET     /v2/audit-log?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z& 401 allow= {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import urllib.request,urllib.error,time,json
+UA={'User-Agent':'Mozilla/5.0','Accept':'application/json'}
+def go(u,m='GET'):
+    try:
+        r=urllib.request.urlopen(urllib.request.Request(u,headers=UA,method=m),timeout=25); return r.status,r.read()
+    except urllib.error.HTTPError as e: return e.code,e.read()
+    except Exception as e: return 'ERR',str(e).encode()
+seq=[
+ ('https://apis.alfaview.com/v2/definitely-not-real-xyz','GET'),
+ ('https://apis.alfaview.com/v2/audit-log/searchable-metadata-attributes?limit=abc','GET'),
+ ('https://apis.alfaview.com/v2/audit-log/searchable-metadata-attributes?bogus=abc','GET'),
+ ('https://apis.alfaview.com/v2/audit-log/searchable-metadata-attributes/00000000-0000-0000-0000-000000000000','GET'),
+ ('https://apis.alfaview.com/v2/audit-log/export','GET'),
+ ('https://apis.alfaview.com/v2/audit-log/00000000-0000-0000-0000-000000000000/events','GET'),
+]
+for i,(u,m) in enumerate(seq):
+    st,b=go(u,m)
+    try: s=json.dumps(json.loads(b))[:200]
+    except: s=b[:110].decode('utf8','replace')
+    print('%-72s %s %s'%(u.split('alfaview.com')[1][:72],st,s))
+    if i<len(seq)-1: time.sleep(1.4)
+PY
+/v2/definitely-not-real-xyz                                              404 404 page not found
+
+/v2/audit-log/searchable-metadata-attributes?limit=abc                   401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+/v2/audit-log/searchable-metadata-attributes?bogus=abc                   401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+/v2/audit-log/searchable-metadata-attributes/00000000-0000-0000-0000-000 404 404 page not found
+
+/v2/audit-log/export                                                     404 404 page not found
+
+/v2/audit-log/00000000-0000-0000-0000-000000000000/events                404 404 page not found
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import urllib.request,urllib.error,time
+UA={'User-Agent':'Mozilla/5.0','Accept':'application/json'}
+def st(u):
+    try:
+        r=urllib.request.urlopen(urllib.request.Request(u,headers=UA),timeout=20); return r.status
+    except urllib.error.HTTPError as e: return e.code
+    except Exception as e: return 'ERR'
+cands=['/v2/audit-log','/v2/audit-log/searchable-metadata-attributes','/v2/audit-events',
+ '/v2/events','/v2/audit','/v2/compliance','/v2/audit-log/events','/v2/audit-log/actions',
+ '/v2/audit-log/searchable-metadata','/v2/audit-log/metadataattributes','/v2/users/me/audit-log',
+ '/v2/stats/audit','/v2/audit-log/actors','/v2/audit-log/targets','/v2/audit-log/config']
+for i,c in enumerate(cands):
+    print('%-46s %s'%(c,st('https://apis.alfaview.com'+c)))
+    if i<len(cands)-1: time.sleep(1.2)
+PY
+/v2/audit-log                                  422
+/v2/audit-log/searchable-metadata-attributes   401
+/v2/audit-events                               404
+/v2/events                                     404
+/v2/audit                                      404
+/v2/compliance                                 404
+/v2/audit-log/events                           404
+/v2/audit-log/actions                          404
+/v2/audit-log/searchable-metadata              404
+/v2/audit-log/metadataattributes               404
+/v2/users/me/audit-log                         404
+/v2/stats/audit                                404
+/v2/audit-log/actors                           404
+/v2/audit-log/targets                          404
+/v2/audit-log/config                           404
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import urllib.request,urllib.error,time,json,hashlib
+UA={'User-Agent':'Mozilla/5.0','Accept':'application/json'}
+def go(u):
+    try:
+        r=urllib.request.urlopen(urllib.request.Request(u,headers=UA),timeout=25); return r.status,r.read()
+    except urllib.error.HTTPError as e: return e.code,e.read()
+    except Exception as e: return 'ERR',str(e).encode()
+seq=[
+ ('https://beta-apis.alfaview.com/v2/audit-log','GET'),
+ ('https://beta-apis.alfaview.com/v2/audit-log/searchable-metadata-attributes','GET'),
+ ('https://beta-apis.alfaview.com/v2/docs/openapi.json','GET'),
+]
+for u,m in seq:
+    st,b=go(u)
+    extra=('md5='+hashlib.md5(b).hexdigest()) if b'openapi' in u.encode() else ''
+    try: s=json.dumps(json.loads(b))[:150]
+    except: s=b[:100].decode('utf8','replace')
+    print('%-62s %s %s %s'%(u.split('.com')[1],st,extra,s))
+    time.sleep(1.3)
+PY
+/v2/audit-log                                                  422  {"title": "Unprocessable Entity", "status": 422, "detail": "validation failed", "errors": [{"message": "required query parameter is missing", "locatio
+/v2/audit-log/searchable-metadata-attributes                   401  {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+/v2/docs/openapi.json                                          200 md5=284a3383c1ac3cfc9152ffcc631891f2 {"components": {"schemas": {"APICredentials": {"additionalProperties": false, "properties": {"clientId": {"description": "The alias of the API key.",
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && tail -5 leads/lead-bigpickle.md && echo "---LINES:" && wc -l leads/lead-bigpickle.md && ls -la reports/ | tail -8
+[LEARN] ACCEPTED IDOR @ apis.alfaview.com POST /v2/rooms: a public, unauthenticated-to-read contract
+[LEARN] ACCEPTED BUSLOGIC @ apis.alfaview.com PATCH /v2/rooms/{id}: a documentation differential on
+[LEARN] REJECTED MISCONFIG @ apis.alfaview.com (orphan quota route): an orphan-schema diff scoped to
+[LEARN] NO_DELTA @ apis/sso standing surface: OpenAPI 200/132100B md5 284a3383 (38 paths, 57 ops),
+[RISK] alfaview gmbh: 63. Up 1 from 62. No unauthenticated exposure was found — every probe this
+---LINES:
+7447 leads/lead-bigpickle.md
+-rw-r--r--  1 runner runner 4242442 Oct  1 16:40 analyst-nemotron3.log
+-rw-r--r--  1 runner runner   15757 Oct  1 16:40 hypotheses-bigpickle.txt
+-rw-r--r--  1 runner runner      51 Oct  1 16:40 hypotheses-laguna.txt
+-rw-r--r--  1 runner runner      50 Oct  1 16:40 hypotheses-ling3.txt
+-rw-r--r--  1 runner runner      52 Oct  1 16:40 hypotheses-longcat.txt
+-rw-r--r--  1 runner runner   12466 Oct  1 16:40 hypotheses-nemotron3.txt
+-rw-r--r--  1 runner runner  612440 Oct  1 16:40 hypotheses.md
+-rw-r--r--  1 runner runner    9922 Oct  1 16:40 valid-bugs.md
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && grep -n "^\[RISK\]\|^\[LEARN\]" leads/lead-bigpickle.md | tail -3 && echo "=== hypotheses-bigpickle.txt head" && head -30 reports/hypotheses-bigpickle.txt
+7445:[LEARN] REJECTED MISCONFIG @ apis.alfaview.com (orphan quota route): an orphan-schema diff scoped to
+7446:[LEARN] NO_DELTA @ apis/sso standing surface: OpenAPI 200/132100B md5 284a3383 (38 paths, 57 ops),
+7447:[RISK] alfaview gmbh: 63. Up 1 from 62. No unauthenticated exposure was found — every probe this
+=== hypotheses-bigpickle.txt head
+## 2026-10-01 09:36:39 UTC [target] (model bigpickle)
+asset: apis.alfaview.com GET /v2/guest-links (ListGuestLinks) + GET /v2/group-links
+confidence: 88
+reasoning: Un-narrowable server-side (measured: roomId/companyId not bound, 422 errors array contains only query.limit). GuestLink requires accessKey/joinUrl/dialInCode/emailAddress (12/15). TokenUserPermissions is a closed 7-boolean additionalProperties:false vocabulary (verified this cycle inside TokenInfo.permissions) with no guest-link axis. Flat unscoped POST create now proven absent — writes are room-scoped, so the lists are the only company-wide read of join credentials.
+evidence_needed: One self-owned low-priv token; GET /v2/auth/token-info to record own bitmask; GET /v2/guest-links?limit=500.
+verify_steps: AUTH_HELPED, read-only, self-owned tenant. GET /v2/auth/token-info → GET /v2/guest-links?limit=1 → compare returned accessKey-bearing rows to own tenant scope.
+impact: Cross-tenant harvest of guest join credentials (accessKey+joinUrl+dialInCode) + guest email addresses. HIGH if the five undeclared server-side checks are absent.
+testability: AUTH_HELPED
+[HYP] The REST audit-log mirrors GraphQL listAuditEvents; server enforces the AUDIT_LOG company gate correctly
+class: IDOR (PREDICTED FALSE — carried so disconfirming evidence stays on record)
+asset: apis.alfaview.com GET /v2/audit-log
+confidence: 20
+reasoning: Live undocumented 39th path (prod+beta), GET-only, validation-before-auth (422 missing from/to) then auth-bound (401 valid params) — same 10-op class. GraphQL mirror gated by AUDIT_LOG=bit21 (client bundle) and feature-flagged to alfaview-internal companies. My earlier "no permission axis" claim was falsified; the gate exists.
+evidence_needed: Self-owned tenant user holding MANAGE_COMPANY; GET V2 /v2/auth/token-info to confirm bit 21; then GET /v2/audit-log?from=..&to=..
+verify_steps: AUTH_HELPED, read-only. Confirm bit 21, issue query, compare returned events to self-owned scope only.
+impact: If cross-tenant boundary unenforced, company admin reads another tenant's audited actions (room/meeting/user ops, actor userId+target ids). HIGH only if the (likely present) gate is broken.
+testability: AUTH_HELPED
+[HYP] RFC7662 introspection runs without client authentication in the same build that validates tokens at userinfo
+class: MISCONFIG
+asset: sso.alfaview.com POST /oauth2/introspect
+confidence: 94 (carried, not re-measured)
+reasoning: 30+ cycle-stable: fabricated client_id accepted on POST-body and Basic channels (200 active:false); same-deployment control /oauth2/userinfo tiers and rejects forged JOSE → omission not architecture.
+evidence_needed: One real self-owned token; POST /oauth2/introspect with it.
+verify_steps: AUTH_HELPED. POST token in body, fabricated client_id (body + Basic variants).
+impact: MEDIUM — token validity/claims disclosed to a caller who proved no client identity; no forgery.
+testability: AUTH_HELPED
+[NEXT] HUMAN: obtain one self-owned low-privlege account (unauthenticated signup at app.alfaview.com/graphql → email → finishSignup, email-gated) then, read-only on self-owned tenant only: `GET /v2/auth/token-info`, then `GET /v2/guest-links?limit=1` and `GET /v2/audit-log?from=2026-09-28T00:00:00Z&to=2026-09-30T00:00:00Z` — replaces the falsified IDOR with a measured authorization-behaviour answer on the top two chains.
+[RISK] alfaview gmbh: 61. Down 1 from 62: two standing spec-debt hypotheses closed (unscoped create, hidden quotas) and the audit surface proved auth-bound, so no unauthenticated exposure was added. The 94 introspect and 88 guest-link chains remain valid but strictly token-gated — risk is carried, not increased.
+verify_steps: AUTH_HELPED, read-only, self-owned tenant. GET /v2/auth/token-info → GET /v2/guest-links?limit=1 → compare returned accessKey-bearing rows to own tenant scope.
+impact: Cross-tenant harvest of guest join credentials (accessKey+joinUrl+dialInCode) + guest email addresses. HIGH if the five undeclared server-side checks are absent.
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import urllib.request,urllib.error,time,json
+UA={'User-Agent':'Mozilla/5.0','Accept':'application/json'}
+def go(u):
+    try:
+        r=urllib.request.urlopen(urllib.request.Request(u,headers=UA),timeout=25); return r.status,r.read()
+    except urllib.error.HTTPError as e: return e.code,e.read()
+    except Exception as e: return 'ERR',str(e).encode()
+B='https://apis.alfaview.com/v2/audit-log'
+F='from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z'
+seq=[
+ B+'?'+F+'&actionType=read&limit=1',
+ B+'?'+F+'&outcome=denied&limit=1',
+ B+'?'+F+'&actor.type=support&limit=1',
+ B+'?'+F+'&metadata.foo=bar&limit=1',
+ B+'?'+F+'&limit=50',
+ B+'?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&sortOrder=asc',
+]
+for i,u in enumerate(seq):
+    st,b=go(u)
+    try: s=json.dumps(json.loads(b))[:170]
+    except: s=b[:120].decode('utf8','replace')
+    print('%-64s %s %s'%(u.split('audit-log')[1][:64],st,s))
+    if i<len(seq)-1: time.sleep(1.3)
+PY
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&actionType=re 401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&outcome=denie 401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&actor.type=su 401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&metadata.foo= 401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&limit=50      401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&sortOrder=asc 401 {"title": "Unauthorized", "status": 401, "detail": "No access token was provided in the Authorization header."}
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && tail -c 1400 leads/lead-bigpickle.md
+mpact: Cross-tenant harvest of guest join credentials (accessKey + joinUrl + dialInCode) plus guest
+testability: AUTH_HELPED
+[PARKED] RoomQuotas/RoomQuotasEdit are orphan schemas implying an undocumented quota route:
+[PARKED] The REST audit-log mirrors GraphQL listAuditEvents without the AUDIT_LOG gate: confidence
+[PARKED] guest-link / group-link accessKey existence oracle: already REJECTED on 2026-09-27 —
+[FINAL] 1. Room creation grants room-scoped admin to arbitrary caller-named principals through a
+[FINAL] 2. Company-wide guest-link and group-link enumeration returns live join credentials with no
+[FINAL] 3. The billing-plan quota check documented on room creation is not applied on the update
+[FINAL] carried, no new hypothesis: RFC7662 introspection runs without client authentication in
+[NEXT] HUMAN: supply one self-owned LOW-PRIVILEGE alfaview account in a tenant I control, holding
+[LEARN] ACCEPTED IDOR @ apis.alfaview.com POST /v2/rooms: a public, unauthenticated-to-read contract
+[LEARN] ACCEPTED BUSLOGIC @ apis.alfaview.com PATCH /v2/rooms/{id}: a documentation differential on
+[LEARN] REJECTED MISCONFIG @ apis.alfaview.com (orphan quota route): an orphan-schema diff scoped to
+[LEARN] NO_DELTA @ apis/sso standing surface: OpenAPI 200/132100B md5 284a3383 (38 paths, 57 ops),
+[RISK] alfaview gmbh: 63. Up 1 from 62. No unauthenticated exposure was found — every probe this
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && grep -n "\[DELTA\]\|\[PRIO\]\|\[HYP\]\|\[NEXT\]\|\[LEARN\]\|\[RISK\]\|class:\|testability:\|confidence:" analyst-prompt.txt | head -60
+890:- 2026-09-28 ACCEPTED IDOR @ apis.alfaview.com: the participant-identity read is the program's first *self-serving* IDOR oracle. Every prior chain in this program has been blocked on a missing input — a token, an account, a user ID. This endpoint hands out the user ID. `GET /v2/rooms/{id}/participants` returns, for every principal currently connected to a room and bucketed by `subRoomId`, the internal `userId` UUID plus `displayName`, `isGuest`, `isDialIn`, `onBreak`, `inWaitingRoom` and `isSpectator` — and those UUIDs are the sole input to `DELETE /v2/users/{id}` and `PATCH /v2/rooms/{roomId}/permissions/{userId}`, the two unscoped destructive operations this program has carried as its standing IDOR target with no way to supply an identifier. The vendor documents the gate for exactly this data and nowhere else: `TokenUserPermissions.userShow` is "If true, the user can see the user names of all users in rooms they can access", in a closed 7-boolean all-required vocabulary whose other six fields are about company/room/user administration and bear no relation to participant identity. Exhaustive reference search confirms **no operation in the 57-operation contract references `TokenUserPermissions` except `GetTokenInfo` returning it** — so the enforcement point is undocumented and this operation is the only plausible consumer. Three independent corroborations that alfaview considers participant identity sensitive: `RoomFeatures` ships `allowCopyRoomInfo` ("Allows moderators to copy the contents of the participant list to the clipboard"), `showRaisedHandsOnlyToModerators` and `shareContentOnlyToModerators`, and `examScreenshare` shares every participant's monitors with moderators. The room-level `Permissions` vocabulary is a closed 9-boolean set with **no** participant-visibility axis, so there is no in-room way to withhold list access; `userShow` is the only expressible gate. The severity hinge is token class: `POST /v2/auth/guest-link` is unauthenticated, takes only `{companyId, roomId, accessKey}`, and returns a real `accessToken` whenever the link is valid (the spec marks it "Can be empty if the guest link is not yet / no longer valid" — empty only when invalid), so an invitation URL handed to an external third party is a plausible route to employees' and moderators' internal UUIDs with no company account involved. Confidence 78, `AUTH_HELPED`, **zero wire evidence of a defect claimed** — the contract shape and the single documented gate are measured; the authorization behaviour is unmeasured.
+959:testability: AUTH_HELPED
+960:[NEXT] HUMAN: obtain one self-owned low-privlege account (unauthenticated signup at app.alfaview.com/graphql → email → finishSignup, email-gated) then, read-only on self-owned tenant only: `GET /v2/auth/token-info`, then `GET /v2/guest-links?limit=1` and `GET /v2/audit-log?from=2026-09-28T00:00:00Z&to=2026-09-30T00:00:00Z` — replaces the falsified IDOR with a measured authorization-behaviour answer on the top two chains.
+961:[RISK] alfaview gmbh: 61. Down 1 from 62: two standing spec-debt hypotheses closed (unscoped create, hidden quotas) and the audit surface proved auth-bound, so no unauthenticated exposure was added. The 94 introspect and 88 guest-link chains remain valid but strictly token-gated — risk is carried, not increased.
+962:[FINAL] 1. RFC7662 introspection runs without client authentication in the same build that validates tokens at userinfo. class: MISCONFIG. asset: sso.alfaview.com POST /oauth2/introspect. confidence: 94 (carried, not re-measured — 30+ cycle-stable, fabricated client_id accepted on POST-body and Basic channels, same-deployment /oauth2/userinfo control tiers and rejects forged JOSE). Blocked on: one real self-owned token. Impact MEDIUM — token validity/claims to a caller who proved no client identity; no forgery. testability: AUTH_HELPED.
+963:[FINAL] 2. Company-wide guest-link AND group-link enumeration returns live join credentials with no expressible authorization axis. class: IDOR. asset: apis.alfaview.com GET /v2/guest-links + GET /v2/group-links. confidence: 90 (up 1 from 88 — this cycle proved GroupLink is credential-equivalent to GuestLink, so the hypothesis was previously under-scoped). Group links are meeting-scoped at creation (POST /v2/meetings/{id} groupLinks[]) but listed company-wide, so their accessKey/joinUrl/dialInCode are join credentials for every meeting in the tenant. Un-narrowable server-side (measured: roomId/companyId unbound, 422 errors[] contains only query.limit); writes are room-scoped so these lists are the only company-wide read of join credentials; TokenUserPermissions is a closed 7-boolean additionalProperties:false vocabulary with no link axis. Blocked on: one self-owned low-priv token. testability: AUTH_HELPED.
+964:[FINAL] 3. The room-permission read/write pair is authorized at company scope, not room scope — any member can enumerate a room's principal set and mint room-admin rights. class: IDOR. asset: apis.alfaview.com GET /v2/rooms/{roomId}/permissions (ListPermissions) + POST /v2/rooms/{roomId}/permissions (CreatePermissions), escalating to DELETE /v2/users/{id}. confidence: 62 (NEW this cycle, entirely unmeasured behaviourally). reasoning: three converging contract facts. (a) The only room-admin primitive a token carries is company-wide ("ANY room"), so room-level Permissions.admin has no corresponding authorization vocabulary and must be enforced by an undeclared server-side comparison. (b) ListPermissions is the one participant-identity read the vendor does NOT 403-tier, and its payload is the room's full participantId set plus every participant's 9-boolean permission bitmap. (c) CreatePermissions lets the caller name both the principal (participantId) and the entire bitmask including admin, with the operation description documenting no authorization requirement at all. The sharpest variant needs no user account: a guest holds its own guest-link id in plain sight in its join URL, and that id is a valid participantId value. evidence_needed: one self-owned low-priv member account plus its own room. verify_steps: AUTH_HELPED. (1) GET /v2/auth/token-info to record whether roomAdmin is false. (2) GET /v2/rooms/{roomId}/permissions on a room the account has merely joined — 403/404 = enforced, 200 with other participants' ids = IDOR half proven. (3) ONE own-tenant write: POST /v2/rooms/{roomId}/permissions with participantId = own user id and permissions.admin = true on a room the account only joined — 204 = escalation to room admin (gates every room-admin operation: room edit/delete, features, file-share limits, language settings, passcode, guest management), 403/404/409 = enforced. (4) If (3) returns 204, repeat with participantId = own guest-link id. impact: LOW-priv member to room-admin privilege escalation plus cross-tenant disclosure of room participant user IDs and permission bitmaps. HIGH if (3) returns 204; MEDIUM if only step (2) discloses. testability: AUTH_HELPED.
+965:[NEXT] HUMAN: supply one self-owned LOW-PRIVILEGE alfaview account with company roomCreate+roomList but roomAdmin=false, plus the id of one room that account has merely joined (via the app.alfaview.com signup -> email -> finishSignup flow, which is email-gated and cannot be automated). That single input unblocks all three chains above; the read-only sequence I will then run at <=1 rps is `GET /v2/auth/token-info` -> `GET /v2/rooms?limit=1` -> `GET /v2/rooms/{roomId}/permissions`, followed by exactly ONE own-tenant write (`POST /v2/rooms/{roomId}/permissions`, participantId = own user id, permissions.admin = true) to read the escalation verdict. No customer data is touched at any point.
+966:[RISK] alfaview gmbh: 62. Up 1 from 61. No new unauthenticated exposure was found — all three requests this cycle were auth-bound or validation-first. The increase reflects a new unmeasured BOLA chain on a WRITE primitive (room-permission minting) whose declared-code pattern the vendor's own contract contradicts, and which is reachable with a plain member account rather than a credential-harvest chain. Risk is carried, not measured; the 94 introspect and now-90 guest/group-link chains remain strictly token-gated.
+967:[NEXT] HUMAN: supply one self-owned low-privilege alfaview account with company `roomCreate+roomList` but `roomAdmin=false`, plus one self-owned `roomId` that the account has merely joined.
+973:[PRIO] apis.alfaview.com POST /v2/rooms,7.1,"a9 b9 t7 g2 c3 f9 — write primitive on the lowest useful
+974:[PRIO] apis.alfaview.com GET /v2/rooms/{roomId}/permissions,6.5,"a8 b8 t7 g2 c3 f8 — three parallel
+975:[PRIO] apis.alfaview.com GET /v2/guest-links + /v2/group-links,5.8,"a7 b9 t6 g2 c3 f3 — carried 90,
+976:[PRIO] apis.alfaview.com PATCH /v2/rooms/{id} (quotas),4.9,"a5 b6 t5 g2 c2 f9 — spec-differential on a
+977:[PRIO] sso.alfaview.com POST /oauth2/introspect,4.4,"a4 b6 t8 g2 c2 f2 — carried 94, OIDC surface but
+978:[HYP] Room creation grants room-scoped admin to arbitrary caller-named principals through a field
+979:class: IDOR
+981:confidence: 70
+986:testability: AUTH_HELPED
+987:[HYP] The billing-plan quota check documented on room creation is not applied on the room update path
+988:class: BUSLOGIC
+990:confidence: 45
+995:testability: AUTH_HELPED
+996:[HYP] Company-wide guest-link and group-link list returns live join credentials with no expressible
+997:class: IDOR
+999:confidence: 90
+1004:testability: AUTH_HELPED
+1012:[NEXT] HUMAN: supply one self-owned LOW-PRIVILEGE alfaview account in a tenant I control, holding
+1013:[LEARN] ACCEPTED IDOR @ apis.alfaview.com POST /v2/rooms: a public, unauthenticated-to-read contract
+1014:[LEARN] ACCEPTED BUSLOGIC @ apis.alfaview.com PATCH /v2/rooms/{id}: a documentation differential on
+1015:[LEARN] REJECTED MISCONFIG @ apis.alfaview.com (orphan quota route): an orphan-schema diff scoped to
+1016:[LEARN] NO_DELTA @ apis/sso standing surface: OpenAPI 200/132100B md5 284a3383 (38 paths, 57 ops),
+1017:[RISK] alfaview gmbh: 63. Up 1 from 62. No unauthenticated exposure was found — every probe this
+2182:- NEW `/v2/rooms?roomTypes=abc` → 422/190B `"expected value to be one of \"department, room, meeting\""` at `query.roomTypes[0]` — new validator class: array item, indexed location, complete enum whitelist 
+2196:- NEW **`/v2/rooms?limit=51` → 422/147B `{"message":"expected number <= 50","location":"query.limit"}`** — new oracle class: per-operation numeric *upper bound* disclosed pre-auth, and it matches the contra
+2279:- CHANGED Pre-auth validation-before-auth class: 9 → 10 GET operations, the new member fully characterised.
+2365:- If a hypothesis needs live confirmation you cannot do passively, emit [NEXT] PROBE with the EXACT read-only request.
+2370:STEP 2 — PRIORITIZE: score top new (or existing) assets 0-10 on attack_surface, business_value, tech_exposure (GraphQL/OAuth/JWT/upload/admin/uncommon), gate_ease (10=no auth), cloud_surface, freshness. priority=0.25a+0.25b+0.15t+0.15g+0.10c+0.10f. Emit [PRIO] asset,score,axis.
+2371:STEP 3 — HYPOTHESES: top 3 assets, max 1 hypothesis each. Strict schema, one field per line under [HYP] title line:
+2372:[HYP] <title>
+2373:class: <IDOR|SSRF|AUTH|XSS|BUSLOGIC|MISCONFIG|OATH|OTHER>
+2375:confidence: <0-100>
+2380:testability: <PASSIVE|AUTH_HELPED|HUMAN_ONLY>
+2381:Never put fields inline in the [HYP] title.
+2383:STEP 5 — NEXT ACTION: exactly one [NEXT] <PROBE|SCAN|RAG|HUMAN>: <one concrete action, exact endpoint if PROBE>.
+2384:STEP 6 — LEARNING: [LEARN] REJECTED/ACCEPTED <class> @ <asset>: <reason>.
+2385:STEP 7 — RISK: [RISK] <program>: <0-100> reason.
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && sed -n '2355,2400p' analyst-prompt.txt
+- CHANGED apis.alfaview.com/v2/users/me/company (GetOwnCompany) identified as 38th path — sole 200-response supplier of companyId across 57 ops
+- CHANGED apis.alfaview.com/v2/audit-log live undocumented 39th path; pre-auth query binder complete (10 GET ops now validate pre-auth)
+- CHANGED apis.alfaview.com/v2/auth/api-key — 4th unauthenticated credential endpoint (HEAD→405 allow:POST, OPTIONS→405/19B); declares unique 403 account-status tier
+You are a senior bug bounty hunter ANALYST for the alfaview gmbh program (report channel: bugs.olivermaicher.eu).
+Eligible in-scope assets (ONLY these, from scope.yml + inventory/alfaview.md): All company-owned infrastructure, alfaview web and desktop applications, mobile applications, APIs, backend systems, support systems, customer portals, websites, and domains operated by alfaview gmbh, including alfaview.com and company-operated subdomains
+Deep-hunt directives:
+- Prioritize HIGH-VALUE classes: broken auth/session, IDOR/BOLA, SSRF-to-cloud-metadata (169.254.169.254), mass assignment, JWT alg/key confusion, OAuth redirect_uri/state flaws, business logic on money/auth flows, file upload, GraphQL introspection+mutations, subdomain takeover.
+- CHAIN aggressively: open redirect -> OAuth code theft -> ATO; IDOR -> cross-tenant PII dump; SSRF -> metadata -> keys; XSS -> session theft -> ATO.
+- Request-level reasoning: exact METHOD path params headers body, expected vs actual status. No filler.
+- Breadth over the full inventory for anomalies (odd status codes, id/uid/email/user_id params, versioned /api/v1|v2|beta|internal, debug/test flags, swagger/openapi/json), then depth on top-3 anomalies.
+- If a hypothesis needs live confirmation you cannot do passively, emit [NEXT] PROBE with the EXACT read-only request.
+OUT OF SCOPE (REJECTED classes): network DoS, account-lockout DoS, descriptive errors/headers only, robots.txt / known public files, outdated library versions, OPTIONS/TRACE, CSRF on logout or anonymous forms, cookie flags on non-sensitive data, self-XSS, scanner reports without POC, physical access, social engineering of employees/vendors, username enumeration on login/forgot-password, brute-force/rate-limit/lockout policy, SSL/TLS best practice, SSL attacks, clickjacking without demonstrated exploit, mail config (SPF/DKIM/DMARC), known-vulnerable library without program-specific exploit, password/account-recovery policy, autocomplete in fields, public login panels, lack of email verification, session control during email/password change, and any exposure of customer/employee/financial/authentication data during testing (program note). Focus on real logic flaws in scoped assets.
+Your job is NOT to invent vulnerabilities. Run the 8 steps and output ONLY structured blocks.
+
+STEP 1 — DELTA: compare inventory+knowledge+last leads against current surface. [NEW]/[CHANGED] one line each, or NO_DELTA.
+STEP 2 — PRIORITIZE: score top new (or existing) assets 0-10 on attack_surface, business_value, tech_exposure (GraphQL/OAuth/JWT/upload/admin/uncommon), gate_ease (10=no auth), cloud_surface, freshness. priority=0.25a+0.25b+0.15t+0.15g+0.10c+0.10f. Emit [PRIO] asset,score,axis.
+STEP 3 — HYPOTHESES: top 3 assets, max 1 hypothesis each. Strict schema, one field per line under [HYP] title line:
+[HYP] <title>
+class: <IDOR|SSRF|AUTH|XSS|BUSLOGIC|MISCONFIG|OATH|OTHER>
+asset: <host/endpoint>
+confidence: <0-100>
+reasoning: <facts only>
+evidence_needed: <what proves it>
+verify_steps: <passive-first concrete HTTP requests>
+impact: <what attacker gets + severity>
+testability: <PASSIVE|AUTH_HELPED|HUMAN_ONLY>
+Never put fields inline in the [HYP] title.
+STEP 4 — SELF-CRITIQUE: drop confidence<40 or REJECTED-class or no-verify-steps. [PARKED] <title>: <why>. [FINAL] survivors ranked.
+STEP 5 — NEXT ACTION: exactly one [NEXT] <PROBE|SCAN|RAG|HUMAN>: <one concrete action, exact endpoint if PROBE>.
+STEP 6 — LEARNING: [LEARN] REJECTED/ACCEPTED <class> @ <asset>: <reason>.
+STEP 7 — RISK: [RISK] <program>: <0-100> reason.
+RULES: facts vs hypotheses strictly separated; no endpoint-map-only; no REJECTED class; sha256 any secret; all claims trace to context or your own read-only probes; passive-first, <=1 rps, GET/HEAD/OPTIONS only for live probes; no auth-bypass or mutating tests against live customer data; any scanner output requires manual validation.
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import json,re
+d=json.load(open('live.json'))
+# does any path description/response reference audit or Event?
+hits=[]
+for p,v in d['paths'].items():
+    s=json.dumps(v)
+    if re.search(r'audit|Audit|Event|checksum',s): hits.append(p)
+print('paths mentioning audit/Event/checksum:',hits)
+print()
+print('companyId producers:')
+for p,v in d['paths'].items():
+    for m,o in v.items():
+        if m in ('get','post','patch','put','delete') and 'companyId' in json.dumps(o):
+            print('  ',m.upper(),p,'|',o.get('operationId'),'| 200->',json.dumps(o['responses'].get('200',{}))[:110])
+print()
+print('Company.companyId example:',d['components']['schemas']['Company']['properties']['companyId']['examples'])
+print('Actor required:',d['components']['schemas']['Actor']['required'],'| Target required:',d['components']['schemas']['Target']['required'])
+print('Event required:',d['components']['schemas']['Event']['required'])
+print('Event.details:',json.dumps(d['components']['schemas']['Event']['properties']['details']))
+print('Event.metadata:',json.dumps(d['components']['schemas']['Event']['properties']['metadata']))
+print('Event.outcome enum:',d['components']['schemas']['Event']['properties']['outcome']['enum'])
+print('Event.actionType enum:',d['components']['schemas']['Event']['properties']['actionType']['enum'])
+PY
+paths mentioning audit/Event/checksum: []
+
+companyId producers:
+
+Company.companyId example: ['0123456789ABCDEFGHIJKLMNOP']
+Actor required: ['type'] | Target required: ['type', 'id']
+Event required: ['id', 'occurredAt', 'actor', 'action', 'targets', 'actionType', 'outcome', 'checksum', 'checksumValid']
+Event.details: {"additionalProperties": {}, "description": "Details about the audited action, (e.g., 'before' and 'after' comparison).", "type": "object"}
+Event.metadata: {"additionalProperties": {"type": "string"}, "description": "The metadata attributes of the audit event. To get the available keys, refer to the 'List Searchable metadata attributes' endpoint.", "type": "object"}
+Event.outcome enum: ['success', 'failure', 'denied']
+Event.actionType enum: ['read', 'write']
+[0m
+[DELTA]
+
+[NEW] apis.alfaview.com /v2/users/me/company (GetOwnCompany) — 38th path, returns Company{companyId, displayName, createdAt}, token-gated (401 pre-auth), 200-response schema added; no equivalent in local 37-path snapshot
+[CHANGED] apis.alfaview.com /v2/docs/openapi.json — byte-identical on prod+beta (md5 284a3383c1ac3cfc9152ffcc631891f2, 132100B, 38 paths, 57 ops). Local recon-notes/alfaview-openapi.yaml remains 37 paths (missing /v2/users/me/company)
+[CHANGED] apis.alfaview.com /v2/audit-log — live undocumented endpoint (pre-auth validation 422 on missing from/to; 401 on valid params). Query binder tested: limit 1..50 enforced, actionType/outcome enums validated, other unknown params ignored without pre-auth error; auth-bound. Event/Actor/Target schemas exist in live OpenAPI but are not referenced by any path. No metadata subpaths found under /v2/audit-log; /v2/audit-log/searchable-metadata-attributes is 401 (auth-gated) not 404. beta-apis identical.
+
+[PRIO]
+
+apis.alfaview.com POST /v2/rooms,7.1,a9_b9_t7_g2_c3_f9 — write primitive creating room-scoped admin grants, company-wide authority unclear
+apis.alfaview.com GET /v2/rooms/{roomId}/permissions,6.5,a8_b8_t7_g2_c3_f8 — room permission set read/write pair with unmeasured room-scoped enforcement
+apis.alfaview.com GET /v2/guest-links + /v2/group-links,5.8,a7_b9_t6_g2_c3_f3 — company-wide credential-bearing lists, auth-bound but gate axis unexpressed in contract
+
+[HYP]
+
+[HYP] Company-wide guest-link and group-link enumeration returns live join credentials with no expressible authorization axis
+class: IDOR
+asset: apis.alfaview.com GET /v2/guest-links + GET /v2/group-links
+confidence: 90
+reasoning: Un-narrowable contract (only pageToken, limit; roomId/companyId not bound in query validation errors array which enumerates only query.limit). GuestLink required fields include accessKey, joinUrl, dialInCode, emailAddress (12/15). GroupLink includes accessKey, joinUrl, dialInCode. TokenUserPermissions is closed 7-boolean additionalProperties:false with no link axis; roomList/userList named for other company-wide reads. Redemption: POST /v2/auth/guest-link takes {companyId,roomId,accessKey} (displayName not required) and performs lookup (post-lookup 422/88B tier). All tested via passive GET/HEAD/OPTIONS only; behavior under token unknown.
+evidence_needed: One self-owned low-privilege token. GET /v2/auth/token-info and GET /v2/guest-links?limit=1 (and group-links) returning objects from self-owned tenant only.
+verify_steps: AUTH_HELPED. 1) GET /v2/auth/token-info (read-only). 2) GET /v2/guest-links?limit=1. 3) GET /v2/group-links?limit=1. Compare returned ids/scope to self-owned tenant; never read other-tenant data.
+impact: Cross-tenant harvest of guest join credentials (accessKey+joinUrl+dialInCode) and guest email addresses. HIGH if authorization gate absent under valid low-priv token.
+testability: AUTH_HELPED
+
+[HYP] Room-permission read/write pair authorized at company scope rather than room scope enables room-admin escalation by a low-priv member
+class: IDOR
+asset: apis.alfaview.com GET /v2/rooms/{roomId}/permissions + POST /v2/rooms/{roomId}/permissions
+confidence: 62
+reasoning: Token carries only company-wide roomAdmin ("any room"); room-level Permissions.admin must be enforced server-side with no matching room-scoped authorization vocabulary documented. ListPermissions returns full principal set+9-boolean bitmaps. CreatePermissions accepts participantId and full bitmask (including admin) with no documented auth requirement. Guest-link id is a plausible participantId in join URL. Contract contradictory to implicit room-scoped enforcement.
+evidence_needed: Self-owned low-priv member account (roomAdmin=false) with roomCreate+roomList, plus self-owned roomId the account has merely joined.
+verify_steps: AUTH_HELPED. 1) GET /v2/auth/token-info (confirm roomAdmin=false). 2) GET /v2/rooms/{roomId}/permissions on own room joined by that account (status only). 3) ONE own-tenant write: POST /v2/rooms/{roomId}/permissions with {"participantId":"<own userId>","permissions":{...,"admin":true,...}} on that same room; observe status (204/403/404/409). Never target other tenants/data.
+impact: Low-priv member to room-admin escalation plus disclosure of room participant ids/bitmaps. HIGH if step 3 returns 204; MEDIUM if only step 2 discloses.
+testability: AUTH_HELPED
+
+[HYP] REST audit-log is auth-bound with correct tenant scope (disconfirming prior cross-tenant audit-read hypothesis)
+class: IDOR
+asset: apis.alfaview.com GET /v2/audit-log
+confidence: 20
+reasoning: Live 39th path; validation-before-auth (422 missing from/to, 422 limit bounds, enum validation on actionType). On valid params returns 401 (auth-gated). No paths reference Event schemas; GraphQL mirror AUDIT_LOG bit exists client-side. Evidence suggests gate exists rather than absent; hypothesis carried to force disconfirmation.
+evidence_needed: Self-owned tenant user; GET /v2/auth/token-info; GET /v2/audit-log?from=2026-09-28T00:00:00Z&to=2026-09-30T00:00:00Z.
+verify_steps: AUTH_HELPED, read-only. Confirm token has expected company context; issue query and compare events to self-owned scope only. Never cross-tenant.
+impact: If gate broken, cross-tenant audit read of actions (actor/targets/details). HIGH only if enforcement absent under privileged token.
+testability: AUTH_HELPED
+
+[FINAL]
+
+1. Company-wide guest-link and group-link enumeration returns live join credentials with no expressible authorization axis. class: IDOR. asset: apis.alfaview.com GET /v2/guest-links + /v2/group-links. confidence: 90. Blocked on: one self-owned low-priv token. Impact HIGH if authorization absent under valid token. testability: AUTH_HELPED.
+
+2. Room-permission read/write pair authorized at company scope rather than room scope enables room-admin escalation by a low-priv member. class: IDOR. asset: apis.alfaview.com GET /v2/rooms/{roomId}/permissions + POST /v2/rooms/{roomId}/permissions. confidence: 62. Blocked on: self-owned low-priv member (roomAdmin=false) with roomCreate+roomList plus self-owned roomId joined by that account. Impact HIGH if write returns 204 (escalation). testability: AUTH_HELPED.
+
+3. RFC7662 introspection runs without client authentication in the same build that validates tokens at userinfo. class: MISCONFIG. asset: sso.alfaview.com POST /oauth2/introspect. confidence: 94 (carried, not re-measured). Blocked on: one real self-owned token. Impact MEDIUM (token validity/claims disclosed to caller proving no client identity; no forgery). testability: AUTH_HELPED.
+
+[PARKED]
+
+RoomQuotas/RoomQuotasEdit are orphan schemas (referenced nowhere in paths) implying an undocumented quota route; no pre-auth path found via exhaustive probing — REJECTED as misconfiguration claim without measurable route.
+REST audit-log Event/Actor/Target schemas exist but are unreferenced by any path; endpoint itself is auth-bound and validation-first — hypothesis downgraded (confidence 20) pending disconfirming evidence under token.
+
+[NEXT]
+
+HUMAN: Supply one self-owned LOW-PRIVILEGE alfaview account in a tenant under your control with company `roomCreate+roomList` but `roomAdmin=false`, plus one self-owned `roomId` that this account has merely joined (via app.alfaview.com signup → email → finishSignup, email-gated). Once provided, perform read-only sequence at <=1 rps: `GET /v2/auth/token-info` → `GET /v2/rooms?limit=1` → `GET /v2/rooms/{roomId}/permissions` (on the provided roomId), followed by exactly ONE own-tenant write `POST /v2/rooms/{roomId}/permissions` with `{"participantId":"<own userId>","permissions":{...,"admin":true,...}}` (using the userId from token-info/participants context) to determine escalation verdict. Also, with that token, read-only: `GET /v2/guest-links?limit=1` and `GET /v2/group-links?limit=1`. No customer data touched.
+
+[LEARN]
+
+REJECTED MISCONFIG @ apis.alfaview.com (orphan quota route): RoomQuotas/RoomQuotasEdit schemas are not reachable from any path; exhaustive path probing found no quota endpoints. Spec-debt only, no measurable anomaly.
+ACCEPTED DELTA @ apis.alfaview.com /v2/users/me/company: 38th path added (Company schema). Confirmed byte-identical OpenAPI across prod+beta (md5 284a3383).
+ACCEPTED SURFACE @ apis.alfaview.com /v2/audit-log: live undocumented endpoint, validation-before-auth then auth-bound; Event schemas unreferenced in paths, no metadata subpaths exposed pre-auth.
+
+[RISK]
+
+alfaview gmbh: 62. Up 1 from 61. No unauthenticated exposure found — all probes this cycle were auth-bound or validation-first (GET/HEAD/OPTIONS only, <=1 rps). Increase reflects an unmeasured BOLA chain on room-permission write (minting admin) with contract-level contradiction; 94 introspect and 90 guest/group-link chains remain strictly token-gated. Risk carried, not yet measured with live token.

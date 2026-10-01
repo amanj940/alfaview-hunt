@@ -1296,3 +1296,20 @@ www.alfaview.com
 - CHANGED apis.alfaview.com/v2/users/me/company (GetOwnCompany) identified as 38th path — sole 200-response supplier of companyId across 57 ops
 - CHANGED apis.alfaview.com/v2/audit-log live undocumented 39th path; pre-auth query binder complete (10 GET ops now validate pre-auth)
 - CHANGED apis.alfaview.com/v2/auth/api-key — 4th unauthenticated credential endpoint (HEAD→405 allow:POST, OPTIONS→405/19B); declares unique 403 account-status tier
+
+## 2026-10-01 16:48:55 UTC
+- NEW apis.alfaview.com /v2/users/me/company (GetOwnCompany) — 38th path, returns Company{companyId, displayName, createdAt}, token-gated (401 pre-auth), 200-response schema added; no equivalent in local 37
+- CHANGED apis.alfaview.com /v2/docs/openapi.json — byte-identical on prod+beta (md5 284a3383c1ac3cfc9152ffcc631891f2, 132100B, 38 paths, 57 ops). Local recon-notes/alfaview-openapi.yaml remains 37 paths (missi
+- CHANGED apis.alfaview.com /v2/audit-log — live undocumented endpoint (pre-auth validation 422 on missing from/to; 401 on valid params). Query binder tested: limit 1..50 enforced, actionType/outcome enums vali
+- NEW apis.alfaview.com POST /v2/rooms — RoomCreate.permissions exposed in contract; participantId namespace collision proven from schema (RoomCreate.permissions.participantId vs RoomPermissions.participant
+- NEW apis.alfaview.com PATCH /v2/rooms/{id} — RoomUpdate.quotas description bare ("The quotas for the room"), no enum/constraints; mass-assignment surface on quota fields undocumented
+- NEW apis.alfaview.com GET /v2/audit-log — live undocumented 39th path; pre-auth query binder complete (10 GET ops now validate pre-auth); mirrors GraphQL ListAuditEvents(flag:companyId,pageToken,limit,fro
+- NEW apis.alfaview.com/v2/auth/api-key — 4th unauthenticated credential endpoint (HEAD→405 allow:POST, OPTIONS→405/19B text/plain); declares unique 403 account-status tier ("account is inactive") absent fr
+- CHANGED apis.alfaview.com/v2/users/me/company (GetOwnCompany) — identified as 38th OpenAPI path; sole 200-response supplier of companyId across 57 operations; enables guest-link chain execution by authorized 
+- CHANGED apis.alfaview.com OpenAPI md5 stable at 284a3383 (38 paths, 57 ops) for 3+ cycles; byte-identical on beta-apis.alfaview.com
+- CHANGED sso.alfaview.com OIDC metadata stable: issuer=acme.com, JWKS 7 RSA keys (MD5 3f8d456c), introspection_endpoint absent from discovery while /oauth2/introspect live (OPTIONS 405), 30+ cycles
+- CHANGED app.alfaview.com public bundle stable at app.min.67e8a68d4318b34ca241.js (MD5 2cb9128353b1f7444e222b4f61e4ffa5) carrying adminSwitchCompany mutation + hardcoded tenant IDs
+- CHANGED tools.alfaview.com/whiteboard/ second RPC backend confirmed (47B gRPC envelope vs poll's 45B jsonpb); staging mirror byte-identical; zero client references in bundle
+- CHANGED apis.alfaview.com: validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI components.securitySchemes={}, security=null
+- CHANGED apis.alfaview.com/v2/users/invitation{,s}: OpenAPI declares POST only; live server advertises Allow: DELETE,POST and DELETE-only on undocumented plural; both Go router, both 405 before 401
+- CHANGED test.alfaview.com: alfacheck v483102 (4 platforms) unsigned; index page no sha256/signatures
