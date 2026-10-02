@@ -1361,3 +1361,27 @@ www.alfaview.com
 - CHANGED Inventory 100% probed — 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain
 
 ## 2026-10-02 18:54:58 UTC
+
+## 2026-10-02 22:44:29 UTC
+- NEW REJECTED (own-claim retraction, material) @ apis.alfaview.com OpenAPI: the string "uuid" appears ZERO times in the live 132100B / md5 284a3383 document, and the document contains ZERO `pattern` keys o
+- NEW ACCEPTED IDOR @ apis.alfaview.com POST /v2/rooms/{roomId}/permissions (CreatePermissions): a BOLA **write** whose target principal is named only in the request body. Scope = `roomId` in path; target =
+- NEW ACCEPTED IDOR (chain) @ apis.alfaview.com: CreatePermissions closes a chain on top of the standing 90-confidence finding. GET /v2/guest-links is un-narrowable company-wide and returns guest-link `id` 
+- NEW MISCONFIG (negative, closes mass-assignment class) @ apis.alfaview.com: all 21 request-body schemas and every nested body schema reachable from them are `additionalProperties: false` — GuestLinkCreate
+- NEW MISCONFIG (inventory, unmapped) @ apis.alfaview.com POST /v2/meetings: a **second, meeting-scoped bulk credential-minting path** never mapped in 38 cycles. MeetingCreate.groupLinks is an array of Grou
+- CHANGED apis.alfaview.com /v2/docs/openapi.json — 200/132100B md5 284a3383c1ac3cfc9152ffcc631891f2 (38 paths, 57 operations), stable 3rd cycle. sso.alfaview.com OIDC — 200/2169B md5 f78a08fc, stable. No path 
+- NEW REJECTED (own-claim retraction #2, material) @ apis.alfaview.com POST /v2/rooms/{roomId}/permissions: I quoted `Permissions.admin` as "edit or delete rooms, change room settings or features and manage
+- NEW ACCEPTED INFO @ apis.alfaview.com: there are **two distinct permission schemas**, which the prior 38 cycles treated as one. `Permissions` (CreatePermissions body, `POST /v2/rooms/{roomId}/permissions`
+- NEW ACCEPTED INFO @ apis.alfaview.com GET /v2/permission-groups: confirmed as the enumeration source for the permission-group binding test. Returns an array of `PermissionGroup{id, name, permissions}`, al
+- NEW REJECTED MISCONFIG @ apis.alfaview.com (documentation only, NOT reportable as a vulnerability): I checked whether the contract expresses authentication requirements in machine-readable form, and it do
+- NEW NO_ANOMALY @ apis.alfaview.com POST /v2/auth/*: the 4 operations lacking an `Authorization` header parameter are exactly the 4 credential-exchange routes (`/auth/api-key`, `/auth/group-link`, `/auth/g
+- CHANGED apis.alfaview.com POST /v2/meetings BUSLOGIC hypothesis 58 → **64**. The confirmation that `GET /v2/permission-groups` exists and returns `{id, name, permissions}` for every group means the out-of-sco
+- CHANGED apis.alfaview.com CreatePermissions IDOR hypothesis 82 → **80**. Downward only, from my own retraction. The BOLA mechanism (unscoped polymorphic `participantId` as the sole write target, cross-namespa
+- CHANGED sso.alfaview.com: no change. `/oauth2/device_authorize` stays at 44 — and this cycle I must record that my own PASSIVE-first verification step for it is a **form-encoded POST**, which the active sessi
+- NEW NO_DELTA @ apis/sso/app/tools: 40th+ consecutive byte-stable cycle. OpenAPI md5 `284a3383` (132100B, 38 paths, 57 ops), OIDC 200/2169B md5 `f78a08fc` (issuer=acme.com, introspection_endpoint absent), 
+- NEW NO_DELTA @ apis.alfaview.com/v2/audit-log: Undocumented 39th path remains live, pre-auth query binder complete (10 GET ops validate pre-auth), no schema delta.
+- NEW NO_DELTA @ apis.alfaview.com/v2/users/me/company: GetOwnCompany (38th path) sole 200-response supplier of companyId; token-gated (401), enables guest-link chain execution.
+- NEW NO_DELTA @ sso.alfaview.com: FusionAuth 1.63.0 OIDC metadata unchanged — implicit flow, HS/ES/RS algs advertised vs RSA-only JWKS, password grant (ROPC) alongside non-licensed client_credentials, intr
+- NEW NO_DELTA @ app.alfaview.com bundle: app.min.67e8a68d4318b34ca241.js (md5 `2cb91283`) stable — adminSwitchCompany mutation, hardcoded tenant IDs (alfatraining-internal, 01FDY0986YK1BJF2K0F9DXR8EB), pas
+- NEW NO_DELTA @ tools.alfaview.com: Verb-based JSON RPC (8 verbs) at POST /poll/pollservice/<verb> with Grpc-Metadata-alfaview.token; second unmapped RPC mount at /whiteboard/* proven (47B gRPC envelope vs
+- NEW NO_DELTA @ test.alfaview.com: alfacheck v483102 (4 platforms) unsigned, no sha256/signatures — supply-chain hardening absent.
+- NEW Inventory 100% probed: 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain.
