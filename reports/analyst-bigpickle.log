@@ -64396,3 +64396,43 @@ All data endpoints return 401 — the gate holds; this is a narrow pre-auth disc
 - **Behavioral:** 38 cycles of inventory were built from cert-transparency *enumeration* only — never from CNAME/A *resolution analysis*. That single omission hid an entire live product (`atlas`) and one wildcard zone. Bulk passive DNS over the full name list is cheap and should have been cycle-1 work. Adding it here immediately produced the first genuinely new asset in many cycles.
 - **Tactical:** distrust empty-scanning tools. crt.sh returned 502 and CertSpotter 504 on retry; hackertarget hostsearch worked and returned 51 names in one request. Always keep a secondary enumeration source.
 - **[RISK]** alfaview GmbH: **63, flat.** Added the first unauthenticated response on a newly discovered internal asset, but impact is limited to LOW-severity reconnaissance — no data access, no privilege gain, no takeover. The 88 guest-link and 94 introspection chains remain the only HIGH/Critical-grade items and both stay strictly token-gated. Risk is carried, not increased.
+===== ANALYST bigpickle 2026-10-02 07:03:10 UTC =====
+[0m
+> build · big-pickle
+[0m
+I'll run the standing passive probes first, then work the 8 steps.
+[0m$ [0mfor u in "https://apis.alfaview.com/v2/docs/openapi.json" "https://beta-apis.alfaview.com/v2/docs/openapi.json"; do echo "== $u"; curl -s -o /tmp/oa.$$ -w "code=%{http_code} size=%{size_download}\n" --max-time 25 "$u"; md5sum /tmp/oa.$$; python3 -c "
+import json,sys
+d=json.load(open('/tmp/oa.$$'))
+print('paths',len(d.get('paths',{})))
+ops=sum(1 for p,v in d['paths'].items() for m in v if m.lower() in ('get','post','patch','put','delete'))
+print('ops',ops)
+print('securitySchemes',d.get('components',{}).get('securitySchemes','ABSENT'))
+print('topsecurity',d.get('security','ABSENT'))
+"; done
+== https://apis.alfaview.com/v2/docs/openapi.json
+code=200 size=132100
+284a3383c1ac3cfc9152ffcc631891f2  /tmp/oa.2432
+paths 38
+ops 57
+securitySchemes ABSENT
+topsecurity ABSENT
+== https://beta-apis.alfaview.com/v2/docs/openapi.json
+code=200 size=132100
+284a3383c1ac3cfc9152ffcc631891f2  /tmp/oa.2432
+paths 38
+ops 57
+securitySchemes ABSENT
+topsecurity ABSENT
+[0m
+[93m[1m! [0mpermission requested: external_directory (/tmp/*); auto-rejecting
+[0m✗ [0mcd /tmp && curl -s --max-time 25 -o oa.json https://apis.alfaview.com/v2/docs/openapi.json && python3 - <<'EOF'
+import json
+d=json.load(open('/tmp/oa.json'))
+sch=d['components']['schemas']
+print("=== schemas WITHOUT additionalProperties:false ===")
+for n,s in sorted(sch.items()):
+    if s.get('additionalProperties') is not False:
+        print(" ", n, "| ap=",s.get('additionalProperties','UNSET'))
+EOF failed
+[91m[1mError: [0mThe user rejected permission to use this specific tool call.

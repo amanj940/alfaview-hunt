@@ -1,13 +1,4 @@
-## 2026-10-02 01:06:02 UTC [target] (model nemotron3)
-[NEW] `apis.alfaview.com POST /v2/rooms` — contract read reveals `RoomCreate.permissions` with `participantId` namespace collision (RoomCreate.permissions.participantId vs RoomPermissions.participantId)
-[NEW] `apis.alfaview.com PATCH /v2/rooms/{id}` — `RoomUpdate.quotas` description bare ("The quotas for the room"), no enum/constraints; mass-assignment surface on quota fields undocumented
-[NEW] `apis.alfaview.com/v2/audit-log` — live undocumented 39th path; pre-auth query binder complete (10 GET ops now validate pre-auth); mirrors GraphQL `ListAuditEvents`
-[NEW] `apis.alfaview.com/v2/users/me/company` (GetOwnCompany) — identified as 38th OpenAPI path; sole 200-response supplier of `companyId` across 57 operations; enables guest-link chain execution by authorized tester
-[CHANGED] OpenAPI spec at `apis.alfaview.com/v2/docs/openapi.json` stable at MD5 `284a3383` (38 paths, 57 ops) for 3+ cycles; byte-identical on beta-apis.alfaview.com
-[CHANGED] `sso.alfaview.com/oauth2/introspect` — 30+ consecutive stable cycles: fabricated `client_id` accepted on POST-body and Basic channels (200 `{"active":false}`); `token_endpoint_auth_methods_supported` advertises `client_secret_basic/post/none` with no runtime verification
-[CHANGED] `app.alfaview.com` public bundle stable at `app.min.67e8a68d4318b34ca241.js` (MD5 `2cb91283`) carrying `adminSwitchCompany` mutation + hardcoded tenant IDs (`alfatraining-internal`, `01FDY0986YK1BJF2K0F9DXR8EB`)
-[CHANGED] `tools.alfaview.com/whiteboard/` second RPC backend confirmed (47B gRPC envelope vs poll's 45B jsonpb); staging mirror byte-identical; zero client references in bundle
-[CHANGED] Inventory 100% probed — 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain
+## 2026-10-02 07:02:56 UTC [target] (model nemotron3)
 [PRIO] apis.alfaview.com/v2/guest-links, 8.65, attack_surface=9 business_value=9 tech_exposure=8 gate_ease=1 cloud_surface=8 freshness=10
 [PRIO] app.alfaview.com/graphql (adminSwitchCompany), 8.55, attack_surface=8 business_value=10 tech_exposure=9 gate_ease=1 cloud_surface=8 freshness=10
 [PRIO] sso.alfaview.com/oauth2/introspect, 7.90, attack_surface=8 business_value=8 tech_exposure=9 gate_ease=1 cloud_surface=7 freshness=9
