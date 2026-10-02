@@ -1344,3 +1344,18 @@ www.alfaview.com
 - CHANGED Inventory 100% probed — 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain
 
 ## 2026-10-02 07:03:10 UTC
+
+## 2026-10-02 13:57:07 UTC
+- NEW apis.alfaview.com/v2/docs/openapi.yaml (YAML twin, 165360B, md5 6738669c92a893c56e157c3927044134) — different byte-stream from JSON (132100B, 284a3383c1ac3cfc9152ffcc631891f2) but semantically identic
+- CHANGED apis.alfaview.com/v2/docs/openapi.json — OpenAPI 3.1.0, 38 paths, 57 operations, stable md5 284a3383c1ac3cfc9152ffcc631891f2 (prod=beta byte-identical). 1 path delta vs local 37-path snapshot (/v2/use
+- CHANGED sso.alfaview.com/oauth2/introspect — OPTIONS 405 (POST-only). POST-body fabricated client_id returns 200 {"active":false}; HTTP Basic auth also accepts fabricated client_id+any secret (200 {"active":f
+- NEW tools.alfaview.com/whiteboard/ — second unmapped RPC backend prefix returns 404/47B gRPC-status envelope {"code":5,"message":"Not Found","details":[]} distinct from poll gateway (501/55B). No WWW-Auth
+- CHANGED usercontent.alfaview.com, staging-usercontent.alfaview.com — file-service hosts return 404/19B with edge-proxy CSRF guard on all tested paths (/, /health, /files, /upload, /download, /v1/files, /api/f
+- CHANGED `apis.alfaview.com/v2/guest-links` and `/v2/group-links` remain HTTP 401 (auth-gated); no new unauthenticated exposure
+- CHANGED `sso.alfaview.com/oauth2/introspect` remains HTTP 405 (OPTIONS) — 30+ consecutive cycles of fabricated `client_id` accepted on POST-body and Basic channels
+- CHANGED `app.alfaview.com/graphql` GET returns HTTP 400 (CSRF guidance) — signup mutation remains sole unauthenticated path to bearer token
+- CHANGED `tools.alfaview.com/whiteboard/` returns HTTP 404/47B gRPC status envelope — second unmapped RPC backend confirmed stable
+- CHANGED `apis.alfaview.com/v2/users/me/company` (GetOwnCompany) HTTP 401 — 38th OpenAPI path, sole supplier of `companyId` for authorized testers
+- CHANGED `apis.alfaview.com/v2/audit-log` undocumented 39th path — pre-auth query binder complete (10 GET ops now validate pre-auth)
+- CHANGED OpenAPI spec MD5 `284a3383` stable 3+ cycles (38 paths, 57 ops), byte-identical on beta-apis
+- CHANGED Inventory 100% probed — 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain

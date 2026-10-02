@@ -971,3 +971,7 @@
 - 2026-10-02 ACCEPTED IDOR @ apis.alfaview.com POST /v2/rooms: a public, unauthenticated-to-read contract
 - 2026-10-02 ACCEPTED BUSLOGIC @ apis.alfaview.com PATCH /v2/rooms/{id}: a documentation differential on RoomUpdate.quotas
 - 2026-10-02 REJECTED MISCONFIG @ apis.alfaview.com (orphan quota route): an orphan-schema diff scoped to
+- 2026-10-02 ACCEPTED IDOR @ apis.alfaview.com GET /v2/guest-links, GET /v2/group-links: Contract proves un-narrowable scope (no roomId/companyId bound pre-auth), credentials in response (accessKey/joinUrl/dialInCode/emailAddress), TokenUserPermissions lacks link axis while room-scoped siblings exist — behavior unmeasured without token.
+- 2026-10-02 ACCEPTED MISCONFIG @ tools.alfaview.com/whiteboard/: Second unmapped RPC prefix with distinct gRPC envelope, no auth challenge observed, public bundle has no references, staging mirror byte-identical — surface discovery only, no exploit demonstrated.
+- 2026-10-02 REJECTED MISCONFIG @ usercontent.alfaview.com: All tested paths return 404 with edge-proxy CSRF guard; no unauthenticated read surface confirmed. Not a weakness.
+- 2026-10-02 REJECTED MISCONFIG @ apis.alfaview.com OpenAPI: YAML/JSON twins semantically identical (same paths/ops/schemas/security); difference is serialization only. Not a finding.

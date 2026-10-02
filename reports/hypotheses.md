@@ -4240,3 +4240,24 @@
 - LEARN: ACCEPTED IDOR @ apis.alfaview.com POST /v2/rooms: a public, unauthenticated-to-read contract
 - LEARN: ACCEPTED BUSLOGIC @ apis.alfaview.com PATCH /v2/rooms/{id}: a documentation differential on RoomUpdate.quotas
 - LEARN: REJECTED MISCONFIG @ apis.alfaview.com (orphan quota route): an orphan-schema diff scoped to
+
+## RANKED HYPOTHESES 2026-10-02 13:57:07 UTC
+- [90] apis.alfaview.com: Company-wide guest/group link lists return live join credentials without expressible authorization axis (from art/lead_bigpickle.txt)
+- [88] apis.alfaview.com/v2/guest-links,: Company-wide guest-link/group-link enumeration yields live join credentials without expressible authorization check (from art/lead_nemotron3.txt)
+- NEXT(hypotheses-bigpickle.txt): HUMAN: Provide one self-owned LOW-PRIVILEGE alfaview account in a tenant you control (no special admin roles). This is required to safely verify the company-wid
+- NEXT(hypotheses-nemotron3.txt): HUMAN: Execute unauthenticated signup flow at app.alfaview.com/graphql (mutation Signup → email → FinishSignup) to obtain a valid bearer token; then test intros
+- LEARN: ACCEPTED IDOR @ apis.alfaview.com GET /v2/guest-links, GET /v2/group-links: Contract proves un-narrowable scope (no roomId/companyId bound pre-auth), credential
+- LEARN: ACCEPTED MISCONFIG @ tools.alfaview.com/whiteboard/: Second unmapped RPC prefix with distinct gRPC envelope, no auth challenge observed, public bundle has no re
+- LEARN: REJECTED MISCONFIG @ usercontent.alfaview.com: All tested paths return 404 with edge-proxy CSRF guard; no unauthenticated read surface confirmed. Not a weakness
+- LEARN: REJECTED MISCONFIG @ apis.alfaview.com OpenAPI: YAML/JSON twins semantically identical (same paths/ops/schemas/security); difference is serialization only. Not 
+- LEARN: ACCEPTED IDOR @ apis.alfaview.com: Company-wide guest-link list un-narrowable and credential-bearing; TokenUserPermissions has no guest-link axis; RoomPermissio
+- LEARN: ACCEPTED MISCONFIG @ app.alfaview.com (public bundle): adminSwitchCompany mutation mints cross-tenant admin tokens with no administration proof; hardcoded produ
+- LEARN: ACCEPTED AUTH @ sso.alfaview.com/oauth2/introspect: 30th cycle unchanged — fabricated client_id accepted on POST-body and Basic; token_endpoint_auth_methods adv
+- LEARN: ACCEPTED MISCONFIG @ tools.alfaview.com/whiteboard/: Second unmapped RPC backend proven by controlled differential — 47B gRPC envelope vs poll's 45B; distinct m
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: Validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI compon
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com/v2/users/invitation{s}: OpenAPI declares POST only; live server advertises Allow: DELETE,POST on /v2/users/invitation and
+- LEARN: REJECTED AUTH @ sso.alfaview.com/oauth2/userinfo: JOSE algorithm confusion tested (alg=none, HS256 with RSA pubkey, HS256 random, RS256 self-signed) — all byte-
+- LEARN: REJECTED OATH @ sso.alfaview.com/oauth2/logout: post_logout_redirect_uri and redirect_uri both ignored; every variant 302 → /
+- LEARN: REJECTED AUTH @ apis.alfaview.com/v2/auth/{guest,group}-link: NO accessKey existence oracle — well-formed synthetic triple returns 422/88B ACTION_INVALID byte-i
+- LEARN: REJECTED MISCONFIG @ apis.alfaview.com: 403-declaration asymmetry not behaviorally load-bearing — /v2/permission-groups returns 401 while declaring no 401; whol
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: Pre-auth query-parameter binder is unauthenticated parameter-enumeration oracle (9 of 26 GET ops); append wrong-typed va
