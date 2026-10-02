@@ -1328,3 +1328,17 @@ www.alfaview.com
 - CHANGED `apis.alfaview.com/v2/users/invitation{,s}`: OpenAPI declares POST only; live server advertises `Allow: DELETE,POST` on `/v2/users/invitation` and DELETE-only on undocumented `/v2/users/invitations`; 
 - CHANGED `test.alfaview.com`: alfacheck v483102 (4 platforms) unsigned; index page no sha256/signatures
 - CHANGED Inventory 100% probed — 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain
+
+## 2026-10-02 01:14:12 UTC
+- NEW apis.alfaview.com /v2/users/me/company (GetOwnCompany) — 38th path, returns Company{companyId, displayName, createdAt}, token-gated (401 pre-auth), 200-response schema added; no equivalent in local 37
+- CHANGED apis.alfaview.com /v2/docs/openapi.json — byte-identical on prod+beta (md5 284a3383c1ac3cfc9152ffcc631891f2, 132100B, 38 paths, 57 ops). Local recon-notes/alfaview-openapi.yaml remains 37 paths (missi
+- CHANGED apis.alfaview.com /v2/audit-log — live undocumented endpoint (pre-auth validation 422 on missing from/to; 401 on valid params). Query binder tested: limit 1..50 enforced, actionType/outcome enums vali
+- NEW `apis.alfaview.com POST /v2/rooms` — contract read reveals `RoomCreate.permissions` with `participantId` namespace collision (RoomCreate.permissions.participantId vs RoomPermissions.participantId)
+- NEW `apis.alfaview.com PATCH /v2/rooms/{id}` — `RoomUpdate.quotas` description bare ("The quotas for the room"), no enum/constraints; mass-assignment surface on quota fields undocumented
+- NEW `apis.alfaview.com/v2/audit-log` — live undocumented 39th path; pre-auth query binder complete (10 GET ops now validate pre-auth); mirrors GraphQL `ListAuditEvents`
+- NEW `apis.alfaview.com/v2/users/me/company` (GetOwnCompany) — identified as 38th OpenAPI path; sole 200-response supplier of `companyId` across 57 operations; enables guest-link chain execution by authori
+- CHANGED OpenAPI spec at `apis.alfaview.com/v2/docs/openapi.json` stable at MD5 `284a3383` (38 paths, 57 ops) for 3+ cycles; byte-identical on beta-apis.alfaview.com
+- CHANGED `sso.alfaview.com/oauth2/introspect` — 30+ consecutive stable cycles: fabricated `client_id` accepted on POST-body and Basic channels (200 `{"active":false}`); `token_endpoint_auth_methods_supported` 
+- CHANGED `app.alfaview.com` public bundle stable at `app.min.67e8a68d4318b34ca241.js` (MD5 `2cb91283`) carrying `adminSwitchCompany` mutation + hardcoded tenant IDs (`alfatraining-internal`, `01FDY0986YK1BJF2K
+- CHANGED `tools.alfaview.com/whiteboard/` second RPC backend confirmed (47B gRPC envelope vs poll's 45B jsonpb); staging mirror byte-identical; zero client references in bundle
+- CHANGED Inventory 100% probed — 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain

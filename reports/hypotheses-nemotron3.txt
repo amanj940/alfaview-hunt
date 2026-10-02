@@ -1,16 +1,12 @@
-## 2026-10-01 21:29:38 UTC [target] (model nemotron3)
-[NEW] `apis.alfaview.com/v2/users/me/company` (GetOwnCompany) identified as 38th OpenAPI path — sole 200-response supplier of `companyId` across 57 operations; enables guest-link chain execution by authorized tester (2026-09-29)
-[NEW] `apis.alfaview.com GET /v2/audit-log` — LIVE, UNDOCUMENTED 39th path absent from OpenAPI; pre-auth query binder complete (10 GET ops now validate pre-auth); mirrors GraphQL `ListAuditEvents` (2026-09-29)
-[NEW] `apis.alfaview.com POST /v2/rooms` — contract read reveals `RoomCreate.permissions` with `participantId` namespace collision (RoomCreate.permissions.participantId vs RoomPermissions.participantId) (2026-10-01)
-[NEW] `apis.alfaview.com PATCH /v2/rooms/{id}` — `RoomUpdate.quotas` description bare ("The quotas for the room"), no enum/constraints; mass-assignment surface on quota fields undocumented (2026-10-01)
-[NEW] `apis.alfaview.com/v2/auth/api-key` — 4th unauthenticated credential endpoint discovered (HEAD→405 allow:POST, OPTIONS→405/19B text/plain); declares unique 403 account-status tier ("account is inactive") (2026-09-26)
+## 2026-10-02 01:06:02 UTC [target] (model nemotron3)
+[NEW] `apis.alfaview.com POST /v2/rooms` — contract read reveals `RoomCreate.permissions` with `participantId` namespace collision (RoomCreate.permissions.participantId vs RoomPermissions.participantId)
+[NEW] `apis.alfaview.com PATCH /v2/rooms/{id}` — `RoomUpdate.quotas` description bare ("The quotas for the room"), no enum/constraints; mass-assignment surface on quota fields undocumented
+[NEW] `apis.alfaview.com/v2/audit-log` — live undocumented 39th path; pre-auth query binder complete (10 GET ops now validate pre-auth); mirrors GraphQL `ListAuditEvents`
+[NEW] `apis.alfaview.com/v2/users/me/company` (GetOwnCompany) — identified as 38th OpenAPI path; sole 200-response supplier of `companyId` across 57 operations; enables guest-link chain execution by authorized tester
 [CHANGED] OpenAPI spec at `apis.alfaview.com/v2/docs/openapi.json` stable at MD5 `284a3383` (38 paths, 57 ops) for 3+ cycles; byte-identical on beta-apis.alfaview.com
-[CHANGED] `sso.alfaview.com/oauth2/introspect` — 30+ consecutive stable cycles: fabricated `client_id` accepted on POST-body and Basic channels (200 `{"active":false}`); `token_endpoint_auth_methods_supported` advertises `client_secret_basic/post/none` with no runtime verification; `introspection_endpoint` absent from discovery while endpoint live (OPTIONS 405)
+[CHANGED] `sso.alfaview.com/oauth2/introspect` — 30+ consecutive stable cycles: fabricated `client_id` accepted on POST-body and Basic channels (200 `{"active":false}`); `token_endpoint_auth_methods_supported` advertises `client_secret_basic/post/none` with no runtime verification
 [CHANGED] `app.alfaview.com` public bundle stable at `app.min.67e8a68d4318b34ca241.js` (MD5 `2cb91283`) carrying `adminSwitchCompany` mutation + hardcoded tenant IDs (`alfatraining-internal`, `01FDY0986YK1BJF2K0F9DXR8EB`)
 [CHANGED] `tools.alfaview.com/whiteboard/` second RPC backend confirmed (47B gRPC envelope vs poll's 45B jsonpb); staging mirror byte-identical; zero client references in bundle
-[CHANGED] `apis.alfaview.com`: validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI `components.securitySchemes={}`, `security=null`
-[CHANGED] `apis.alfaview.com/v2/users/invitation{,s}`: OpenAPI declares POST only; live server advertises `Allow: DELETE,POST` on `/v2/users/invitation` and DELETE-only on undocumented `/v2/users/invitations`; both Go router, both 405 before 401
-[CHANGED] `test.alfaview.com`: alfacheck v483102 (4 platforms) unsigned; index page no sha256/signatures
 [CHANGED] Inventory 100% probed — 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain
 [PRIO] apis.alfaview.com/v2/guest-links, 8.65, attack_surface=9 business_value=9 tech_exposure=8 gate_ease=1 cloud_surface=8 freshness=10
 [PRIO] app.alfaview.com/graphql (adminSwitchCompany), 8.55, attack_surface=8 business_value=10 tech_exposure=9 gate_ease=1 cloud_surface=8 freshness=10
@@ -50,8 +46,7 @@ impact: OAuth token metadata disclosure → token reconnaissance, scope enumerat
 testability: AUTH_HELPED
 [PARKED] tools.alfaview.com/whiteboard/ BOLA via unmapped RPC: No passive verify steps — requires valid gRPC-metadata token from authenticated session (AUTH_HELPED) and verb enumeration is not passively discoverable (flat code:5 for all verbs); demoted from active hunt
 [PARKED] Validation-before-auth on query-param routes: Informational only — reproduces public OpenAPI schema, no data exposure, no auth bypass; downgraded from standalone finding
-[PARKED] Undeclared DELETE on /v2/users/invitation{,s}: Single isolated route, not systemic; 405 before 401 means auth still enforced; no exploit path without token
-[PARKED] 2FA enforcement asymmetry (SSO vs native): No exploitation path without credentialed accounts on both paths; program prohibits brute-force/credential testing
+[PARKED] Undeclared DELETE on /v2/users/invitation{s}: Single isolated route, not systemic; 405 before 401 means auth still enforced; no exploit path without token
 [PARKED] POST /v2/rooms RoomCreate.permissions mass-assignment: Contract shows nested permissions array with participantId; requires authenticated company context to test; no unauthenticated vector
 [PARKED] PATCH /v2/rooms/{id} RoomUpdate.quotas: Documentation gap only; requires authenticated room ownership to test; no evidence of over-permissive write
 [FINAL] Ranked survivors:
@@ -61,7 +56,7 @@ testability: AUTH_HELPED
 [LEARN] ACCEPTED AUTH @ sso.alfaview.com/oauth2/introspect: 30th cycle unchanged — fabricated client_id accepted on POST-body and Basic; token_endpoint_auth_methods advertises client_secret_basic/post/none with no runtime verification; introspection_endpoint absent from discovery while endpoint live
 [LEARN] ACCEPTED MISCONFIG @ tools.alfaview.com/whiteboard/: Second unmapped RPC backend proven by controlled differential — 47B gRPC envelope vs poll's 45B; distinct marshaller; no auth challenge; zero client references
 [LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com: Validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI components.securitySchemes={}, security=null
-[LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com/v2/users/invitation{,s}: OpenAPI declares POST only; live server advertises Allow: DELETE,POST on /v2/users/invitation and DELETE-only on undocumented /v2/users/invitations; both Go router (19B text/plain), both 405 before 401
+[LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com/v2/users/invitation{s}: OpenAPI declares POST only; live server advertises Allow: DELETE,POST on /v2/users/invitation and DELETE-only on undocumented /v2/users/invitations; both Go router (19B text/plain), both 405 before 401
 [LEARN] REJECTED AUTH @ sso.alfaview.com/oauth2/userinfo: JOSE algorithm confusion tested (alg=none, HS256 with RSA pubkey, HS256 random, RS256 self-signed) — all byte-identical access_token_failed_processing; no third tier
 [LEARN] REJECTED OATH @ sso.alfaview.com/oauth2/logout: post_logout_redirect_uri and redirect_uri both ignored; every variant 302 → /
 [LEARN] REJECTED AUTH @ apis.alfaview.com/v2/auth/{guest,group}-link: NO accessKey existence oracle — well-formed synthetic triple returns 422/88B ACTION_INVALID byte-identical to traversal key; taxonomy exactly two tiers (schema 422, business 422)

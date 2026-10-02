@@ -7541,3 +7541,56 @@ testability: AUTH_HELPED
 [LEARN]
 [RISK]
 ## 2026-10-01 21:27:40 UTC [target] (model bigpickle)
+## 2026-10-02 01:14:03 UTC [target] (model bigpickle)
+[NEXT] HUMAN: supply one self-owned LOW-PRIVILEGE alfaview account in a tenant I control, holding
+[LEARN] ACCEPTED IDOR @ apis.alfaview.com POST /v2/rooms: a public, unauthenticated-to-read contract
+[LEARN] ACCEPTED BUSLOGIC @ apis.alfaview.com PATCH /v2/rooms/{id}: a documentation differential on
+[LEARN] REJECTED MISCONFIG @ apis.alfaview.com (orphan quota route): an orphan-schema diff scoped to
+[LEARN] NO_DELTA @ apis/sso standing surface: OpenAPI 200/132100B md5 284a3383 (38 paths, 57 ops),
+[RISK] alfaview gmbh: 63. Up 1 from 62. No unauthenticated exposure was found — every probe this
+[HYP] <title>
+class: <IDOR|SSRF|AUTH|XSS|BUSLOGIC|MISCONFIG|OATH|OTHER>
+asset: <host/endpoint>
+confidence: <0-100>
+reasoning: <facts only>
+evidence_needed: <what proves it>
+verify_steps: <passive-first concrete HTTP requests>
+impact: <what attacker gets + severity>
+testability: <PASSIVE|AUTH_HELPED|HUMAN_ONLY>
+[NEW] apis.alfaview.com /v2/users/me/company (GetOwnCompany) — 38th path, returns Company{companyId, displayName, createdAt}, token-gated (401 pre-auth), 200-response schema added; no equivalent in local 37-path snapshot
+[CHANGED] apis.alfaview.com /v2/docs/openapi.json — byte-identical on prod+beta (md5 284a3383c1ac3cfc9152ffcc631891f2, 132100B, 38 paths, 57 ops). Local recon-notes/alfaview-openapi.yaml remains 37 paths (missing /v2/users/me/company)
+[CHANGED] apis.alfaview.com /v2/audit-log — live undocumented endpoint (pre-auth validation 422 on missing from/to; 401 on valid params). Query binder tested: limit 1..50 enforced, actionType/outcome enums validated, other unknown params ignored without pre-auth error; auth-bound. Event/Actor/Target schemas exist in live OpenAPI but are not referenced by any path. No metadata subpaths found under /v2/audit-log; /v2/audit-log/searchable-metadata-attributes is 401 (auth-gated) not 404. beta-apis identical.
+[PRIO]
+[HYP]
+[HYP] Company-wide guest-link and group-link enumeration returns live join credentials with no expressible authorization axis
+class: IDOR
+asset: apis.alfaview.com GET /v2/guest-links + GET /v2/group-links
+confidence: 90
+reasoning: Un-narrowable contract (only pageToken, limit; roomId/companyId not bound in query validation errors array which enumerates only query.limit). GuestLink required fields include accessKey, joinUrl, dialInCode, emailAddress (12/15). GroupLink includes accessKey, joinUrl, dialInCode. TokenUserPermissions is closed 7-boolean additionalProperties:false with no link axis; roomList/userList named for other company-wide reads. Redemption: POST /v2/auth/guest-link takes {companyId,roomId,accessKey} (displayName not required) and performs lookup (post-lookup 422/88B tier). All tested via passive GET/HEAD/OPTIONS only; behavior under token unknown.
+evidence_needed: One self-owned low-privilege token. GET /v2/auth/token-info and GET /v2/guest-links?limit=1 (and group-links) returning objects from self-owned tenant only.
+verify_steps: AUTH_HELPED. 1) GET /v2/auth/token-info (read-only). 2) GET /v2/guest-links?limit=1. 3) GET /v2/group-links?limit=1. Compare returned ids/scope to self-owned tenant; never read other-tenant data.
+impact: Cross-tenant harvest of guest join credentials (accessKey+joinUrl+dialInCode) and guest email addresses. HIGH if authorization gate absent under valid low-priv token.
+testability: AUTH_HELPED
+[HYP] Room-permission read/write pair authorized at company scope rather than room scope enables room-admin escalation by a low-priv member
+class: IDOR
+asset: apis.alfaview.com GET /v2/rooms/{roomId}/permissions + POST /v2/rooms/{roomId}/permissions
+confidence: 62
+reasoning: Token carries only company-wide roomAdmin ("any room"); room-level Permissions.admin must be enforced server-side with no matching room-scoped authorization vocabulary documented. ListPermissions returns full principal set+9-boolean bitmaps. CreatePermissions accepts participantId and full bitmask (including admin) with no documented auth requirement. Guest-link id is a plausible participantId in join URL. Contract contradictory to implicit room-scoped enforcement.
+evidence_needed: Self-owned low-priv member account (roomAdmin=false) with roomCreate+roomList, plus self-owned roomId the account has merely joined.
+verify_steps: AUTH_HELPED. 1) GET /v2/auth/token-info (confirm roomAdmin=false). 2) GET /v2/rooms/{roomId}/permissions on own room joined by that account (status only). 3) ONE own-tenant write: POST /v2/rooms/{roomId}/permissions with {"participantId":"<own userId>","permissions":{...,"admin":true,...}} on that same room; observe status (204/403/404/409). Never target other tenants/data.
+impact: Low-priv member to room-admin escalation plus disclosure of room participant ids/bitmaps. HIGH if step 3 returns 204; MEDIUM if only step 2 discloses.
+testability: AUTH_HELPED
+[HYP] REST audit-log is auth-bound with correct tenant scope (disconfirming prior cross-tenant audit-read hypothesis)
+class: IDOR
+asset: apis.alfaview.com GET /v2/audit-log
+confidence: 20
+reasoning: Live 39th path; validation-before-auth (422 missing from/to, 422 limit bounds, enum validation on actionType). On valid params returns 401 (auth-gated). No paths reference Event schemas; GraphQL mirror AUDIT_LOG bit exists client-side. Evidence suggests gate exists rather than absent; hypothesis carried to force disconfirmation.
+evidence_needed: Self-owned tenant user; GET /v2/auth/token-info; GET /v2/audit-log?from=2026-09-28T00:00:00Z&to=2026-09-30T00:00:00Z.
+verify_steps: AUTH_HELPED, read-only. Confirm token has expected company context; issue query and compare events to self-owned scope only. Never cross-tenant.
+impact: If gate broken, cross-tenant audit read of actions (actor/targets/details). HIGH only if enforcement absent under privileged token.
+testability: AUTH_HELPED
+[FINAL]
+[PARKED]
+[NEXT]
+[LEARN]
+[RISK]
