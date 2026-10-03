@@ -68331,3 +68331,512 @@ top security: None
 securitySchemes: None
 audit-log in paths: []
 [0m
+===== ANALYST bigpickle 2026-10-03 07:06:27 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mls -la; echo "---"; find . -maxdepth 3 -iname "*openapi*" -o -maxdepth 3 -iname "*.yaml" -o -maxdepth 3 -iname "*scope*" | head -50
+total 1052
+drwxr-xr-x 12 runner runner   4096 Oct  3 07:02 .
+drwxr-xr-x  3 runner runner   4096 Oct  3 07:02 ..
+drwxr-xr-x  7 runner runner   4096 Oct  3 07:02 .git
+drwxr-xr-x  3 runner runner   4096 Oct  3 07:02 .github
+-rw-r--r--  1 runner runner   1883 Oct  3 07:02 README.md
+-rw-r--r--  1 runner runner     32 Oct  3 07:02 analyst-out.txt
+-rw-r--r--  1 runner runner 450520 Oct  3 07:02 analyst-prompt.txt
+-rw-r--r--  1 runner runner 446610 Oct  3 07:02 ctx.txt
+drwxr-xr-x  2 runner runner   4096 Oct  3 07:02 inventory
+drwxr-xr-x  2 runner runner   4096 Oct  3 07:02 knowledge
+drwxr-xr-x  2 runner runner   4096 Oct  3 07:02 leads
+-rw-r--r--  1 runner runner  79088 Oct  3 07:02 probe-results.md
+drwxr-xr-x  2 runner runner   4096 Oct  3 07:02 recon-notes
+drwxr-xr-x  2 runner runner   4096 Oct  3 07:02 reports
+drwxr-xr-x  2 runner runner   4096 Oct  3 07:02 reposcan-raw
+-rw-r--r--  1 runner runner   3323 Oct  3 07:02 scope.yml
+drwxr-xr-x  2 runner runner   4096 Oct  3 07:02 scripts
+-rw-r--r--  1 runner runner     33 Oct  3 07:02 state_bigpickle.json
+-rw-r--r--  1 runner runner     33 Oct  3 07:02 state_laguna.json
+-rw-r--r--  1 runner runner     33 Oct  3 07:02 state_ling3.json
+-rw-r--r--  1 runner runner     33 Oct  3 07:02 state_longcat.json
+-rw-r--r--  1 runner runner     33 Oct  3 07:02 state_mimo.json
+-rw-r--r--  1 runner runner     33 Oct  3 07:02 state_nemotron3.json
+drwxr-xr-x  2 runner runner  12288 Oct  3 07:02 triage
+---
+./scope.yml
+./recon-notes/alfaview-openapi.yaml
+./recon-notes/SCOPE-CONFIRMATION.md
+[0m
+[0m$ [0mls -la recon-notes/ 2>/dev/null; echo "---inventory---"; ls -la inventory/ 2>/dev/null; echo "---art---"; ls -la art/ 2>/dev/null | head
+total 192
+drwxr-xr-x  2 runner runner   4096 Oct  3 07:02 .
+drwxr-xr-x 12 runner runner   4096 Oct  3 07:02 ..
+-rw-r--r--  1 runner runner   4789 Oct  3 07:02 CORPUS-ALFAVIEW.md
+-rw-r--r--  1 runner runner   3624 Oct  3 07:02 DEDICATED-DEEP.md
+-rw-r--r--  1 runner runner   7833 Oct  3 07:02 DEEPER-FINDINGS.md
+-rw-r--r--  1 runner runner   6061 Oct  3 07:02 SCOPE-CONFIRMATION.md
+-rw-r--r--  1 runner runner 159550 Oct  3 07:02 alfaview-openapi.yaml
+---inventory---
+total 176
+drwxr-xr-x  2 runner runner   4096 Oct  3 07:02 .
+drwxr-xr-x 12 runner runner   4096 Oct  3 07:02 ..
+-rw-r--r--  1 runner runner 170596 Oct  3 07:02 alfaview.md
+---art---
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -o live-openapi.json -w "http=%{http_code} size=%{size_download} time=%{time_total}\n" https://apis.alfaview.com/v2/docs/openapi.json && md5sum live-openapi.json && python3 -c "
+import json;d=json.load(open('live-openapi.json'));print('paths',len(d['paths']));print('ops',sum(len([m for m in v if m in ('get','post','patch','put','delete','head','options','trace')]) for v in d['paths'].values()))"
+http=200 size=132100 time=0.859277
+284a3383c1ac3cfc9152ffcc631891f2  live-openapi.json
+paths 38
+ops 57
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import json
+d=json.load(open('live-openapi.json'))
+hits={"oneOf":[],"anyOf":[],"allOf":[],"not":[],"discriminator":[],"deprecated":[],"webhooks":[],"callbacks":[],"oneOfSchemas":[]}
+def walk(n,path):
+    if isinstance(n,dict):
+        for k,v in n.items():
+            if k in ("oneOf","anyOf","allOf","not","discriminator"): hits[k].append(path+"."+k)
+            if k=="deprecated" and v is True: hits["deprecated"].append(path+" deprecated")
+            if k=="callbacks": hits["callbacks"].append(path)
+            walk(v,path+"."+k)
+    elif isinstance(n,list):
+        for i,v in enumerate(n): walk(v,path+"[]")
+walk(d,"")
+for k,v in hits.items(): print(k,len(v), v[:6])
+print("webhooks:", "webhooks" in d)
+PY
+oneOf 0 []
+anyOf 0 []
+allOf 0 []
+not 0 []
+discriminator 0 []
+deprecated 1 ['.components.schemas.GroupLink.properties.joinLink deprecated']
+webhooks 0 []
+callbacks 0 []
+oneOfSchemas 0 []
+webhooks: False
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import json,collections
+d=json.load(open('live-openapi.json'))
+print("openapi",d.get("openapi"),"info",json.dumps(d.get("info")))
+print("servers:",json.dumps(d.get("servers")))
+print("top-level keys:",sorted(d.keys()))
+print("security:",d.get("security"),"securitySchemes:",d.get("components",{}).get("securitySchemes"))
+# x- extension inventory
+exts=collections.Counter()
+def walk(n):
+    if isinstance(n,dict):
+        for k,v in n.items():
+            if k.startswith("x-"): exts[k]+=1
+            walk(v)
+    elif isinstance(n,list):
+        for v in n: walk(v)
+walk(d)
+print("x-extensions:",dict(exts))
+PY
+openapi 3.1.0 info {"description": "## Format information\n\n* All time fields are returned in RFC3339 format and in UTC if not mentioned otherwise.\n\n## Authentication\n\n### API Key and Credentials\n\nAll API requests require an access token for authorization. Access tokens can be obtained by authenticating using any of the following endpoints:\n- [Authenticate via API key](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticateAPIKey)\n- [Authenticate via password](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticatePassword)\n- [Authenticate a guest (guest link)](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticateGuestLink)\n- [Authenticate a guest (group link)](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticateGroupLink)\nThe access token is returned as a base64-encoded string. It needs to be used as the value in the `Authorization` header in all subsequent API requests.\n\n### Token Time-To-Live (TTL)\n\nAccess tokens are valid for 1 hour. After this period, tokens will be expired and a new token must be obtained.\n\n## Permissions\n\nExcept for endpoints affecting \"own\" resources (e.g., \"Get own Meeting\"), returning static resources (e.g., \"List Available Languages\") and authentication endpoints, all endpoints require the caller to have specific permissions. There are two distinct types of permissions that can be applied to users independently.\n\n### Room permissions\n\nRoom permissions are the permissions of users in a particular room. If users have no permissions for a room, they cannot get any information about the room and it is excluded from room lists (except they have the user permissions to list all rooms).\n\nTo edit room properties or create resources (e.g., links, subrooms) for a room, users need room administrator permissions or user permissions that permit those actions.\nFor further information please refer to the [room permissions section in the support center](https://support.alfaview.com/en/administration/general/room-permissions/).\n\n### User permissions\n\nUser permissions are high level permissions applied to users independently from specific rooms.\nFor further information please refer to the [user permissions section in the support center](https://support.alfaview.com/en/administration/general/user-permissions/).\n", "title": "alfaview", "version": "2"}
+servers: [{"url": "https://apis.alfaview.com"}]
+top-level keys: ['components', 'info', 'openapi', 'paths', 'servers', 'tags']
+security: None securitySchemes: None
+x-extensions: {'x-sort-index': 57}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import json,collections
+d=json.load(open('live-openapi.json'))
+mt=collections.Counter(); hdr=collections.Counter()
+for p,item in d['paths'].items():
+    for m,op in item.items():
+        if m not in ('get','post','patch','put','delete'): continue
+        rb=op.get('requestBody')
+        if rb:
+            for c in rb.get('content',{}): mt[c]+=1
+        for pr in op.get('parameters',[]):
+            if pr.get('in')=='header': hdr[pr.get('name')]+=1
+print("requestBody media types:",dict(mt))
+print("header params:",dict(hdr))
+# formats used anywhere
+fmts=collections.Counter()
+def walk(n,path):
+    if isinstance(n,dict):
+        if 'format' in n and isinstance(n.get('format'),str): fmts[n['format']]+=1
+        for k,v in n.items(): walk(v,path+"."+k)
+    elif isinstance(n,list):
+        for v in n: walk(v,path+"[]")
+walk(d,"")
+print("formats:",dict(fmts))
+PY
+requestBody media types: {'application/json': 22}
+header params: {'Authorization': 53}
+formats: {'date-time': 43, 'uri': 2, 'int64': 14, 'email': 7, 'int32': 17}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import json
+d=json.load(open('live-openapi.json'))
+S=d['components']['schemas']
+for n in ('TokenUserPermissions','InviteUserPermissions','Permissions','PermissionsEdit','RoomPermissions','ParticipantPermissions'):
+    s=S.get(n)
+    if not s: print(n,"MISSING"); continue
+    print("=== %s === additionalProperties=%s required=%s"%(n,s.get('additionalProperties'),s.get('required')))
+    for p,v in (s.get('properties') or {}).items():
+        print("   %-22s %-7s %s"%(p,v.get('type'),(v.get('description') or '')[:110]))
+PY
+=== TokenUserPermissions === additionalProperties=False required=['manageCompany', 'userAdmin', 'userList', 'userShow', 'roomAdmin', 'roomList', 'roomCreate']
+   manageCompany          boolean If true, the user can manage company settings.
+   roomAdmin              boolean If true, the user can create, update and delete any room.
+   roomCreate             boolean If true, the user can create rooms for their company.
+   roomList               boolean If true, the user can list all rooms in their company.
+   userAdmin              boolean If true, the user can create, update and delete other users, send password reset mails and resend sign-up mail
+   userList               boolean If true, the user can list all users in their company.
+   userShow               boolean If true, the user can see the user names of all users in rooms they can access.
+=== InviteUserPermissions === additionalProperties=False required=['manageCompany', 'userAdmin', 'userList', 'userShow', 'roomAdmin', 'roomList', 'roomCreate']
+   manageCompany          boolean If true, the user can manage company settings. Implies userAdmin, roomAdmin and userShow.
+   roomAdmin              boolean If true, the user can create, update and delete any room. Implies roomList and roomCreate.
+   roomCreate             boolean If true, the user can create rooms for their company.
+   roomList               boolean If true, the user can list all rooms in their company.
+   userAdmin              boolean If true, the user can create, update and delete other users, send password reset mails and resend sign-up mail
+   userList               boolean If true, the user can list all users in their company.
+   userShow               boolean If true, the user can see the user names of all users in rooms they can access.
+=== Permissions === additionalProperties=False required=['admin', 'voice', 'video', 'promote', 'join', 'screen', 'vip', 'chat', 'upload']
+   admin                  boolean If true, the associated user is an admin.
+   chat                   boolean Permission to chat.
+   join                   boolean Permission to join the room.
+   promote                boolean Permission to promote permissions for other users.
+   screen                 boolean Permission to share the screen.
+   upload                 boolean Permission to upload files.
+   video                  boolean Permission to stream video input.
+   vip                    boolean Permission to mark users as VIP.
+   voice                  boolean Permission to speak.
+=== PermissionsEdit === additionalProperties=False required=None
+   admin                  ['boolean', 'null'] Permission to act as an administrator. Administrators are allowed to edit or delete rooms, change room setting
+   chat                   ['boolean', 'null'] Permission to chat in the room.
+   join                   ['boolean', 'null'] Permission to join the room.
+   promote                ['boolean', 'null'] Permission to promote permissions for other users for the room.
+   screen                 ['boolean', 'null'] Permission to share the screen in the room.
+   upload                 ['boolean', 'null'] Permission to upload files in the room.
+   video                  ['boolean', 'null'] Permission to stream video input in the room.
+   vip                    ['boolean', 'null'] Permission to mark users as VIP in the room.
+   voice                  ['boolean', 'null'] Permission to speak in the room.
+=== RoomPermissions === additionalProperties=False required=None
+   groupLinkPermissions   ['array', 'null'] The permissions of group links for this room.
+   guestLinkPermissions   ['array', 'null'] The permissions of guest links for this room.
+   userPermissions        ['array', 'null'] The permissions of users for this room.
+=== ParticipantPermissions === additionalProperties=False required=['participantId', 'permissions']
+   participantId          string  The user ID / guest link ID / group link ID to which the permissions apply.
+   permissions            None    The assigned permissions.
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import json
+d=json.load(open('live-openapi.json'))
+print("===== info.description (full) =====")
+print(d['info']['description'])
+print("===== tags declared =====")
+for t in d['tags']: print(" ",t)
+PY
+===== info.description (full) =====
+## Format information
+
+* All time fields are returned in RFC3339 format and in UTC if not mentioned otherwise.
+
+## Authentication
+
+### API Key and Credentials
+
+All API requests require an access token for authorization. Access tokens can be obtained by authenticating using any of the following endpoints:
+- [Authenticate via API key](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticateAPIKey)
+- [Authenticate via password](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticatePassword)
+- [Authenticate a guest (guest link)](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticateGuestLink)
+- [Authenticate a guest (group link)](https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticateGroupLink)
+The access token is returned as a base64-encoded string. It needs to be used as the value in the `Authorization` header in all subsequent API requests.
+
+### Token Time-To-Live (TTL)
+
+Access tokens are valid for 1 hour. After this period, tokens will be expired and a new token must be obtained.
+
+## Permissions
+
+Except for endpoints affecting "own" resources (e.g., "Get own Meeting"), returning static resources (e.g., "List Available Languages") and authentication endpoints, all endpoints require the caller to have specific permissions. There are two distinct types of permissions that can be applied to users independently.
+
+### Room permissions
+
+Room permissions are the permissions of users in a particular room. If users have no permissions for a room, they cannot get any information about the room and it is excluded from room lists (except they have the user permissions to list all rooms).
+
+To edit room properties or create resources (e.g., links, subrooms) for a room, users need room administrator permissions or user permissions that permit those actions.
+For further information please refer to the [room permissions section in the support center](https://support.alfaview.com/en/administration/general/room-permissions/).
+
+### User permissions
+
+User permissions are high level permissions applied to users independently from specific rooms.
+For further information please refer to the [user permissions section in the support center](https://support.alfaview.com/en/administration/general/user-permissions/).
+
+===== tags declared =====
+  {'description': 'Authentication endpoints', 'name': 'Authentication'}
+  {'description': 'Room endpoints', 'name': 'Rooms'}
+  {'description': 'Meeting endpoints', 'name': 'Meetings'}
+  {'description': 'Guest endpoints', 'name': 'Guests'}
+  {'description': 'Report endpoints', 'name': 'Reports'}
+  {'description': 'User endpoints', 'name': 'Users'}
+  {'description': 'Permission endpoints', 'name': 'Permissions'}
+  {'description': 'File endpoints', 'name': 'Files'}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import json,collections
+d=json.load(open('live-openapi.json'))
+declared={t['name'] for t in d['tags']}
+used=collections.Counter(); order=[]
+for p,item in d['paths'].items():
+    for m,op in item.items():
+        if m not in ('get','post','patch','put','delete'): continue
+        for t in op.get('tags',[]):
+            used[t]+=1
+            order.append((op.get('x-sort-index'),t,op.get('operationId'),m.upper(),p))
+print("declared-not-used:",sorted(declared-set(used)))
+print("used-not-declared:",sorted(set(used)-declared))
+for t,c in used.most_common(): print("  %-24s %d"%(t,c))
+print("===== sort-index holes =====")
+idx=sorted(int(x[0]) for x in order if x[0] is not None)
+print("min",idx[0],"max",idx[-1],"count",len(idx),"holes:",[i for i in range(idx[0],idx[-1]+1) if i not in idx])
+print("===== PermissionsEdit.admin full =====")
+print(d['components']['schemas']['PermissionsEdit']['properties']['admin']['description'])
+PY
+declared-not-used: []
+used-not-declared: []
+  Rooms                    26
+  Guests                   14
+  Users                    6
+  Authentication           5
+  Meetings                 5
+  Permissions              5
+  Files                    3
+  Reports                  2
+===== sort-index holes =====
+min 0 max 32 count 66 holes: [24, 25, 26, 30, 31]
+===== PermissionsEdit.admin full =====
+Permission to act as an administrator. Administrators are allowed to edit or delete rooms, change room settings or features and manage guests in the room.
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import json,collections
+d=json.load(open('live-openapi.json'))
+M=('get','post','patch','put','delete','head','options','trace')
+n=0; ops=[]
+for p,item in d['paths'].items():
+    for m in item:
+        if m in M: n+=1; ops.append((m,p,item[m].get('operationId'),item[m].get('x-sort-index')))
+print("total ops",n)
+idxs=[o[3] for o in ops]
+print("with sort-index",sum(1 for i in idxs if i is not None))
+c=collections.Counter(i for i in idxs if i is not None)
+print("duplicated indexes:",{k:v for k,v in c.items() if v>1})
+# which ops share a sort index
+byi=collections.defaultdict(list)
+for m,p,oid,i in ops:
+    if i is not None: byi[i].append((m.upper(),p,oid))
+for k in sorted(byi):
+    if len(byi[k])>1:
+        print("idx",k,"->",byi[k])
+# non-method keys inside path items (path-level parameters etc.)
+for p,item in d['paths'].items():
+    extra=[k for k in item if k not in M]
+    if extra: print("path-level keys",p,extra)
+PY
+total ops 57
+with sort-index 57
+duplicated indexes: {0: 6, 13: 2, 6: 3, 1: 6, 14: 2, 8: 2, 10: 2, 2: 4, 4: 4, 3: 4, 11: 2, 9: 2, 7: 2, 5: 2}
+idx 0 -> [('POST', '/v2/auth/api-key', 'AuthenticateAPIKey'), ('GET', '/v2/guest-links', 'ListGuestLinks'), ('GET', '/v2/meetings', 'ListOwnMeetings'), ('GET', '/v2/rooms', 'ListRooms'), ('GET', '/v2/stats', 'ListStatistics'), ('POST', '/v2/users/invitation', 'InviteUser')]
+idx 1 -> [('POST', '/v2/auth/password', 'AuthenticatePassword'), ('GET', '/v2/meetings/{id}', 'GetOwnMeeting'), ('GET', '/v2/rooms/{id}', 'GetRoom'), ('GET', '/v2/rooms/{roomId}/attendances', 'ListAttendances'), ('GET', '/v2/rooms/{roomId}/guest-links', 'ListGuestLinksForRoom'), ('GET', '/v2/users', 'ListUsers')]
+idx 2 -> [('GET', '/v2/guest-links/{id}', 'GetGuestLink'), ('POST', '/v2/meetings', 'CreateMeeting'), ('POST', '/v2/rooms', 'CreateRoom'), ('GET', '/v2/users/me', 'GetOwnUser')]
+idx 3 -> [('PATCH', '/v2/meetings/{id}', 'UpdateMeeting'), ('PATCH', '/v2/rooms/{id}', 'UpdateRoom'), ('POST', '/v2/rooms/{roomId}/guest-links', 'CreateGuestLinks'), ('PATCH', '/v2/users', 'UpdateUser')]
+idx 4 -> [('PATCH', '/v2/guest-links/{id}', 'UpdateGuestLink'), ('POST', '/v2/meetings/{id}/cancellation', 'CancelMeeting'), ('DELETE', '/v2/rooms/{id}', 'DeleteRoom'), ('DELETE', '/v2/users/{id}', 'DeleteUser')]
+idx 5 -> [('DELETE', '/v2/rooms/{roomId}/guest-links/{id}', 'DeleteGuestLink'), ('GET', '/v2/rooms/{roomId}/subrooms', 'ListSubrooms')]
+idx 6 -> [('POST', '/v2/auth/guest-link', 'AuthenticateGuestLink'), ('GET', '/v2/group-links', 'ListGroupLinks'), ('POST', '/v2/rooms/{roomId}/subrooms', 'CreateSubroom')]
+idx 7 -> [('GET', '/v2/rooms/{roomId}/group-links', 'ListGroupLinksForRoom'), ('PATCH', '/v2/rooms/{roomId}/subrooms/{subroomId}', 'UpdateSubroom')]
+idx 8 -> [('GET', '/v2/group-links/{id}', 'GetGroupLink'), ('DELETE', '/v2/rooms/{roomId}/subrooms/{subroomId}', 'DeleteSubroom')]
+idx 9 -> [('GET', '/v2/rooms/{roomId}/features', 'GetRoomFeatures'), ('POST', '/v2/rooms/{roomId}/group-links', 'CreateGroupLink')]
+idx 10 -> [('PATCH', '/v2/group-links/{id}', 'UpdateGroupLink'), ('PATCH', '/v2/rooms/{roomId}/features', 'UpdateRoomFeatures')]
+idx 11 -> [('DELETE', '/v2/rooms/{roomId}/features', 'DeleteRoomFeatures'), ('DELETE', '/v2/rooms/{roomId}/group-links/{id}', 'DeleteGroupLink')]
+idx 13 -> [('POST', '/v2/auth/group-link', 'AuthenticateGroupLink'), ('GET', '/v2/permission-groups', 'ListPermissionGroups')]
+idx 14 -> [('GET', '/v2/auth/token-info', 'GetTokenInfo'), ('GET', '/v2/rooms/{roomId}/permissions', 'ListPermissions')]
+[0m
+## Objective
+- Continue the alfaview gmbh POC focused on `apis.alfaview.com`, validate the highest-value IDOR/auth/business-logic hypotheses, and return only the requested eight structured analysis blocks.
+- Separate verified facts from hypotheses and avoid inventing or overstating impact.
+
+## Important Details
+- Current state: `phase=POC`, `target=api`.
+- Scope is limited to alfaview-owned infrastructure and applications described by `scope.yml` and `inventory/alfaview.md`.
+- Live testing must be passive-first, ≤1 rps, and limited to GET/HEAD/OPTIONS; no mutation, customer-data access, auth bypass, scanner-only claims, or rejected classes.
+- User’s required output order: DELTA, PRIORITIZE, HYPOTHESES, SELF-CRITIQUE, NEXT ACTION, LEARNING, RISK; emit exactly one `[NEXT]` action.
+- Priority formula: `0.25a+0.25b+0.15t+0.15g+0.10c+0.10f`.
+- Do not reuse retracted claims: OpenAPI has zero `uuid` occurrences and zero `pattern` keys; all 42 path parameters across 40 operations are unconstrained strings.
+- `Permissions.admin` on CreatePermissions only says `"If true, the associated user is an admin."`; the longer room-management wording belongs to `PermissionsEdit.admin` on PATCH.
+- Missing/irrelevant 403 declarations do not prove missing authorization. Authorization claims require wire evidence.
+- `/v2/auth/guest-link` has no accessKey existence oracle; synthetic, traversal, and valid-format unmatched values collapse to the same business tier.
+- Authentication claims must rest on observed wire behavior because the OpenAPI document has no machine-readable security requirements.
+- A self-owned low-privilege account and an unmoderated room in the same tenant would unblock all four major authenticated chains.
+- Do not send the proposed `/oauth2/device_authorize` POST without explicit authorization.
+
+## Work State
+### Completed
+- Current production and beta OpenAPI files are byte-identical: `https://apis.alfaview.com/v2/docs/openapi.json`, MD5 `284a3383c1ac3cfc9152ffcc631891f2`, 132100 bytes, 38 paths, 57 operations.
+- Confirmed `GET /v2/users/me/company` is the sole documented 200-response supplier of `companyId`; unauthenticated access returns 401.
+- Confirmed `GET /v2/guest-links` and `GET /v2/group-links` bind only `pageToken` and `limit`; no `roomId` or `companyId` filter exists. Responses can contain `accessKey`, `joinUrl`, `dialInCode`, and `emailAddress`.
+- Confirmed `TokenUserPermissions` is a closed seven-boolean vocabulary with no guest/group-link permission axis; live authorization remains unmeasured.
+- Confirmed `POST /v2/rooms/{roomId}/permissions` uses an unscoped, polymorphic `participantId` and atomic nine-boolean `Permissions`; `PermissionsEdit` is a separate partial-update schema.
+- Confirmed `GET /v2/permission-groups` returns `PermissionGroup{id,name,permissions}`, including complete attached permission sets and an `"Admin"` name example.
+- Confirmed `POST /v2/meetings` accepts caller-selected `permissionGroupId` values in `guestLinks` and `groupLinks`.
+- Validation-before-auth is mapped across nine documented GET operations; undocumented `GET /v2/audit-log` adds a tenth live route.
+- Closed negative avenues: REST mass assignment, REST SSRF, API JWT confusion, SSO JOSE confusion, logout redirect manipulation, and accessKey validity enumeration.
+- `app.alfaview.com/graphql` Signup is unauthenticated, but activation is email-gated; it remains the only standing unauthenticated path to a legitimate bearer token.
+- `sso.alfaview.com/oauth2/introspect` accepts fabricated client IDs with no runtime secret verification, but meaningful token testing requires POST authorization.
+
+### Active
+- CreatePermissions BOLA, confidence 80: one self-owned write can decisively test whether a company-wide principal ID receives `admin:true` and `promote:true` in an unmoderated room.
+- Company-wide guest/group-link scope chain, confidence approximately 88–90: contract-proven un-narrowable credential-bearing reads; wire authorization still unmeasured.
+- Meeting-scoped permission-group binding, confidence 64: permission-group IDs are directly enumerable, but out-of-authority binding is untested.
+- `/oauth2/device_authorize` unregistered-client hypothesis, confidence 44: parked because verification requires one form-encoded POST.
+- `adminSwitchCompany` cross-tenant token-minting signature remains informational at confidence 45; no admin credential or wire authorization evidence exists.
+
+### Blocked
+- No self-owned low-privilege alfaview account or unmoderated same-tenant room has been provided.
+- Signup completion requires access to the activation email.
+- Authenticated IDOR/business-logic behavior cannot be resolved while all relevant routes return 401.
+- `/oauth2/device_authorize` cannot advance under GET/HEAD/OPTIONS-only constraints.
+
+## Next Move
+1. Request one self-owned low-privilege alfaview account in a controlled tenant plus one room that account does not moderate.
+2. After receiving access, run GET `/v2/auth/token-info`, `/v2/users/me/company`, `/v2/guest-links?limit=1`, and `/v2/rooms/{roomId}/participants`; then perform exactly one CreatePermissions request in that tenant with `{"participantId":"<id>","permissions":{"admin":true,"voice":true,"video":true,"promote":true,"join":true,"screen":true,"vip":true,"chat":true,"upload":true}}`.
+
+## Relevant Files
+- `scope.yml`: authoritative in-scope asset definition.
+- `inventory/alfaview.md`: alfaview host inventory and historical verdicts.
+- `recon-notes/alfaview-openapi.yaml`: stored 37-path OpenAPI snapshot; current live document has 38 paths.
+- `leads/lead_nemotron3.txt`: ranked guest-link lead.
+- `hypotheses-nemotron3.txt`: current ranked hypothesis state.
+Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import json
+d=json.load(open('live-openapi.json'))
+P=d['paths']
+def show(path,m):
+    op=P[path][m]
+    print("=== %s %s | %s"%(m.upper(),path,op.get('operationId')))
+    print("summary:",op.get('summary'))
+    print("desc:",(op.get('description') or "")[:600])
+    print("403:",json.dumps((op.get('responses') or {}).get('403')))
+    for pr in op.get('parameters',[]):
+        if pr.get('name') in ('limit','pageToken','roomId','id'):
+            print("   param %s in=%s schema=%s desc=%s"%(pr['name'],pr.get('in'),json.dumps(pr.get('schema')),(pr.get('description') or '')[:200]))
+    print()
+show('/v2/guest-links','get')
+show('/v2/rooms/{roomId}/guest-links','get')
+show('/v2/group-links','get')
+show('/v2/rooms','get')
+PY
+=== GET /v2/guest-links | ListGuestLinks
+summary: List Guest Links
+desc: Lists guest links.
+403: {"description": "The requesting user does not have the necessary permissions."}
+   param pageToken in=query schema={"description": "For pagination: Pass the nextPageToken from the last successful request to obtain the next page. Omit on first request.", "type": "string"} desc=For pagination: Pass the nextPageToken from the last successful request to obtain the next page. Omit on first request.
+   param limit in=query schema={"default": 100, "description": "For pagination: Limit the number of returned guest links.", "format": "int32", "maximum": 500, "minimum": 0, "type": "integer"} desc=For pagination: Limit the number of returned guest links.
+
+=== GET /v2/rooms/{roomId}/guest-links | ListGuestLinksForRoom
+summary: List Guest Links for a Room
+desc: Lists guest links for a room. Returns an empty array if the room does not exist.
+403: {"description": "The requesting user does not have the necessary permissions."}
+   param roomId in=path schema={"description": "The room ID.", "examples": ["00000000-0000-0000-0000-000000000000"], "type": "string"} desc=The room ID.
+   param pageToken in=query schema={"description": "For pagination: Pass the nextPageToken from the last successful request to obtain the next page. Omit on first request.", "type": "string"} desc=For pagination: Pass the nextPageToken from the last successful request to obtain the next page. Omit on first request.
+   param limit in=query schema={"default": 100, "description": "For pagination: Limit the number of returned guest links.", "format": "int32", "maximum": 500, "minimum": 0, "type": "integer"} desc=For pagination: Limit the number of returned guest links.
+
+=== GET /v2/group-links | ListGroupLinks
+summary: List Group Links
+desc: Lists group links.
+403: null
+   param pageToken in=query schema={"description": "For pagination: Pass the nextPageToken from the last successful request to obtain the next page. Omit on first request.", "type": "string"} desc=For pagination: Pass the nextPageToken from the last successful request to obtain the next page. Omit on first request.
+   param limit in=query schema={"default": 100, "description": "For pagination: Limit the number of returned group links.", "format": "int32", "maximum": 500, "minimum": 0, "type": "integer"} desc=For pagination: Limit the number of returned group links.
+
+=== GET /v2/rooms | ListRooms
+summary: List Rooms
+desc: Lists rooms.
+403: null
+   param pageToken in=query schema={"description": "For pagination: Pass the nextPageToken from the last successful request to obtain the next page. Omit on first request.", "type": "string"} desc=For pagination: Pass the nextPageToken from the last successful request to obtain the next page. Omit on first request.
+   param limit in=query schema={"default": 50, "description": "For pagination: Set a limit on the number of returned rooms.", "format": "int32", "maximum": 50, "minimum": 0, "type": "integer"} desc=For pagination: Set a limit on the number of returned rooms.
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'PY'
+import json
+d=json.load(open('live-openapi.json'))
+P=d['paths']
+for path,m in (('/v2/rooms/{roomId}/permissions','post'),('/v2/rooms/{roomId}/permissions','get')):
+    op=P[path][m]
+    print("=== %s %s | %s"%(m.upper(),path,op.get('operationId')))
+    print("summary:",op.get('summary'))
+    print("desc:",(op.get('description') or "")[:800])
+    print("401:",json.dumps((op.get('responses') or {}).get('401')))
+    print("403:",json.dumps((op.get('responses') or {}).get('403')))
+    print()
+# limit caps
+caps={}
+for p,item in P.items():
+    for m,op in item.items():
+        if m not in ('get','post','patch','put','delete'): continue
+        for pr in op.get('parameters',[]):
+            if pr.get('name')=='limit':
+                s=pr.get('schema') or {}
+                caps.setdefault((s.get('type'),s.get('maximum'),s.get('minimum')),[]).append(op.get('operationId'))
+for k,v in sorted(caps.items(),key=lambda x:str(x[0])):
+    print("limit schema",k,"->",sorted(v))
+PY
+=== POST /v2/rooms/{roomId}/permissions | CreatePermissions
+summary: Create Room Permissions
+desc: Creates permissions for a user that are applied in a room.
+401: {"description": "The 'Authorization' header did not contain a valid API token."}
+403: {"description": "The requesting user does not have the necessary permissions."}
+
+=== GET /v2/rooms/{roomId}/permissions | ListPermissions
+summary: List Room Permissions
+desc: Lists permissions applied in a room.
+401: {"description": "The 'Authorization' header did not contain a valid API token."}
+403: null
+
+limit schema ('integer', 50, 0) -> ['ListRooms']
+limit schema ('integer', 500, 0) -> ['ListGroupLinks', 'ListGroupLinksForRoom', 'ListGuestLinks', 'ListGuestLinksForRoom']
+[0m
+Cycle 40 complete. Live spec re-fetched (unchanged, md5 `284a3383…`), then audited the four structural axes never checked in 39 prior cycles. One result is a material retraction of the lead I have been carrying at 88–90.
+
+```
+[PASS] 1. OBJECTIVE
+Correct the standing high-confidence guest-link authorization lead and close remaining un-audited OpenAPI structural axes for the alfaview POC (apis.alfaview.com), keeping claims contract-bound and separating authorization bypass from exposure amplification.
+
+[PASS] 2. DELTA
+NEW FACT: OpenAPI info.description states the authorization model in prose: "If users have no permissions for a room, they cannot get any information about the room and it is excluded from room lists (except they have the user permissions to list all rooms)" and "To edit room properties or create resources (e.g., links, subrooms) for a room, users need room administrator permissions or user permissions that permit those actions."
+NEW FACT: TokenUserPermissions.roomList = "If true, the user can list all rooms in their company"; roomAdmin = "If true, the user can create, update and delete any room". These are the documented axes for company-wide reads and room-resource writes.
+NEW FACT: The spec exposes paired routes - GET /v2/guest-links (403 declared, "The requesting user does not have the necessary permissions") and GET /v2/rooms/{roomId}/guest-links (same 403), which is exactly what the prose predicts: room-scoped for holders of room permissions, company-wide for holders of roomList.
+RETRACTION (confidence 88-90 -> 12): my standing lead inferred an authorization gap from the absence of a permission *named* for guest links. info.description documents the controlling rule and403 declaration exists. "No guestLinkList field" is a naming convention, not a missing check. Residual real issue is only exposure amplification: limit max 500 on guest/group link lists (vs 50 on GET /v2/rooms) returning accessKey, joinUrl, dialInCode, emailAddress - LOW/MEDIUM information exposure behind an administrative permission, not an authorization bypass.
+RETRACTION: the x-sort-index "holes" oracle (min 0 max 32, holes 24/25/26/30/31) is an artifact - indexes are per-group and heavily duplicated (index 0 maps to 6 operations, index 1 to 6). Sort-index is not a global ordinal; the gap analysis is meaningless. Closed for good.
+REFRAMED: CreatePermissions BOLA survives (scored 78, not reduced) but no longer framable as "no documented permission model" - the documented control is room-admin-in-that-room or roomAdmin, so the live question is precisely whether the implementation binds participantId to roomId.
+NEW NEGATIVES: zero oneOf/anyOf/allOf/not/discriminator anywhere, so no polymorphic body escape exists and the mass-assignment closure is now structurally confirmed rather than inferred. All 22 request bodies are application/json only, so no multipart or form-urlencoded alternate channel. Only header parameter in the entire contract is Authorization (53 operations). No webhooks, no callbacks. Formats: date-time 43, int32 17, int64 14, email 7, uri 2 - the 2 uri fields are ErrorModel only, confirming SSRF closure.
+CONFIRMED UNCHANGED: 38 paths, 57 operations, 132100 bytes, single production server origin, security and securitySchemes still absent, declared and used tag sets match exactly with no orphans.
+
+[UNCONFIRMED] 3. PRIORITIZE
+1: "Retract and reframe the guest-link lead as exposure amplification, and propagate the correction to leads/lead_nemotron3.txt and hypotheses-nemotron3.txt" - a=90 b=95 t=100 g=85 c=95 f=100 -> 94
+2: "CreatePermissions participantId-to-roomId binding test once a low-priv account exists" - a=75 b=90 t=60 g=75 c=70 f=95 -> 78
+3: "Complete the validation-before-auth map across the remaining documented GET routes as a negative-control differentiator" - a=40 b=85 t=100 g=35 c=80 f=95 -> 69
+
+[UNCONFIRMED] 4. HYPOTHESES
+H1 (retracted, 12): company-wide guest/group-link reads lack expressible authorization - REFUTED by info.description prose plus the 403 declaration on ListGuestLinks; do not report as authorization bypass.
+H2 (12, live-dependent): a caller WITHOUT roomList receives guest-link credentials for rooms they hold no room permission in - sharp, falsifiable negative control, needs one low-priv account.
+H3 (18): a caller WITH roomList can bulk-harvest every guest accessKey, joinUrl, dialInCode and emailAddress in the company at 500 per request (10x the rooms page cap) - business-logic exposure, administrative permission required.
+H4 (78, testable with one write): CreatePermissions grants admin+promote to a participantId from outside the path room - residual is binding, not documented-model absence.
+
+[PASS] 5. SELF-CRITIQUE
+This is the third time an inference from an absent declaration has produced an overstated finding, and the pattern is mine: I read "missing field" as "missing control" when the vendor documents the control elsewhere. The correction came only from reading info.description, which I had treated as boilerplate auth prose in cycle 1 and never audited as a claims source. I also let a 500-confidence lead propagate to another agent's file for many cycles, where an unretracted wrong claim does real damage. I should treat spec prose and field descriptions as first-class evidence and should have audited them before promoting any contract-only claim above ~60. Remaining weakness: every live authorization question is still unresolved because all relevant routes 401 without a token, so the reframed H2/H3 are untested.
+
+[REQUEST INPUT] 6. NEXT ACTION
+Request one self-owned low-privilege alfaview account in a controlled tenant plus one room that account does not moderate. On receipt, the first probe is a negative control before any write: GET /v2/auth/token-info to confirm the permission vector, then GET /v2/guest-links?limit=500 unauthenticated-as-privileged and as the unprivileged principal to determine whether guest credentials for rooms outside the account's room permissions are returned (H2), which either re-elevates or closes the lead.
+
+[UNCONFIRMED] 7. LEARNING
+OpenAPI info.description and per-field descriptions are primary evidence, not boilerplate - the permission model that decides three standing leads lives in prose and had never been audited. Absence of a specifically named permission field is not evidence of a missing authorization check. x-sort-index is group-relative, not a global ordinal, so gap analysis over it is noise. Zero oneOf/anyOf/allOf plus application/json-only bodies is what makes additionalProperties:false mass-assignment closure structurally sound rather than assumed.
+
+[PASS] 8. RISK
+Retracting an 88-90 confidence lead removes the campaign's most quotable finding and may mask a real exposure if H2 is never tested - mitigate by testing H2 as soon as an account exists and by reporting H3 on its merits without an authorization-bypass label. Writing this correction to shared lead files could overwrite another agent's concurrent work; if written, append a dated retraction block rather than replacing the entry. No live state was mutated: this cycle used one GET on the OpenAPI document plus offline analysis.
+```

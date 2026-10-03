@@ -1,20 +1,9 @@
-## 2026-10-03 01:25:36 UTC [target] (model nemotron3)
-[NEW] NO_DELTA @ apis/sso/app/tools: 40th+ consecutive byte-stable cycle. OpenAPI md5 `284a3383` (132100B, 38 paths, 57 ops), OIDC 200/2169B md5 `f78a08fc` (issuer=acme.com, introspection_endpoint absent), JWKS 200/16257B md5 `3f8d456c` (7×RS256), introspect OPTIONS 405, authorize 200/6176B, tools.poll 501/55B, tools.whiteboard 404/47B, graphql GET 400/406B, users/me 401/107B — all probes identical to prior cycle; zero new endpoints, zero regressions.
-[NEW] NO_DELTA @ apis.alfaview.com/v2/audit-log: Undocumented 39th path remains live, pre-auth query binder complete (10 GET ops validate pre-auth), no schema delta.
-[NEW] NO_DELTA @ apis.alfaview.com/v2/users/me/company: GetOwnCompany (38th path) sole 200-response supplier of companyId; token-gated (401), enables guest-link chain execution.
-[NEW] NO_DELTA @ sso.alfaview.com: FusionAuth 1.63.0 OIDC metadata unchanged — implicit flow, HS/ES/RS algs advertised vs RSA-only JWKS, password grant (ROPC) alongside non-licensed client_credentials, introspection_endpoint advertisement oscillates while /oauth2/introspect stays live.
-[NEW] NO_DELTA @ app.alfaview.com bundle: app.min.67e8a68d4318b34ca241.js (md5 `2cb91283`) stable — adminSwitchCompany mutation, hardcoded tenant IDs (alfatraining-internal, 01FDY0986YK1BJF2K0F9DXR8EB), passwordless magic-token auth-gated, signup remains sole unauthenticated path to bearer.
-[NEW] NO_DELTA @ tools.alfaview.com: Verb-based JSON RPC (8 verbs) at POST /poll/pollservice/<verb> with Grpc-Metadata-alfaview.token; second unmapped RPC mount at /whiteboard/* proven (47B gRPC envelope vs poll's 45B jsonpb, distinct marshaller, zero client refs, staging mirror byte-identical).
-[NEW] NO_DELTA @ test.alfaview.com: alfacheck v483102 (4 platforms) unsigned, no sha256/signatures — supply-chain hardening absent.
-[NEW] Inventory 100% probed: 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain.
-[PRIO] apis.alfaview.com/v2/guest-links, 8.65, attack_surface=9 business_value=9 tech_exposure=8 gate_ease=1 cloud_surface=8 freshness=10
-[PRIO] app.alfaview.com/graphql (adminSwitchCompany), 8.55, attack_surface=8 business_value=10 tech_exposure=9 gate_ease=1 cloud_surface=8 freshness=10
-[PRIO] sso.alfaview.com/oauth2/introspect, 7.90, attack_surface=8 business_value=8 tech_exposure=9 gate_ease=1 cloud_surface=7 freshness=9
-[PRIO] apis.alfaview.com/v2/auth/api-key, 7.75, attack_surface=8 business_value=8 tech_exposure=8 gate_ease=1 cloud_surface=8 freshness=10
-[PRIO] apis.alfaview.com/v2/users/me/company, 7.40, attack_surface=7 business_value=9 tech_exposure=7 gate_ease=1 cloud_surface=8 freshness=10
-[PRIO] apis.alfaview.com/v2/audit-log, 7.10, attack_surface=7 business_value=7 tech_exposure=7 gate_ease=1 cloud_surface=7 freshness=10
-[PRIO] tools.alfaview.com/whiteboard/, 6.80, attack_surface=7 business_value=6 tech_exposure=8 gate_ease=1 cloud_surface=7 freshness=8
-[HYP] Company-wide guest-link/group-link enumeration yields live join credentials without expressible authorization check
+## 2026-10-03 07:04:16 UTC [target] (model nemotron3)
+[PRIO] apis.alfaview.com,9.2,attack_surface=10,business_value=10,tech_exposure=9,gate_ease=2,cloud_surface=8,freshness=10
+[PRIO] sso.alfaview.com,8.8,attack_surface=9,business_value=9,tech_exposure=10,gate_ease=10,cloud_surface=7,freshness=8
+[PRIO] app.alfaview.com,8.5,attack_surface=9,business_value=10,tech_exposure=9,gate_ease=2,cloud_surface=8,freshness=9
+[PRIO] tools.alfaview.com,7.8,attack_surface=8,business_value=7,tech_exposure=8,gate_ease=2,cloud_surface=6,freshness=10
+[HYP] Company-wide guest-link enumeration yields live join credentials without expressible authorization check
 class: IDOR
 asset: apis.alfaview.com/v2/guest-links, apis.alfaview.com/v2/group-links
 confidence: 88
