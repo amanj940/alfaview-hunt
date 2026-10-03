@@ -1,4 +1,4 @@
-## 2026-10-03 19:25:29 UTC [target] (model nemotron3)
+## 2026-10-03 22:24:30 UTC [target] (model nemotron3)
 [PRIO] sso.alfaview.com/oauth2/introspect,7.55,attack_surface=8,business_value=9,tech_exposure=9,gate_ease=3,cloud_surface=5,freshness=10
 [PRIO] app.alfaview.com/graphql (adminSwitchCompany),7.25,attack_surface=9,business_value=10,tech_exposure=9,gate_ease=1,cloud_surface=5,freshness=5
 [PRIO] apis.alfaview.com/v2/guest-links + /v2/group-links,7.10,attack_surface=9,business_value=10,tech_exposure=8,gate_ease=1,cloud_surface=5,freshness=5
@@ -44,6 +44,7 @@ testability: AUTH_HELPED
 [LEARN] ACCEPTED IDOR (chain) @ apis.alfaview.com: guest-links enumeration → CreatePermissions composes credential-harvest → privilege-grant chain; both halves contract-proven, zero wire evidence, AUTH_HELPED
 [LEARN] ACCEPTED MISCONFIG (negative) @ apis.alfaview.com: mass assignment closed across entire write surface — all 21 request-body schemas and nested schemas are additionalProperties:false
 [LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com POST /v2/meetings: second meeting-scoped bulk credential-issuance path (guestLinks/groupLinks arrays with caller-supplied permissionGroupId); three distinct issuance routes with caller-chosen permission groups
+[LEARN] ACCEPTED MISCONFIG @ tools.alfaview.com/whiteboard/: second unmapped RPC backend proven by controlled differential (47B gRPC envelope vs poll's 45B jsonpb), distinct marshaller, no auth challenge observed, zero client references in bundle, staging mirror byte-identical — surface discovery only, no exploit demonstrated
 [LEARN] REJECTED IDOR @ apis.alfaview.com: "OpenAPI spec confirms path-param UUID patterns" premise FALSE — live 132100B document contains "uuid" zero times, zero `pattern` keys; all 42 path params across 40 operations are unconstrained `type: string`
 [LEARN] REJECTED IDOR @ apis.alfaview.com POST /v2/rooms/{roomId}/permissions: retracted Permissions.admin scope claim — "edit or delete rooms, manage guests" lives on PermissionsEdit.admin (PATCH), not Permissions (CREATE); two schemas, two operations, merged erroneously
 [LEARN] ACCEPTED INFO @ apis.alfaview.com: two distinct permission schemas — Permissions (CREATE, all 9 booleans required = atomic full-set write) vs PermissionsEdit (PATCH, all-optional partial delta); Create is more dangerous write path
