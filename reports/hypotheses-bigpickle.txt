@@ -1,1 +1,47 @@
-## 2026-10-03 07:06:15 UTC [target] (model bigpickle)
+## 2026-10-03 12:41:36 UTC [target] (model bigpickle)
+[PRIO] apis.alfaview.com (REST v2),9.90,"a=10,b=10,t=10,g=9,c=10,f=9"  
+[PRIO] app.alfaview.com (GraphQL),9.45,"a=10,b=9,t=10,g=9,c=9,f=9"  
+[PRIO] sso.alfaview.com (OIDC),8.95,"a=9,b=9,t=9,g=9,c=9,f=9"  
+[PRIO] tools.alfaview.com (poll+whiteboard RPC),7.40,"a=8,b=7,t=8,g=8,c=8,f=9"  
+[PRIO] whiteboard.alfaview.com (renderer),5.90,"a=6,b=6,t=6,g=6,c=7,f=9"
+[HYP] CreatePermissions grants room-admin to any company-wide principal ID because participantId is an unconstrained, cross-namespace body identifier
+class: IDOR
+asset: apis.alfaview.com POST /v2/rooms/{roomId}/permissions
+confidence: 80
+reasoning: |
+evidence_needed: |
+verify_steps: |
+impact: |
+testability: AUTH_HELPED
+[HYP] Meeting-scoped bulk link creation binds caller-chosen permission group (out-of-scope group binding)
+class: BUSLOGIC
+asset: apis.alfaview.com POST /v2/meetings
+confidence: 64
+reasoning: |
+evidence_needed: |
+verify_steps: |
+impact: |
+testability: AUTH_HELPED
+[HYP] sso.alfaview.com/oauth2/device_authorize accepts unregistered client_id (device flow client-registration bypass)
+class: OATH
+asset: sso.alfaview.com/oauth2/device_authorize
+confidence: 44
+reasoning: |
+evidence_needed: |
+verify_steps: |
+impact: |
+testability: PASSIVE
+[PARKED] tools.alfaview.com/whiteboard/ second RPC backend (unmapped prefix, 47B gRPC envelope): **why** — differential proven (distinct marshaller vs poll), no auth challenge observed, public bundle contains zero `whiteboard` references, staging mirror identical. However, no auth bypass demonstrated, no data exposure, no enumeration oracle that reveals verbs beyond flat `code:5` responses, and unmapped route alone is not a reportable weakness. Requires verb enumeration + auth behavior + response semantics; insufficient for HIGH without concrete exploit primitive. Confidence insufficient to promote; keep as inventory fact only.
+[PARKED] app.alfaview.com `adminSwitchCompany` mutation in public bundle: **why** — returns `{companyId, accessToken, permissions}` from caller's token plus `nextCompanyId`; hardcoded tenant IDs present. Authorization is entirely server-side and unmeasured; no XSS/path to anonymous invocation identified (GraphQL GET 400 behind CSRF guard, admin ops expect token header). No verifiable exploit primitive without token + authorization failure evidence. Informational only.
+[PARKED] sso.alfaview.com `/oauth2/introspect` client-auth omission (fabricated client_id accepted): **why** — structural weakness in client authentication for public clients; however exploitation requires a valid token value and meaningful introspection result. No token submitted (passive-only allowed). No direct privilege gain demonstrated without token context. Not standalone HIGH without chained exploit.
+[FINAL] CreatePermissions BOLA (80) — promoted (AUTH_HELPED).  
+[FINAL] Meeting-scoped permission-group binding (64) — promoted (AUTH_HELPED).  
+[FINAL] device_authorize unregistered-client_id (44) — promoted but lowest (PASSIVE, one POST only).
+[NEXT] HUMAN: Provide **one self-owned LOW-PRIVILEGE** alfaview account in a tenant you control, plus **one room** in that same tenant that the account **does not moderate**. Do **not** send any other data. With that single input I will (a) call `GET /v2/users/me/company` and `GET /v2/guest-links?limit=1` (read-only), (b) attempt **one** `POST /v2/rooms/{roomId}/permissions` against that non-moderated room with a harvested target `participantId` and atomic full permissions set (including `admin:true`, `promote:true`), and (c) record the exact status/body verbatim. This directly tests the 80-confidence CreatePermissions BOLA with minimal blast radius (self-owned tenant only). No cross-tenant tests.
+[LEARN] REJECTED IDOR @ apis.alfaview.com POST /v2/rooms/{roomId}/permissions: retracted earlier impact claim conflating `Permissions.admin` (CreatePermissions body) with `PermissionsEdit.admin` (PATCH route). Create path uses atomic `Permissions` with all 9 booleans required; documented `admin` meaning on Create is only "the associated user is an admin" — not the richer scope sentence from PATCH. HYP confidence corrected 82→80.
+[LEARN] ACCEPTED INFO @ apis.alfaview.com: `Permissions` (CreatePermissions) vs `PermissionsEdit` (PATCH) are distinct schemas — Create is atomic full set, PATCH is partial delta. Create is the more dangerous write path given unconstrained `participantId`.
+[LEARN] ACCEPTED INFO @ apis.alfaview.com GET `/v2/permission-groups`: returns every group `{id,name,permissions}` (full 9-bool set) including `admin` template; enumeration source for meeting-scoped `permissionGroupId` binding (enables single-step test).
+[LEARN] REJECTED MISCONFIG @ apis.alfaview.com (documentation-only): contract declares no machine-readable auth requirements (top-level `security=null`, `securitySchemes` empty, `Authorization` present but never `required:true`, no per-op `security`); 2/57 ops omit even 401 prose. Auth state must be determined from wire behavior, not declarations.
+[LEARN] NO_ANOMALY @ apis.alfaview.com POST `/v2/auth/*`: the 4 ops without `Authorization` header are exactly the 4 body-credential exchanges (`/auth/api-key`, `/auth/group-link`, `/auth/guest-link`, `/auth/password`); 403 patterns internally coherent.
+[LEARN] PROCEDURAL: auditing prior output against spec caught a second fabrication (UUID-pattern claim; misattributed permission sentence). Contract text must be quoted only after per-field lookup.
+[RISK] alfaview gmbh: 66 (unchanged). No new unauthenticated surface exposure this cycle; strongest asset remains CreatePermissions BOLA at 80 (unconstrained cross-namespace `participantId`, atomic full-admin grant). Meeting-scoped permission-group binding at 64 is plausible but lower confidence. The introspect client-auth omission is structural but token-gated; device_authorize unregistered-client_id test is decisive either way (44). Four HIGH-value chains still converge on a single missing input: one self-owned low-privilege account + non-moderated room in same tenant. Mass assignment is closed across write surface; validation-before-auth is bounded to query-param routes (path params correctly 401). No claim of PII/config disclosure; all findings are authorization/logic flaws pending wire confirmation.

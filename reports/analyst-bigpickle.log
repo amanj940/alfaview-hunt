@@ -68840,3 +68840,123 @@ OpenAPI info.description and per-field descriptions are primary evidence, not bo
 [PASS] 8. RISK
 Retracting an 88-90 confidence lead removes the campaign's most quotable finding and may mask a real exposure if H2 is never tested - mitigate by testing H2 as soon as an account exists and by reporting H3 on its merits without an authorization-bypass label. Writing this correction to shared lead files could overwrite another agent's concurrent work; if written, append a dated retraction block rather than replacing the entry. No live state was mutated: this cycle used one GET on the OpenAPI document plus offline analysis.
 ```
+===== ANALYST bigpickle 2026-10-03 12:41:49 UTC =====
+[0m
+> build · big-pickle
+[0m
+**STEP 1 — DELTA**
+
+[NO_DELTA] OpenAPI md5 `284a3383c1ac3cfc9152ffcc631891f2` (132100B, 38 paths, 57 ops) byte-stable on apis.alfaview.com and beta-apis.alfaview.com (3+ consecutive cycles).  
+[NO_DELTA] sso.alfaview.com OIDC 200/2169B md5 `f78a08fc`, JWKS 200/16257B md5 `3f8d456c` (7×RS256), `introspection_endpoint` absent from discovery while `/oauth2/introspect` remains live (OPTIONS 405) — 30+ consecutive cycles.  
+[NO_DELTA] sso.alfaview.com `/oauth2/introspect`: POST-body and HTTP Basic both accept fabricated `client_id` (200 `{"active":false}`); only Basic-vs-body `client_id_mismatch` yields 401 — stable.  
+[NO_DELTA] app.alfaview.com bundle `app.min.67e8a68d4318b34ca241.js` (md5 `2cb91283`) unchanged; carries `adminSwitchCompany` mutation and hardcoded tenant IDs (`alfatraining-internal`, `01FDY0986YK1BJF2K0F9DXR8EB`).  
+[NO_DELTA] tools.alfaview.com: 8-verb `/poll/pollservice/<verb>` with `Grpc-Metadata-alfaview.token`; second unmapped RPC mount `/whiteboard/*` returns 47B gRPC envelope (distinct from poll 45B) — confirmed stable, zero client references in bundle.  
+[NO_DELTA] apis.alfaview.com: validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; `components.securitySchemes={}`, top-level `security=null`.  
+[NO_DELTA] `/v2/users/me/company` (GetOwnCompany, 38th path) sole 200-response supplier of `companyId`; `/v2/audit-log` undocumented 39th path live with pre-auth query binder.  
+[NO_DELTA] test.alfaview.com alfacheck v483102 unsigned (4 platforms), no sha256/signatures.  
+[NO_DELTA] Inventory 100% probed (55 dedicated hosts), 31 exhausted, zero unprobed.
+
+**STEP 2 — PRIORITIZE**
+
+[PRIO] apis.alfaview.com (REST v2),9.90,"a=10,b=10,t=10,g=9,c=10,f=9"  
+[PRIO] app.alfaview.com (GraphQL),9.45,"a=10,b=9,t=10,g=9,c=9,f=9"  
+[PRIO] sso.alfaview.com (OIDC),8.95,"a=9,b=9,t=9,g=9,c=9,f=9"  
+[PRIO] tools.alfaview.com (poll+whiteboard RPC),7.40,"a=8,b=7,t=8,g=8,c=8,f=9"  
+[PRIO] whiteboard.alfaview.com (renderer),5.90,"a=6,b=6,t=6,g=6,c=7,f=9"
+
+**STEP 3 — HYPOTHESES**
+
+[HYP] CreatePermissions grants room-admin to any company-wide principal ID because participantId is an unconstrained, cross-namespace body identifier
+class: IDOR
+asset: apis.alfaview.com POST /v2/rooms/{roomId}/permissions
+confidence: 80
+reasoning: |
+  - Path carries scope `roomId` (bare `type: string`).
+  - Body uses `Permissions` (CreatePermissions) with **all 9 booleans required** = atomic full-permission set (including `admin`, `promote`).
+  - `ParticipantPermissions.participantId` is bare `type: string`, documented as "user ID / guest link ID / group link ID to which the permissions apply" (three namespaces, one field, no discriminator, no `pattern`; contract contains zero `"uuid"` and zero `pattern` keys).
+  - Target IDs obtainable company-wide via `GET /v2/guest-links` (un-narrowable list returning `accessKey`, `joinUrl`, `dialInCode`, `emailAddress`, `id`, `roomId`, `permissionGroupId`, `createdBy`).
+  - `TokenUserPermissions` is a closed 7-boolean vocabulary with **no guest-link/group-link axis**; room-scoped siblings exist separately.
+  - 422/88B `ACTION_INVALID` is a post-lookup business tier (not a format oracle) for synthetic values; 403 prose exists but contract has no declarative security scheme.
+evidence_needed: |
+  - With an authorized token for a self-owned low-privilege account and a room that account does not moderate: does CreatePermissions return `403` (closed) or `204` (BOLA/escalation)?
+  - If `204`, confirm the permission set is actually applied (not transient). If `409`/other, record verbatim.
+verify_steps: |
+  1. `GET https://apis.alfaview.com/v2/users/me/company` (Authorization: Bearer <token>) — obtain `companyId` (sole 200 supplier).
+  2. `GET https://apis.alfaview.com/v2/guest-links?limit=1` (Authorization: Bearer <token>) — obtain one `id` (cross-namespace target). Alternatively use a known userId from `/v2/rooms/{roomId}/participants` in same tenant if available.
+  3. Choose `roomId` in same tenant that token owner does **not** moderate.
+  4. **ONE** `POST https://apis.alfaview.com/v2/rooms/{roomId}/permissions` (Authorization: Bearer <token>) with JSON body: {"participantId":"<id>","permissions":{"admin":true,"voice":true,"video":true,"promote":true,"join":true,"screen":true,"vip":true,"chat":true,"upload":true}}. Record status, `Content-Type`, body verbatim.
+impact: |
+  - If 204: low-privilege account grants itself `admin`+`promote` on any company room using an ID harvested from unscoped list (tenant-wide room takeover). 
+  - If 403: closed; no direct impact.
+testability: AUTH_HELPED
+
+[HYP] Meeting-scoped bulk link creation binds caller-chosen permission group (out-of-scope group binding)
+class: BUSLOGIC
+asset: apis.alfaview.com POST /v2/meetings
+confidence: 64
+reasoning: |
+  - `MeetingCreate.guestLinks` and `.groupLinks` require caller-supplied `permissionGroupId` (bare `type: string`), no documented constraint on which groups caller may bind.
+  - `GET /v2/permission-groups` returns every group as `{id, name, permissions}` (full 9-bool `Permissions` set); `name` example `"Admin"`. Enumeration source exists.
+  - Three issuance paths now mapped (room-scoped bulk, meeting-scoped bulk, unscoped PATCH) all accept caller-chosen `permissionGroupId`.
+  - `TokenUserPermissions` has 7 booleans, **no permission-group axis**; no declared permission expresses "may bind this permission group".
+evidence_needed: |
+  - With authorized token: does `POST /v2/meetings` accept a `permissionGroupId` whose attached `permissions` include `admin` but which caller should not hold? Does it return 403/422, or 201 with joinUrl?
+verify_steps: |
+  1. `GET https://apis.alfaview.com/v2/users/me/company` (Authorization: Bearer <token>) — confirm tenant.
+  2. `GET https://apis.alfaview.com/v2/permission-groups` (Authorization: Bearer <token>) — record caller's group IDs, names, `admin` flag in `permissions`.
+  3. **ONE** minimal `POST https://apis.alfaview.com/v2/meetings` (Authorization: Bearer <token>) with `guestLinks` containing one element using a group ID that is plausibly high-privilege in the tenant (or just record acceptance). Never bind another tenant's group. Record status/body verbatim.
+impact: |
+  - If unvalidated and returns 201 with joinUrl: low-privilege meeting creator mints guest links pre-bound to high-privilege permission group, holder of joinUrl escalates without touching room-permissions route (MEDIUM). 
+  - If 403/422: closed.
+testability: AUTH_HELPED
+
+[HYP] sso.alfaview.com/oauth2/device_authorize accepts unregistered client_id (device flow client-registration bypass)
+class: OATH
+asset: sso.alfaview.com/oauth2/device_authorize
+confidence: 44
+reasoning: |
+  - `/oauth2/authorize` validates `client_id` registration before `redirect_uri` handling (stable behavior across cycles); dynamic registration closed (no `registration_endpoint`, `/oauth2/register` is generic theme page).
+  - `device_code` in `grant_types_supported` in OIDC discovery; endpoint live.
+  - Metadata byte-stable (md5 `f78a08fc`).
+evidence_needed: |
+  - Response to unauthenticated form POST with fabricated `client_id` — is it `invalid_client` (closed, 40) or 200 issuing `device_code`/`user_code`/`verification_uri` (HIGH)?
+verify_steps: |
+  1. **ONE** unauthenticated `POST https://sso.alfaview.com/oauth2/device_authorize` with `Content-Type: application/x-www-form-urlencoded` and body `client_id=recon-not-a-real-client-0000&scope=openid`. Record status, headers, body verbatim.
+impact: |
+  - If 200 with device_code: device flow becomes client-registration bypass / token-issuance primitive (HIGH). 
+  - If `invalid_client` (400): closed.
+testability: PASSIVE
+
+**STEP 4 — SELF-CRITIQUE**
+
+[PARKED] tools.alfaview.com/whiteboard/ second RPC backend (unmapped prefix, 47B gRPC envelope): **why** — differential proven (distinct marshaller vs poll), no auth challenge observed, public bundle contains zero `whiteboard` references, staging mirror identical. However, no auth bypass demonstrated, no data exposure, no enumeration oracle that reveals verbs beyond flat `code:5` responses, and unmapped route alone is not a reportable weakness. Requires verb enumeration + auth behavior + response semantics; insufficient for HIGH without concrete exploit primitive. Confidence insufficient to promote; keep as inventory fact only.
+
+[PARKED] app.alfaview.com `adminSwitchCompany` mutation in public bundle: **why** — returns `{companyId, accessToken, permissions}` from caller's token plus `nextCompanyId`; hardcoded tenant IDs present. Authorization is entirely server-side and unmeasured; no XSS/path to anonymous invocation identified (GraphQL GET 400 behind CSRF guard, admin ops expect token header). No verifiable exploit primitive without token + authorization failure evidence. Informational only.
+
+[PARKED] sso.alfaview.com `/oauth2/introspect` client-auth omission (fabricated client_id accepted): **why** — structural weakness in client authentication for public clients; however exploitation requires a valid token value and meaningful introspection result. No token submitted (passive-only allowed). No direct privilege gain demonstrated without token context. Not standalone HIGH without chained exploit.
+
+[FINAL] CreatePermissions BOLA (80) — promoted (AUTH_HELPED).  
+[FINAL] Meeting-scoped permission-group binding (64) — promoted (AUTH_HELPED).  
+[FINAL] device_authorize unregistered-client_id (44) — promoted but lowest (PASSIVE, one POST only).
+
+**STEP 5 — NEXT ACTION**
+
+[NEXT] HUMAN: Provide **one self-owned LOW-PRIVILEGE** alfaview account in a tenant you control, plus **one room** in that same tenant that the account **does not moderate**. Do **not** send any other data. With that single input I will (a) call `GET /v2/users/me/company` and `GET /v2/guest-links?limit=1` (read-only), (b) attempt **one** `POST /v2/rooms/{roomId}/permissions` against that non-moderated room with a harvested target `participantId` and atomic full permissions set (including `admin:true`, `promote:true`), and (c) record the exact status/body verbatim. This directly tests the 80-confidence CreatePermissions BOLA with minimal blast radius (self-owned tenant only). No cross-tenant tests.
+
+**STEP 6 — LEARNING**
+
+[LEARN] REJECTED IDOR @ apis.alfaview.com POST /v2/rooms/{roomId}/permissions: retracted earlier impact claim conflating `Permissions.admin` (CreatePermissions body) with `PermissionsEdit.admin` (PATCH route). Create path uses atomic `Permissions` with all 9 booleans required; documented `admin` meaning on Create is only "the associated user is an admin" — not the richer scope sentence from PATCH. HYP confidence corrected 82→80.
+
+[LEARN] ACCEPTED INFO @ apis.alfaview.com: `Permissions` (CreatePermissions) vs `PermissionsEdit` (PATCH) are distinct schemas — Create is atomic full set, PATCH is partial delta. Create is the more dangerous write path given unconstrained `participantId`.
+
+[LEARN] ACCEPTED INFO @ apis.alfaview.com GET `/v2/permission-groups`: returns every group `{id,name,permissions}` (full 9-bool set) including `admin` template; enumeration source for meeting-scoped `permissionGroupId` binding (enables single-step test).
+
+[LEARN] REJECTED MISCONFIG @ apis.alfaview.com (documentation-only): contract declares no machine-readable auth requirements (top-level `security=null`, `securitySchemes` empty, `Authorization` present but never `required:true`, no per-op `security`); 2/57 ops omit even 401 prose. Auth state must be determined from wire behavior, not declarations.
+
+[LEARN] NO_ANOMALY @ apis.alfaview.com POST `/v2/auth/*`: the 4 ops without `Authorization` header are exactly the 4 body-credential exchanges (`/auth/api-key`, `/auth/group-link`, `/auth/guest-link`, `/auth/password`); 403 patterns internally coherent.
+
+[LEARN] PROCEDURAL: auditing prior output against spec caught a second fabrication (UUID-pattern claim; misattributed permission sentence). Contract text must be quoted only after per-field lookup.
+
+**STEP 7 — RISK**
+
+[RISK] alfaview gmbh: 66 (unchanged). No new unauthenticated surface exposure this cycle; strongest asset remains CreatePermissions BOLA at 80 (unconstrained cross-namespace `participantId`, atomic full-admin grant). Meeting-scoped permission-group binding at 64 is plausible but lower confidence. The introspect client-auth omission is structural but token-gated; device_authorize unregistered-client_id test is decisive either way (44). Four HIGH-value chains still converge on a single missing input: one self-owned low-privilege account + non-moderated room in same tenant. Mass assignment is closed across write surface; validation-before-auth is bounded to query-param routes (path params correctly 401). No claim of PII/config disclosure; all findings are authorization/logic flaws pending wire confirmation.
