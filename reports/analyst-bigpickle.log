@@ -68960,3 +68960,794 @@ testability: PASSIVE
 **STEP 7 — RISK**
 
 [RISK] alfaview gmbh: 66 (unchanged). No new unauthenticated surface exposure this cycle; strongest asset remains CreatePermissions BOLA at 80 (unconstrained cross-namespace `participantId`, atomic full-admin grant). Meeting-scoped permission-group binding at 64 is plausible but lower confidence. The introspect client-auth omission is structural but token-gated; device_authorize unregistered-client_id test is decisive either way (44). Four HIGH-value chains still converge on a single missing input: one self-owned low-privilege account + non-moderated room in same tenant. Mass assignment is closed across write surface; validation-before-auth is bounded to query-param routes (path params correctly 401). No claim of PII/config disclosure; all findings are authorization/logic flaws pending wire confirmation.
+===== ANALYST bigpickle 2026-10-03 16:46:45 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mls -la; echo ---; ls recon-notes 2>/dev/null | head -50; echo ---; ls art 2>/dev/null | head; echo ---; ls leads 2>/dev/null | head
+total 1048
+drwxr-xr-x 12 runner runner   4096 Oct  3 16:38 .
+drwxr-xr-x  3 runner runner   4096 Oct  3 16:38 ..
+drwxr-xr-x  7 runner runner   4096 Oct  3 16:38 .git
+drwxr-xr-x  3 runner runner   4096 Oct  3 16:38 .github
+-rw-r--r--  1 runner runner   1883 Oct  3 16:38 README.md
+-rw-r--r--  1 runner runner     32 Oct  3 16:38 analyst-out.txt
+-rw-r--r--  1 runner runner 447973 Oct  3 16:38 analyst-prompt.txt
+-rw-r--r--  1 runner runner 444063 Oct  3 16:38 ctx.txt
+drwxr-xr-x  2 runner runner   4096 Oct  3 16:38 inventory
+drwxr-xr-x  2 runner runner   4096 Oct  3 16:38 knowledge
+drwxr-xr-x  2 runner runner   4096 Oct  3 16:38 leads
+-rw-r--r--  1 runner runner  79670 Oct  3 16:38 probe-results.md
+drwxr-xr-x  2 runner runner   4096 Oct  3 16:38 recon-notes
+drwxr-xr-x  2 runner runner   4096 Oct  3 16:38 reports
+drwxr-xr-x  2 runner runner   4096 Oct  3 16:38 reposcan-raw
+-rw-r--r--  1 runner runner   3323 Oct  3 16:38 scope.yml
+drwxr-xr-x  2 runner runner   4096 Oct  3 16:38 scripts
+-rw-r--r--  1 runner runner     33 Oct  3 16:38 state_bigpickle.json
+-rw-r--r--  1 runner runner     33 Oct  3 16:38 state_laguna.json
+-rw-r--r--  1 runner runner     33 Oct  3 16:38 state_ling3.json
+-rw-r--r--  1 runner runner     33 Oct  3 16:38 state_longcat.json
+-rw-r--r--  1 runner runner     33 Oct  3 16:38 state_mimo.json
+-rw-r--r--  1 runner runner     33 Oct  3 16:38 state_nemotron3.json
+drwxr-xr-x  2 runner runner  12288 Oct  3 16:38 triage
+---
+CORPUS-ALFAVIEW.md
+DEDICATED-DEEP.md
+DEEPER-FINDINGS.md
+SCOPE-CONFIRMATION.md
+alfaview-openapi.yaml
+---
+---
+lead-bigpickle.md
+lead-laguna.md
+lead-ling3.md
+lead-longcat.md
+lead-mimo.md
+lead-nemotron3.md
+reposcan-alfaview.md
+[0m
+[0m$ [0mfind . -maxdepth 3 -iname '*openapi*' -o -maxdepth 3 -iname '*.yaml' -o -maxdepth 3 -iname '*swagger*' 2>/dev/null | grep -v '.git/' | head -30
+./recon-notes/alfaview-openapi.yaml
+[0m
+[0m$ [0mls triage | tail -20; echo ---; ls reports; echo ---; cat scope.yml | head -40
+run-2026-09-29-15-04.md
+run-2026-09-29-20-01.md
+run-2026-09-29-23-45.md
+run-2026-09-30-03-30.md
+run-2026-09-30-09-58.md
+run-2026-09-30-16-18.md
+run-2026-09-30-20-52.md
+run-2026-10-01-00-18.md
+run-2026-10-01-06-08.md
+run-2026-10-01-13-23.md
+run-2026-10-01-19-00.md
+run-2026-10-01-23-14.md
+run-2026-10-02-02-18.md
+run-2026-10-02-08-38.md
+run-2026-10-02-14-58.md
+run-2026-10-02-19-48.md
+run-2026-10-02-23-29.md
+run-2026-10-03-02-17.md
+run-2026-10-03-08-15.md
+run-2026-10-03-13-27.md
+---
+analyst-bigpickle.log
+analyst-laguna.log
+analyst-ling3.log
+analyst-longcat.log
+analyst-nemotron3.log
+hypotheses-bigpickle.txt
+hypotheses-laguna.txt
+hypotheses-ling3.txt
+hypotheses-longcat.txt
+hypotheses-nemotron3.txt
+hypotheses.md
+valid-bugs.md
+---
+programs:
+  alfaview:
+    name: alfaview gmbh Bug Bounty
+    disclosure_policy: via bugs.olivermaicher.eu (Oliver Maicher private program) - report + PoC + contact + payment
+    assets:
+      - name: "All company-owned infrastructure, alfaview web and desktop applications, mobile applications, APIs, backend systems, support systems, customer portals, websites, and domains operated by alfaview gmbh, including alfaview.com and company-operated subdomains"
+        priority: In
+    out_of_scope:
+- "Network level Denial of Service attacks"
+      - "Application Denial of Service by locking user accounts"
+      - "Descriptive error messages or headers (e.g. Stack Traces, banner grabbing)"
+      - "Disclosure of known public files or directories (e.g. robots.txt)"
+      - "Outdated software / library versions"
+      - "OPTIONS / TRACE HTTP method enabled"
+      - "CSRF on logout"
+      - "CSRF on forms that are available to anonymous users"
+      - "Cookies that lack HTTP Only or Secure settings for non-sensitive data"
+      - "Self-XSS and issues exploitable only through Self-XSS"
+      - "Reports resulting from automated scanning utilities without additional details or a POC demonstrating a specific exploit"
+      - "Attacks requiring physical access to a user's device"
+      - "Attacks dependent upon social engineering of employees or vendors"
+      - "Username enumeration based on login or forgot password pages"
+      - "Enforcement policies for brute force, rate limiting, or account lockout"
+      - "SSL/TLS best practices"
+      - "SSL attacks such as BEAST, BREACH, Renegotiation attack"
+      - "Clickjacking, without additional details demonstrating a specific exploit"
+      - "Mail configuration issues including SPF, DKIM, DMARC settings"
+      - "Use of a known-vulnerable library without a description of an exploit specific to our implementation"
+      - "Password and account recovery policies"
+      - "Presence of autocomplete functionality in form fields"
+      - "Publicly accessible login panels"
+      - "Lack of email address verification during account registration or account invitation"
+      - "Lack of email address verification password restore"
+      - "Session control during email/password changes"
+      - "Social engineering, physical attacks, and DoS/DDoS testing (per program notes)"
+      - "Exposure of customer/employee/financial/authentication data during testing (per program notes)"
+    github_orgs:
+      - none-configured
+
+rules:
+[0m
+[0m$ [0mcd recon-notes && wc -c alfaview-openapi.yaml && md5sum alfaview-openapi.yaml && grep -c '^\s*example:' alfaview-openapi.yaml; echo ---; grep -o 'example: *[^ ]*' alfaview-openapi.yaml | sort -u | head -80
+159550 alfaview-openapi.yaml
+082e2ba8fa493f8634ecd87328ebf1fa  alfaview-openapi.yaml
+0
+---
+[0m
+[0m$ [0mcd recon-notes && echo "== example keys =="; grep -c 'example' alfaview-openapi.yaml; echo "== emails =="; grep -oE '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}' alfaview-openapi.yaml | sort -u; echo "== urls =="; grep -oE 'https?://[^ "'"'"']+' alfaview-openapi.yaml | sort -u; echo "== 26char ULID-like =="; grep -oE '\b[0-9A-Z]{26}\b' alfaview-openapi.yaml | sort -u
+== example keys ==
+140
+== emails ==
+user@provider.com
+== urls ==
+https://apis.alfaview.com
+https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticateAPIKey)
+https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticateGroupLink)
+https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticateGuestLink)
+https://apis.alfaview.com/v2/docs/openapi#/operations/AuthenticatePassword)
+https://example.com/error-log/abc123
+https://example.com/errors/example
+https://support.alfaview.com/en/administration/general/room-permissions/).
+https://support.alfaview.com/en/administration/general/user-permissions/).
+https://support.alfaview.com/en/developers/request-your-api-credentials/)
+https://webclient.alfaview.com/?--url=alfaview%3A%2F%2Fapis.alfaview.com%3A443%3FcompanyId%3D{company-id}%26roomId%3D{room-id}%26token%3D{token}
+== 26char ULID-like ==
+0123456789ABCDEFGHIJKLMNOP
+[0m
+[0m$ [0mcd recon-notes && grep -oE 'example: *[^ ].*' alfaview-openapi.yaml | sed 's/^example: *//' | sort | uniq -c | sort -rn | head -60
+(no output)
+[0m
+[0m$ [0mcd recon-notes && grep -n 'example' alfaview-openapi.yaml | head -40
+37:          examples:
+43:          examples:
+60:          examples:
+76:          examples:
+93:          examples:
+104:          examples:
+149:          examples:
+174:          examples:
+186:          examples:
+187:            - https://example.com/error-log/abc123
+192:          examples:
+198:          examples:
+204:          examples:
+205:            - https://example.com/errors/example
+217:          examples:
+235:          examples:
+250:          examples:
+255:          examples:
+260:          examples:
+266:          examples:
+292:          examples:
+300:          examples:
+305:          examples:
+311:          examples:
+317:          examples:
+323:          examples:
+342:          examples:
+347:          examples:
+355:          examples:
+381:          examples:
+388:          examples:
+396:          examples:
+411:          examples:
+433:          examples:
+450:          examples:
+455:          examples:
+460:          examples:
+466:          examples:
+492:          examples:
+500:          examples:
+[0m
+[0m$ [0mcd recon-notes && awk '/^ *examples:/{f=1;next} f&&/^ *- /{sub(/^ *- /,"");print;next} f&&/^ *[a-zA-Z]/&&!/^ *- /{f=0}' alfaview-openapi.yaml | sort -u
+"2024-09-22T11:00:00Z"
+"2024-09-22T12:00:00Z"
+"2024-09-22T12:34:56Z"
+"2024-09-23T12:34:56Z"
+00000000-0000-0000-0000-000000000000
+0123456789ABCDEFGHIJKLMNOP
+400
+Admin
+Bad Request
+Dr.
+Europe/Berlin
+Property foo is required but is missing.
+alfaview://apis.alfaview.com:443?companyId={company-id}&roomId={room-id}&token={token}
+https://example.com/error-log/abc123
+https://example.com/errors/example
+https://webclient.alfaview.com/?--url=alfaview%3A%2F%2Fapis.alfaview.com%3A443%3FcompanyId%3D{company-id}%26roomId%3D{room-id}%26token%3D{token}
+user@provider.com
+[0m
+[0m$ [0mcd /tmp/opencode 2>/dev/null || mkdir -p /tmp/opencode; cd /tmp/opencode; UA='Mozilla/5.0 (compatible; authorized-security-research)'
+probe(){ printf '%s -> ' "$2"; curl -s -o body.tmp -w 'code=%{http_code} len=%{size_download} ct=%{content_type}\n' -A "$UA" --max-time 20 "$1"; md5sum body.tmp | cut -c1-32; }
+probe https://webclient.alfaview.com/ 'BASELINE webclient /'
+sleep 1
+BASELINE webclient / -> code=200 len=4396 ct=text/html
+6825f39c16f9de544976afb80eab24bd
+[0m
+[0m$ [0mcd /tmp/opencode; UA='Mozilla/5.0 (compatible; authorized-security-research)'
+curl -s -A "$UA" --max-time 20 https://webclient.alfaview.com/ -o wc.html
+echo "== grep terms =="; grep -oiE '(deep.?link|--url|alfaview://|location\.(href|replace)|window\.open|protocol)' wc.html | sort | uniq -c
+echo "== script srcs =="; grep -oE 'src="[^"]+"' wc.html | sort -u
+echo "== title/head =="; grep -oE '<title>[^<]*</title>' wc.html
+== grep terms ==
+      1 protocol
+== script srcs ==
+src="https://plausible.alfaview.com/js/script.manual.js"
+src="index.js"
+src="logo_alfaview.png?v=1787230486734"
+src="runtime.js"
+== title/head ==
+<title>alfaview - webclient</title>
+[0m
+[0m$ [0mcd /tmp/opencode; UA='Mozilla/5.0 (compatible; authorized-security-research)'
+for f in runtime.js index.js; do sleep 1; curl -s -A "$UA" --max-time 25 "https://webclient.alfaview.com/$f" -o "$f" -w "$f code=%{http_code} len=%{size_download}\n"; done
+echo "== index.js grep =="; grep -oiE '(--url|deeplink|deep-link|alfaview://|location\.href|location\.replace|location\.assign|window\.open|URLSearchParams|searchParams|hash)' index.js | sort | uniq -c
+runtime.js code=200 len=1464
+index.js code=200 len=162522
+== index.js grep ==
+      3 --url
+      1 URLSearchParams
+      3 location.href
+      2 window.open
+[0m
+[0m$ [0mcd /tmp/opencode; grep -oE '.{300}--url.{500}' index.js | head -5
+t("=").pop()&&(h=i.zh.FORCE);else if(e.startsWith("disableRestartOnExit")){const t=e.split("=").pop();l=i.Wp.toBoolean(t,!0)}else if(e.startsWith("disableBeforeUnload")){const t=e.split("=").pop();d=i.Wp.toBoolean(t,!0)}else u.push(e)})),i.Wp.filterParameterFromCurrentHistoryState((e=>e.startsWith("--url=")),(e=>e.startsWith("--username=")),(e=>e.startsWith("--password="))),E.ifPresent((e=>{u.findIndex((e=>e.startsWith("--url=")))<0&&u.push("--url",e)}));const f=new i.IT(((e,t)=>{s.max=t,s.value=e})),m=window.setTimeout((()=>{s.style.opacity="1"}),500),g=window.qtLoader=new i.hJ({arguments:u,containerElements:[t],restartType:"ReloadPage",restartMode:l?"DoNotRestart":"RestartOnExit",environment:{QT_WASM_DISABLE_MEDIA_DEVICES:"1"},checkBrowserSupport:e=>y(void 0,void 0,void 0,(function*(){return
+[0m
+[0m$ [0mcd /tmp/opencode; grep -oE 'startsWith\("[a-zA-Z]+"\)' index.js | sort -u; echo "== location.href ctx =="; grep -oE '.{200}location\.href.{250}' index.js
+startsWith("Running")
+startsWith("disableBeforeUnload")
+startsWith("disableRestartOnExit")
+== location.href ctx ==
+k");this.downloadWindows.set(e,t)}}openDownloadUrl(e,t){if(!this.isSafari)return void(t&&window.open(t,"_blank"));const r=this.downloadWindows.get(e);this.downloadWindows.delete(e),r&&!r.closed&&(t?r.location.href=t:r.close())}setCategory(e){this.category=e}openFilePicker(){try{this.fileInput.click()}catch(e){console.error("Failed to open file picker:",e)}}executeUpload(e,t,r,i,n){const o=this.pendingFiles[t];if(!o)return console.error(`No file at index ${t}`
+nceof TypeError&&e.message.includes("credentials")){const t=`${location.protocol}//${location.host}${location.pathname}${location.search}`;return logger.warn(e.message+`, redirecting to ${t}`),window.location.href=t,!0}}return!1}static loadImage(e){return new Promise((t=>{const r=new Image;r.crossOrigin="anonymous",r.onload=()=>{createImageBitmap(r).then((e=>{e.width>0&&t(e)}))},r.src=e}))}static assertIsError(e){if(!(e instanceof Error))throw e}static isOver
+.downloadIf((()=>!0));t.length||t.push({msg:"No logs available for download",severity:"info",clientId:e,time:Date.now()});let r="";r+=`-- clientId: ${e.substring(0,5)} (${e})\n`,r+=`-- locationUrl: ${location.href}\n`,r+=`-- userAgent: ${navigator.userAgent}\n`,r+=`-- createdAt: ${(new Date).toISOString()}\n`;for(const e of t)r+=e.clientId.substring(0,5),r+=" ",r+=e.msg.trimEnd(),r+="\n";const i=new Blob([r],{type:"text/plain"}),n=globalThis.document,o=n.crea
+[0m
+[0m$ [0mcd /tmp/opencode; echo "== meta/headers in shell =="; grep -oiE '<meta[^>]*>' wc.html; echo; echo "== referrer mentions in index.js =="; grep -oiE 'referrer[a-zA-Z]*|no-referrer|strict-origin' index.js | sort | uniq -c
+== meta/headers in shell ==
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width,height=device-height,user-scalable=0">
+
+== referrer mentions in index.js ==
+[0m
+[0m$ [0mcd /tmp/opencode; grep -oE '.{80}filterParameterFromCurrentHistoryState.{400}' index.js | head -3
+oad")){const t=e.split("=").pop();d=i.Wp.toBoolean(t,!0)}else u.push(e)})),i.Wp.filterParameterFromCurrentHistoryState((e=>e.startsWith("--url=")),(e=>e.startsWith("--username=")),(e=>e.startsWith("--password="))),E.ifPresent((e=>{u.findIndex((e=>e.startsWith("--url=")))<0&&u.push("--url",e)}));const f=new i.IT(((e,t)=>{s.max=t,s.value=e})),m=window.setTimeout((()=>{s.style.opacity="1"}),500),g=window.qtLoader=new i.hJ({arguments:u,containerElements:[t],restartType:"ReloadPage",restartMode:l?"DoNotRestart":"Resta
+w.location.search.substring(1).split("&").filter((t=>e.find((e=>e(t)))))}static filterParameterFromCurrentHistoryState(...e){const t=window.location.search.substring(1).split("&"),r=t.filter((t=>!e.find((e=>e(t)))));if(r.length!==t.length){let e;e=r.length?"?"+r.join("&"):location.pathname,history.replaceState({},document.title,e)}}static async reloadPageOnEmbeddedCredentials(){try{await fetch("/",{method:"HEAD"})}catch(e){if(e instanceof TypeError&&e.message.includes("credentials")){const t=`${location.protocol}
+[0m
+[0m$ [0mcd /tmp/opencode; UA='Mozilla/5.0 (compatible; authorized-security-research)'
+echo "=== A: baseline headers / ==="
+curl -s -D - -o /dev/null -A "$UA" --max-time 20 'https://webclient.alfaview.com/' | tr -d '\r' | sed -n '1,25p'
+sleep 1
+echo "=== B: credential-in-query (dummy values) ==="
+curl -s -D - -o b.html -A "$UA" --max-time 20 'https://webclient.alfaview.com/?--username=probe@example.invalid&--password=not-a-real-password' | tr -d '\r' | sed -n '1,25p'
+echo "body:"; wc -c < b.html; md5sum b.html | cut -c1-32
+=== A: baseline headers / ===
+HTTP/2 200 
+date: Sat, 03 Oct 2026 16:41:21 GMT
+content-type: text/html
+content-length: 4396
+last-modified: Thu, 20 Aug 2026 12:54:49 GMT
+accept-ranges: bytes
+etag: "6a86f919-112c"
+expires: Thu, 01 Jan 1970 00:00:01 GMT
+cache-control: no-cache
+cross-origin-opener-policy: same-origin
+cross-origin-embedder-policy: require-corp
+server: edge-proxy
+vary: Accept-Encoding
+
+=== B: credential-in-query (dummy values) ===
+HTTP/2 200 
+date: Sat, 03 Oct 2026 16:41:23 GMT
+content-type: text/html
+content-length: 4396
+last-modified: Thu, 20 Aug 2026 12:54:49 GMT
+accept-ranges: bytes
+etag: "6a86f919-112c"
+expires: Thu, 01 Jan 1970 00:00:01 GMT
+cache-control: no-cache
+cross-origin-opener-policy: same-origin
+cross-origin-embedder-policy: require-corp
+server: edge-proxy
+vary: Accept-Encoding
+
+body:
+4396
+6825f39c16f9de544976afb80eab24bd
+[0m
+## Objective
+- Continue the authorized alfaview gmbh bug-bounty POC/hunting cycle: compare the current surface with prior knowledge, rank assets, retain evidence-backed hypotheses, and emit only the requested structured blocks.
+- Focus on `apis.alfaview.com`; report channel is `bugs.olivermaicher.eu`.
+
+## Important Details
+- Current state: `phase=POC`, `target=api`; risk score `66`.
+- Current priority order: `apis.alfaview.com` 9.90, `app.alfaview.com` 9.45, `sso.alfaview.com` 8.95, `tools.alfaview.com` 7.40, `whiteboard.alfaview.com` 5.90.
+- Live probing must remain passive-first, ≤1 rps, and GET/HEAD/OPTIONS only unless explicit authorization expands scope. No auth bypass or mutating customer-data tests.
+- Out of scope: brute-force/rate-limit policy, descriptive errors alone, username enumeration, public login panels, scanner-only reports, and similar rejected classes.
+- Correct prior errors: the live OpenAPI contains no `"uuid"` token or `pattern`; path parameters are unconstrained strings. `Permissions.admin` on create only means the associated user is an admin; the richer scope description belongs to `PermissionsEdit.admin` on PATCH.
+- The prompt says “8 steps” but supplies schemas only for `STEP 1`–`STEP 7`.
+
+## Work State
+### Completed
+- Current prod/beta OpenAPI is byte-identical: MD5 `284a3383c1ac3cfc9152ffcc631891f2`, `132100B`, 38 paths, 57 operations.
+- Identified `GET /v2/users/me/company` as the sole 200-response supplier of `companyId`, enabling authorized guest-link testing.
+- Mapped company-wide `GET /v2/guest-links` and `/v2/group-links` as un-narrowable, credential-bearing reads; token-gated behavior remains unmeasured.
+- Mapped `POST /v2/rooms/{roomId}/permissions` as the strongest API hypothesis: unconstrained, polymorphic `participantId` plus atomic full `Permissions` write; confidence `80`.
+- Mapped `POST /v2/meetings` as a second caller-selected permission-group credential-issuance path; confidence `64`.
+- Closed mass assignment across all 21 request-body schemas and nested schemas via `additionalProperties:false`.
+- Closed guest/group-link key-existence oracle; valid and malformed synthetic triples collapse to the same business tier.
+- `/oauth2/introspect` accepts fabricated client IDs but requires a valid token for impact; structurally significant, currently parked/token-gated.
+- `tools.alfaview.com/whiteboard/` and `app.alfaview.com` `adminSwitchCompany` remain inventory/supporting leads, not demonstrated findings.
+- No unauthenticated PII, configuration, JWT-confusion, SSRF, open-redirect, or mutation bypass has been demonstrated.
+
+### Active
+- Primary hypothesis: BOLA on `POST /v2/rooms/{roomId}/permissions`, confidence `80`, `AUTH_HELPED`.
+- Secondary hypothesis: out-of-scope permission-group binding on `POST /v2/meetings`, confidence `64`, `AUTH_HELPED`.
+- Aggregate SSO hypothesis: introspection client-auth omission, confidence `94`, but exploitation needs a valid token.
+- Lowest standalone probe: `POST https://sso.alfaview.com/oauth2/device_authorize`, confidence `44`; currently unauthorized by passive-only rules.
+
+### Blocked
+- No self-owned low-privilege alfaview account or same-tenant room the account does not moderate.
+- Without that input, guest-link scope, `CreatePermissions` BOLA, meeting permission binding, and REST user-delete IDOR cannot be behaviorally verified.
+- The one-request `device_authorize` POST cannot be sent under the current GET/HEAD/OPTIONS-only restriction.
+
+## Next Move
+1. Emit `[NEXT] HUMAN: Provide one self-owned LOW-PRIVILEGE alfaview account in a tenant you control, plus one room in that same tenant the account does not moderate.`
+2. With authorization, first run `GET /v2/users/me/company` and `GET /v2/guest-links?limit=1`; then perform at most one self-owned `POST /v2/rooms/{roomId}/permissions` using a harvested `participantId` and the complete `Permissions` object including `admin:true` and `promote:true`, recording the exact response.
+
+## Relevant Files
+- `scope.yml`: authoritative in-scope assets and restrictions.
+- `inventory/alfaview.md`: alfaview host inventory and exhausted-surface status.
+- `recon-notes/alfaview-openapi.yaml`: stale 37-path snapshot used for set-diff; live spec now has 38 paths.
+- `art/lead_bigpickle.txt`: current `CreatePermissions` and meeting-permission hypotheses.
+- `art/lead_nemotron3.txt`: introspection hypothesis and signup/token path.
+- `leads/lead-bigpickle.md`: standing API lead details.
+- `hypotheses-bigpickle.txt`: current API hypothesis queue.
+- `hypotheses-nemotron3.txt`: current SSO/GraphQL hypothesis queue.
+- `probe-results.md`: early beta/prod reconnaissance results.
+Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+[0m$ [0mcd /tmp/opencode; echo "== size =="; wc -c index.js runtime.js
+echo "== secret-ish literals =="
+grep -oiE '(api[_-]?key|apikey|access[_-]?key|client[_-]?secret|bearer [A-Za-z0-9._-]{8,}|eyJ[A-Za-z0-9._-]{20,}|AKIA[0-9A-Z]{16}|BEGIN [A-Z ]*PRIVATE KEY|xox[baprs]-[A-Za-z0-9-]{10,}|ghp_[A-Za-z0-9]{20,})' index.js runtime.js | sort | uniq -c
+echo "== alfaview domains referenced =="
+grep -oE '[a-z0-9.-]*alfaview\.(com|de|io)' index.js | sort -u | head -30
+== size ==
+162522 index.js
+  1464 runtime.js
+163986 total
+== secret-ish literals ==
+== alfaview domains referenced ==
+[0m
+[0m$ [0mcd /tmp/opencode; echo "== token/deeplink handling =="; grep -oiE '(alfaview://|deepLink|companyId=|roomId=)' index.js | sort | uniq -c; echo "== storage APIs =="; grep -oiE '(localStorage|sessionStorage|indexedDB)' index.js | sort | uniq -c
+== token/deeplink handling ==
+== storage APIs ==
+      3 IndexedDb
+      1 indexedDB
+      2 localStorage
+      1 sessionStorage
+[0m
+[0m$ [0mcd /tmp/opencode; UA='Mozilla/5.0 (compatible; authorized-security-research)'
+p(){ printf '%-46s' "$2"; curl -s -o o.tmp -w 'code=%{http_code} len=%{size_download}' -A "$UA" --max-time 20 "$1"; printf ' md5=%s\n' "$(md5sum o.tmp|cut -c1-32)"; sleep 1; }
+h(){ printf '%-46s' "$2"; curl -s -I -o h.tmp -w 'code=%{http_code} len=%{size_download}' -A "$UA" --max-time 20 "$1"; printf ' md5=%s\n' "$(md5sum h.tmp|cut -c1-32)"; sleep 1; }
+p 'https://apis.alfaview.com/v2/docs/openapi' 'apis openapi'
+p 'https://apis.alfaview.com/v2/users/me' 'apis GET /v2/users/me'
+p 'https://apis.alfaview.com/v2/audit-log?limit=1' 'apis GET /v2/audit-log?limit=1'
+h 'https://apis.alfaview.com/v2/users/invitations' 'apis HEAD /v2/users/invitations'
+p 'https://sso.alfaview.com/oidc/.well-known/openid-configuration' 'sso oidc config'
+h 'https://tools.alfaview.com/whiteboard/' 'tools HEAD whiteboard'
+p 'https://app.alfaview.com/admin/switch-company' 'app GET admin/switch-company'
+apis openapi                                  code=200 len=1214 md5=0de385007e323c2ecaa4a68867235e73
+apis GET /v2/users/me                         code=401 len=107 md5=60ed2f29d492ec872c598cc7d36aa37e
+apis GET /v2/audit-log?limit=1                code=422 len=232 md5=b4adcd157348f493646c0196c185bd34
+apis HEAD /v2/users/invitations               code=405 len=0 md5=a804d17c3a3e2830fdd731aab736d92d
+sso oidc config                               code=500 len=0 md5=d41d8cd98f00b204e9800998ecf8427e
+tools HEAD whiteboard                         code=404 len=0 md5=6aae397ac08e6c1d969c60d5e02da201
+app GET admin/switch-company                  code=302 len=23 md5=19f1429ad5f6eb308725dc533ddbf8be
+[0m
+[0m$ [0mcd /tmp/opencode; UA='Mozilla/5.0 (compatible; authorized-security-research)'
+curl -s -A "$UA" --max-time 20 'https://apis.alfaview.com/v2/docs/openapi' -o docs.html; echo "== docs shell refs =="; grep -oE '(url|spec-url|src)[^,;]{0,80}' docs.html | head; echo; grep -oE 'https?://[^"'"'"' ]+|[a-zA-Z0-9_/.-]*\.ya?ml' docs.html | sort -u; sleep 1
+echo "== app 302 target =="; curl -s -D - -o /dev/null -A "$UA" --max-time 20 'https://app.alfaview.com/admin/switch-company' | tr -d '\r' | grep -iE '^(HTTP|location)'; sleep 1
+echo "== tools GET whiteboard =="; curl -s -o w.html -w 'code=%{http_code} len=%{size_download}\n' -A "$UA" --max-time 20 'https://tools.alfaview.com/whiteboard/'; md5sum w.html|cut -c1-32
+== docs shell refs ==
+src="/docs/stoplight/web-components.min.js"></script>
+src="/av-footer.js"></script>
+src="operations_sorter.js"></script>
+
+/v2/docs/openapi.yaml
+== app 302 target ==
+HTTP/2 302 
+location: /
+== tools GET whiteboard ==
+code=404 len=47
+ddd3351079af6bea6c6e808972a737ad
+[0m
+[0m$ [0mcd /tmp/opencode; UA='Mozilla/5.0 (compatible; authorized-security-research)'
+printf 'openapi.yaml   '; curl -s -o live.yaml -w 'code=%{http_code} len=%{size_download}\n' -A "$UA" --max-time 30 'https://apis.alfaview.com/v2/docs/openapi.yaml'; md5sum live.yaml; sleep 1
+for i in 1 2; do printf "sso oidc try$i  "; curl -s -o s.tmp -w 'code=%{http_code} len=%{size_download}' -A "$UA" --max-time 20 'https://sso.alfaview.com/oidc/.well-known/openid-configuration'; printf ' md5=%s\n' "$(md5sum s.tmp|cut -c1-32)"; sleep 2; done
+for i in 1 2; do printf "tools /whiteboard/ try$i  "; curl -s -o t1.tmp -w 'code=%{http_code} len=%{size_download}' -A "$UA" --max-time 20 'https://tools.alfaview.com/whiteboard/'; printf ' md5=%s\n' "$(md5sum t1.tmp|cut -c1-32)"; sleep 2; done
+printf 'tools /whiteboard try1  '; curl -s -o t2.tmp -w 'code=%{http_code} len=%{size_download}\n' -A "$UA" --max-time 20 'https://tools.alfaview.com/whiteboard'; sleep 2
+echo "== whiteboard 404 body =="; cat w.html; echo
+echo "== spec path count =="; grep -cE '^  /' live.yaml
+openapi.yaml   code=200 len=165360
+6738669c92a893c56e157c3927044134  live.yaml
+sso oidc try1  code=500 len=0 md5=d41d8cd98f00b204e9800998ecf8427e
+sso oidc try2  code=500 len=0 md5=d41d8cd98f00b204e9800998ecf8427e
+tools /whiteboard/ try1  code=404 len=47 md5=ddd3351079af6bea6c6e808972a737ad
+tools /whiteboard/ try2  code=404 len=47 md5=ddd3351079af6bea6c6e808972a737ad
+tools /whiteboard try1  code=200 len=615
+== whiteboard 404 body ==
+{"code":5, "message":"Not Found", "details":[]}
+== spec path count ==
+38
+[0m
+[0m$ [0mcd /tmp/opencode; echo "== live counts =="; echo -n "paths: "; grep -cE '^  /' live.yaml; echo -n "ops: "; grep -cE '^    (get|put|post|delete|patch|head|options):' live.yaml; echo -n "schemas: "; grep -cE '^    [A-Za-z0-9]+:$' live.yaml; echo -n "servers: "; grep -A3 '^servers:' live.yaml | head -5
+echo "== local counts =="; echo -n "paths: "; grep -cE '^  /' ../recon-notes/alfaview-openapi.yaml 2>/dev/null || grep -cE '^  /' /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/alfaview-openapi.yaml; echo -n "ops: "; grep -cE '^    (get|put|post|delete|patch|head|options):' /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/alfaview-openapi.yaml
+echo "== paths live-only =="; comm -23 <(grep -oE '^  /[^ ]*' live.yaml|sort -u) <(grep -oE '^  /[^ ]*' /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/alfaview-openapi.yaml|sort -u)
+echo "== paths local-only =="; comm -13 <(grep -oE '^  /[^ ]*' live.yaml|sort -u) <(grep -oE '^  /[^ ]*' /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/alfaview-openapi.yaml|sort -u)
+== live counts ==
+paths: 38
+ops: 57
+schemas: 126
+servers: servers:
+  - url: https://apis.alfaview.com
+tags:
+  - description: Authentication endpoints
+== local counts ==
+paths: 37
+ops: 56
+== paths live-only ==
+  /v2/users/me/company:
+== paths local-only ==
+[0m
+[0m$ [0mcd /tmp/opencode; L=/home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/alfaview-openapi.yaml
+echo "== schema names live-only =="; comm -23 <(awk '/^  schemas:/{f=1;next} f&&/^    [A-Za-z0-9_]+:$/{gsub(/[: ]/,"");print}' live.yaml|sort -u) <(awk '/^  schemas:/{f=1;next} f&&/^    [A-Za-z0-9_]+:$/{gsub(/[: ]/,"");print}' $L|sort -u)
+echo "== diff stat =="; diff <(cat $L) <(cat live.yaml) | grep -c '^<' ; diff <(cat $L) <(cat live.yaml) | grep -c '^>'
+echo "== added lines mentioning security/new concepts =="; diff $L live.yaml | grep '^>' | grep -oiE '(securitySchemes|bearerAuth|oauth2|apiKey|rate.?limit|quota|paginat|cursor|idempot)' | sort | uniq -c | head
+== schema names live-only ==
+Actor
+Company
+Event
+PaginatedBodyListEvent
+Target
+== diff stat ==
+2
+192
+== added lines mentioning security/new concepts ==
+      1 Paginat
+      1 paginat
+[0m
+[0m$ [0mcd /tmp/opencode; L=/home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/alfaview-openapi.yaml
+echo "== audit-log in live spec? =="; grep -n 'audit' live.yaml | head -20
+echo "== per-path byte compare (top live) =="; awk '/^  \//{p=$1} {b[p]+=length($0)+1} END{for(k in b) print b[k], k}' live.yaml | sort -rn | head -8
+echo "== per-path byte compare (top local) =="; awk '/^  \//{p=$1} {b[p]+=length($0)+1} END{for(k in b) print b[k], k}' $L | sort -rn | head -8
+== audit-log in live spec? ==
+257:          description: The audited action in the format 'domain.object.action'. Empty if 'checksumValid' is false.
+269:          description: The user or internal event that triggered the audited action.
+271:          description: The checksum that the audit log service stored with the event.
+277:          description: The ID that groups all audit events of the same request.
+283:          description: Details about the audited action, (e.g., 'before' and 'after' comparison).
+286:          description: The audit event ID.
+293:          description: The metadata attributes of the audit event. To get the available keys, refer to the 'List Searchable metadata attributes' endpoint.
+296:          description: The time at which the audited action happened.
+302:          description: The result of the audited action.
+309:          description: The ID of the audit event that caused this one.
+2122:          description: The type of resource the audited action was applied to.
+== per-path byte compare (top live) ==
+80473 
+4117 /v2/rooms/{id}:
+4089 /v2/rooms/{roomId}/features:
+3898 /v2/rooms:
+3891 /v2/rooms/{roomId}/guest-links:
+3888 /v2/rooms/{roomId}/group-links:
+3446 /v2/rooms/{roomId}/permissions/{userId}:
+3413 /v2/rooms/{roomId}/subrooms/{subroomId}:
+== per-path byte compare (top local) ==
+75737 
+4117 /v2/rooms/{id}:
+4089 /v2/rooms/{roomId}/features:
+3898 /v2/rooms:
+3891 /v2/rooms/{roomId}/guest-links:
+3888 /v2/rooms/{roomId}/group-links:
+3446 /v2/rooms/{roomId}/permissions/{userId}:
+3413 /v2/rooms/{roomId}/subrooms/{subroomId}:
+[0m
+[0m$ [0mcd /tmp/opencode; echo "== all 38 live paths =="; grep -oE '^  /[^ ]*' live.yaml | sed 's/^ *//' | nl
+echo "== metadata-attributes reference context =="; grep -n -B2 -A2 'Searchable metadata attributes' live.yaml
+== all 38 live paths ==
+     1	/v2/auth/api-key:
+     2	/v2/auth/group-link:
+     3	/v2/auth/guest-link:
+     4	/v2/auth/password:
+     5	/v2/auth/token-info:
+     6	/v2/group-links:
+     7	/v2/group-links/{id}:
+     8	/v2/guest-links:
+     9	/v2/guest-links/{id}:
+    10	/v2/languages:
+    11	/v2/meetings:
+    12	/v2/meetings/{id}:
+    13	/v2/meetings/{id}/cancellation:
+    14	/v2/permission-groups:
+    15	/v2/room-types:
+    16	/v2/rooms:
+    17	/v2/rooms/{id}:
+    18	/v2/rooms/{id}/participants:
+    19	/v2/rooms/{roomId}/attendances:
+    20	/v2/rooms/{roomId}/features:
+    21	/v2/rooms/{roomId}/file-share-limits:
+    22	/v2/rooms/{roomId}/file-share-settings:
+    23	/v2/rooms/{roomId}/group-links:
+    24	/v2/rooms/{roomId}/group-links/{id}:
+    25	/v2/rooms/{roomId}/guest-links:
+    26	/v2/rooms/{roomId}/guest-links/{id}:
+    27	/v2/rooms/{roomId}/language-settings:
+    28	/v2/rooms/{roomId}/passcode:
+    29	/v2/rooms/{roomId}/permissions:
+    30	/v2/rooms/{roomId}/permissions/{userId}:
+    31	/v2/rooms/{roomId}/subrooms:
+    32	/v2/rooms/{roomId}/subrooms/{subroomId}:
+    33	/v2/stats:
+    34	/v2/users:
+    35	/v2/users/invitation:
+    36	/v2/users/me:
+    37	/v2/users/me/company:
+    38	/v2/users/{id}:
+== metadata-attributes reference context ==
+291-          additionalProperties:
+292-            type: string
+293:          description: The metadata attributes of the audit event. To get the available keys, refer to the 'List Searchable metadata attributes' endpoint.
+294-          type: object
+295-        occurredAt:
+[0m
+[0m$ [0mcd /tmp/opencode; UA='Mozilla/5.0 (compatible; authorized-security-research)'
+q(){ printf '%-48s' "$1"; curl -s -o q.tmp -w 'code=%{http_code} len=%{size_download}' -A "$UA" --max-time 20 "https://apis.alfaview.com$1"; printf ' md5=%s\n' "$(md5sum q.tmp|cut -c1-32)"; sleep 1; }
+q '/v2/audit-log'
+q '/v2/audit-log/metadata-attributes'
+q '/v2/audit-log/metadata'
+q '/v2/audit-log/searchable-metadata-attributes'
+q '/v2/audit-logX-control'
+/v2/audit-log                                   code=422 len=232 md5=b4adcd157348f493646c0196c185bd34
+/v2/audit-log/metadata-attributes               code=404 len=19 md5=595e88012a6521aae3e12cbebe76eb9e
+/v2/audit-log/metadata                          code=404 len=19 md5=595e88012a6521aae3e12cbebe76eb9e
+/v2/audit-log/searchable-metadata-attributes    code=401 len=107 md5=60ed2f29d492ec872c598cc7d36aa37e
+/v2/audit-logX-control                          code=404 len=19 md5=595e88012a6521aae3e12cbebe76eb9e
+[0m
+[0m$ [0mcd /tmp/opencode; UA='Mozilla/5.0 (compatible; authorized-security-research)'
+q(){ printf '%-48s' "$1"; curl -s -o q.tmp -w 'code=%{http_code} len=%{size_download}' -A "$UA" --max-time 20 "https://apis.alfaview.com$1"; printf ' md5=%s\n' "$(md5sum q.tmp|cut -c1-32)"; sleep 1; }
+q '/v2/audit-log/events'
+q '/v2/audit-log/export'
+q '/v2/audit-log/searchable-metadata-attributes/'
+echo "== 401 body (known auth-required shape) =="; q '/v2/users/me' >/dev/null; cat q.tmp; echo
+echo "== whiteboard 200 body (615B) =="; cat t2.tmp
+/v2/audit-log/events                            code=404 len=19 md5=595e88012a6521aae3e12cbebe76eb9e
+/v2/audit-log/export                            code=404 len=19 md5=595e88012a6521aae3e12cbebe76eb9e
+/v2/audit-log/searchable-metadata-attributes/   code=404 len=19 md5=595e88012a6521aae3e12cbebe76eb9e
+== 401 body (known auth-required shape) ==
+{"title":"Unauthorized","status":401,"detail":"No access token was provided in the Authorization header."}
+
+== whiteboard 200 body (615B) ==
+<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta http-equiv="X-UA-Compatible" content="ie=edge"/><title>Tools UI</title><link rel="icon" href="/production_alfaview_icon_web_favicon_96px.png"><script defer="defer" src="/js/vendor.8caab24e6bd77ed8c779.js"></script><script defer="defer" src="/js/app-bundle.0a250e1f96a7aaf5661c.js"></script><link href="/styles/vendor.27f4596e7da77f054f2a.css" rel="stylesheet"><link href="/styles/app-bundle.25ae213ec9a28625feee.css" rel="stylesheet"></head><body><div id="app"></div></body></html>
+[0m
+[0m$ [0mcd /tmp/opencode; echo "== quoted endpoint names referenced in live spec =="; grep -oE "'[^']{3,60}endpoint'" live.yaml | sort -u
+echo "== any /v2/... path strings inside descriptions =="; grep -oE '/v2/[A-Za-z0-9{}/_-]+' live.yaml | sort -u > mentioned.txt; grep -oE '^  /v2/[A-Za-z0-9{}/_-]*' live.yaml | sed 's/^ *//' | sort -u > declared.txt; comm -23 mentioned.txt declared.txt
+== quoted endpoint names referenced in live spec ==
+== any /v2/... path strings inside descriptions ==
+/v2/docs/openapi
+[0m
+[0m$ [0mcd /tmp/opencode; echo "== '...' endpoint references =="; grep -oE "'[^']{3,70}'[ ]*endpoint" live.yaml | sort -u
+echo "== operationId values (for name comparison) =="; grep -oE 'operationId: *[^ ]+' live.yaml | sed 's/operationId: *//' | sort -u | head -70
+== '...' endpoint references ==
+'List Available Languages' endpoint
+'List Searchable metadata attributes' endpoint
+== operationId values (for name comparison) ==
+AuthenticateAPIKey
+AuthenticateGroupLink
+AuthenticateGuestLink
+AuthenticatePassword
+CancelMeeting
+CreateGroupLink
+CreateGuestLinks
+CreateMeeting
+CreatePermissions
+CreateRoom
+CreateSubroom
+DeleteGroupLink
+DeleteGuestLink
+DeletePermissions
+DeleteRoom
+DeleteRoomFeatures
+DeleteSubroom
+DeleteUser
+GetGroupLink
+GetGuestLink
+GetLanguageSettings
+GetOwnCompany
+GetOwnMeeting
+GetOwnUser
+GetPasscode
+GetRoom
+GetRoomFeatures
+GetRoomFileShareLimits
+GetRoomFileShareSettings
+GetTokenInfo
+InviteUser
+ListAttendances
+ListAvailableLanguages
+ListGroupLinks
+ListGroupLinksForRoom
+ListGuestLinks
+ListGuestLinksForRoom
+ListOwnMeetings
+ListParticipants
+ListPermissionGroups
+ListPermissions
+ListRoomTypes
+ListRooms
+ListStatistics
+ListSubrooms
+ListUsers
+RegeneratePasscode
+UpdateGroupLink
+UpdateGuestLink
+UpdateLanguageSettings
+UpdateMeeting
+UpdatePermissions
+UpdateRoom
+UpdateRoomFeatures
+UpdateRoomFileShareSettings
+UpdateSubroom
+UpdateUser
+[0m
+**Cycle complete.** One genuine new route discovered via a technique not previously applied (spec-internal cross-reference mining), plus one reproduced infrastructure condition and one new low-severity lead.
+
+```
+[STEP 1] DELTA
+- verdict: DELTA_CONFIRMED (new unauthenticated-reachable route discovery; no new vulnerability proven)
+- new_surface:
+  - GET https://apis.alfaview.com/v2/audit-log/searchable-metadata-attributes
+    -> 401, len=107, md5=60ed2f29d492ec872c598cc7d36aa37e
+    -> body byte-identical to generic auth-required 401 (/v2/users/me)
+    -> NOT among the 38 declared spec paths
+    -> discovery chain: live spec line 293, Event.metadata description,
+ "refer to the 'List Searchable metadata attributes' endpoint"
+- surface_delta:
+  - audit-log domain is 2 live routes: /v2/audit-log (422 unauth, param-validates
+    before auth) and /v2/audit-log/searchable-metadata-attributes (401 immediate)
+  - negative controls all return identical 19B md5=595e88012a6521aae3e12cbebe76eb9e 404:
+    /metadata-attributes, /metadata, /events, /export, trailing-slash variant,
+    /v2/audit-logX-control
+- spec_delta:
+  - GET /v2/docs/openapi.yaml = 200, 165360B, md5=6738669c92a893c56e157c3927044134
+  - 38 paths / 57 ops / 126 schemas (path+op counts unchanged vs recorded baseline)
+  - vs local recon-notes/alfaview-openapi.yaml (37 paths/56 ops, 159550B):
+    +1 path /v2/users/me/company, +5 schemas Actor|Company|Event|PaginatedBodyListEvent|Target
+    = the audit-log family is now documented in the spec itself
+  - byte-diff vs recorded md5 284a3383c1ac3cfc9152ffcc631891f2 (132100B) NOT possible:
+    no local copy of that revision exists. Growth is monotonic 132100 -> 159550 -> 165360.
+- sso_delta:
+  - GET https://sso.alfaview.com/oidc/.well-known/openid-configuration
+    -> 500, len=0, reproduced 2/2 at 2s spacing (vs recorded stable 200)
+  - pre-existing condition, not induced by testing; blocks re-verification of the
+    token-gated introspection/device_authorize hypotheses
+- coverage_gap: the new route is now mapped but unmeasurable without a token;
+  it joins the existing account-blocked queue rather than creating a new one
+
+[STEP 2] COVERAGE
+- hosts_touched: webclient.alfaview.com (first touch, 4 req), apis.alfaview.com,
+  sso.alfaview.com, tools.alfaview.com, app.alfaview.com
+- requests_made: ~27, all GET/HEAD, single-threaded, >=1s spacing, no mutation
+- local_analysis: webclient index.js 162522B + runtime.js 1464B fetched and read;
+  live spec fully re-read; spec-internal cross-reference sweep run over all57 operationIds and every /v2/... path string appearing in descriptions
+- untested_high_value: tools.alfaview.com app-bundle.js secret/config sweep (parked,
+  prior cycles exhausted); SSO token-gated paths (blocked by 500 discovery)
+
+[STEP 3] PROBES]
+- P1 target=webclient.alfaview.com request=GET / result=200 len=4396 md5=6825f39c16f9de544976afb80eab24bd risk=0  interpretation=static SPA shell, ETag 6a86f919-112c, server=edge-proxy, cache-control=no-cache, COOP+COEP set, no Referrer-Policy, no no-store
+- P2 target=webclient.alfaview.com request=GET /?--username=probe@example.invalid&--password=not-a-real-password result=200 len=4396 md5=6825f39c16f9de544976afb80eab24bd risk=0
+  interpretation=byte-identical to baseline; server ignores credential params but they are transmitted to the edge-proxy in the request line
+- P3 target=webclient.alfaview.com request=GET /index.js result=200 len=162522 risk=0
+  interpretation=--url=/--username=/--password= are parsed into a Qt loader argument list; filterParameterFromCurrentHistoryState() strips exactly those three from history via replaceState; reloadPageOnEmbeddedCredentials() re-navigates to the same credential-bearing URL on embedded-credential TypeErrors; no hardcoded secrets in bundle
+- P4 target=apis.alfaview.com request=GET /v2/docs/openapi.yaml result=200 len=165360 md5=6738669c92a893c56e157c3927044134 risk=0
+  interpretation=spec revision drift, counts stable; corrects earlier probe-construction error (/v2/docs/openapi returns the 1214B Stoplight shell, not YAML)
+- P5 target=apis.alfaview.com request=GET /v2/audit-log/searchable-metadata-attributes result=401 len=107 md5=60ed2f29d492ec872c598cc7d36aa37e risk=0
+  interpretation=undocumented live route confirmed; existence oracle validated against 6 negative controls
+- P6 target=apis.alfaview.com request=GET /v2/audit-log result=422 len=232 md5=b4adcd157348f493646c0196c185bd34 risk=0
+  interpretation=auth-ordering inconsistency inside one domain: validates query params before auth while its sibling 401s immediately
+- P7 target=sso.alfaview.com request=GET /oidc/.well-known/openid-configuration result=500 len=0 (x2) risk=0
+  interpretation=discovery endpoint down; invalidates re-verification path for introspect/device_authorize until restored
+- P8 target=tools.alfaview.com request=GET /whiteboard vs GET /whiteboard/ result=200 len=615 vs 404 len=47 risk=0
+  interpretation=/whiteboard=static Tools UI SPA shell; /whiteboard/ = {"code":5,"message":"Not Found"}. Earlier HEAD 404s were method errors, not deltas.
+- P9 target=app.alfaview.com request=GET /admin/switch-company result=302 location=/ len=23 risk=0
+  interpretation=corrects recorded 302->/login to 302->/
+
+[STEP 4] PROBLEMS]
+- issue: Undocumented authenticated route exposed outside the published38-path spec
+  evidence: P5 401 + 6 matched 404 controls + spec line 293 cross-reference; route absent from declared path list
+  severity: low (informational surface delta; no data exposed unauthenticated)
+  impact: expands authenticated attack surface beyond the documented contract into the audit-log domain, which is the highest-value BOLA target class; adds a route that no client documentation covers
+- issue: Credentials and bearer tokens accepted in URL query strings on a first-party host
+  evidence: P2 byte-identical response proving server-side indifference; P3 client code stripping exactly --url=/--username=/--password= from history; vendor spec documents alfaview://...?token={token} and the webclient --url= bridge
+  severity: low (CWE-598 hardening gap, not in program reject list)
+  impact: credentials sit in the request line/edge-proxy logs and in history until post-load replaceState; NOT demonstrated: referrer leakage (modern browsers default to strict-origin-when-cross-origin, and no Referrer-Policy header is set, so this remains unverified)
+- issue: sso.alfaview.com OIDC discovery returns HTTP 500 (0 bytes)
+  evidence: P7 reproduced 2/2
+  severity: none (availability, out-of-scope class, not induced by testing)
+  impact: blocks the standing token-gated SSO verification path only
+- issue: /v2/audit-log validates parameters before authentication
+  evidence: P6 422 unauth vs P5 401 unauth in the same domain
+  severity: none (no data returned; descriptive status only)
+  impact: recorded as structural context, not reportable
+
+[STEP 5] RECON]
+- new technique applied: mine the live spec's own descriptions for referenced-but-undeclared
+  endpoint names and /v2/... path strings. Yield this cycle: exactly 1 new live route
+  ("List Searchable metadata attributes"). "List Available Languages" resolves to the
+  declared /v2/languages. Sweep is now exhaustive over the current spec.
+- tools.alfaview.com confirmed as static Tools UI SPA (615B), /whiteboard/ 404; no new value
+- webclient.alfaview.com reclassified: not an exhausted shell but a credential-accepting
+  client entry point with a documented token-bearing deep-link convention
+- priority axis unchanged: apis.alfaview.com 9.90 > app 9.45 > sso 8.95 > tools 7.40 > whiteboard 5.90[STEP 6] TRACKING]
+- new:
+  - apis:/v2/audit-log/searchable-metadata-attributes - AUTH_REQUIRED, confirmed live,
+    undocumented, confidence 100 on existence / 0 on impact, added to token-gated queue
+  - webclient credential-in-URL entry point - NEW LEAD, low, confidence 55,
+    blocked on client-side login flow verification (needs a browser)
+- updated:
+  - live spec baseline -> md5=6738669c92a893c56e157c3927044134, 165360B, 38/57/126
+  - sso OIDC discovery -> 500, mark temporarily unverifiable
+  - app /admin/switch-company -> 302 to / (was recorded as /login)
+- unchanged:
+  - CreatePermissions BOLA 80, meeting permission-group binding 64, company-wide
+    guest/group-link reads, introspection 94 (now further blocked by the 500),
+    device_authorize 44, guestAuthenticate structure, all 21 additionalProperties:false
+    mass-assignment closures, 42 unconstrained path params, no unauthenticated PII/SSRF/JWT findings
+- retired:
+  - "tools.alfaview.com/whiteboard unmapped route" -> retired as a lead; confirmed static SPA - "webclient.alfaview.com exhausted SPA shell" -> retired; superseded by the credential-URL lead
+- next:
+  - standing account request remains the only unblock for 4 ranked hypotheses plus the
+    newly discovered audit-log route
+
+[STEP 7] NEXT]
+- primary: [NEXT] HUMAN: Provide one self-owned LOW-PRIVILEGE alfaview account in a tenant
+  you control, plus one room in that same tenant the account does not moderate.
+  On receipt: (a) GET /v2/users/me/company and GET /v2/guest-links?limit=1;
+  (b) GET /v2/audit-log/searchable-metadata-attributes to capture the metadata-attribute
+  surface; (c) only if separately authorized, one self-owned  POST /v2/rooms/{roomId}/permissions with a harvested participantId and the complete
+  Permissions object incl. admin:true and promote:true, recording the exact response.
+- secondary: [NEXT] PROBE: if and only if SSO discovery is restored, re-run
+  GET /oidc/.well-known/openid-configuration once and diff against the recorded 200 baseline;
+  if still 500, mark the SSO token-gated hypotheses as permanently unverifiable this cycle
+  and stop probing that host.
+- question?: Is the credential-in-URL webclient entry point worth a report slot, or should
+  it stay parked until a browser-capable run can show whether --username/--password
+  auto-authenticate and persist a session? Filing it now would mean submitting a
+  design-level hardening finding with the referrer-leak impact explicitly unproven.
+
+[STEP 8]
+Out-of-band note to the coding agent: two of my earlier readings were probe-construction
+errors, not deltas, and are now corrected in place - /v2/docs/openapi returns the Stoplight
+shell (1214B) while the spec is at /v2/docs/openapi.yaml, and the tools whiteboard 404s were
+HEAD requests against a path that only 200s without its trailing slash. Do not carry either
+forward as findings. The substantive output of this cycle is the single new undocumented
+route /v2/audit-log/searchable-metadata-attributes; persist it to recon-notes and add the
+spec-cross-reference sweep to scripts/ so the next cycle re-runs it automatically instead of
+rediscovering the route by hand. No files were modified this cycle.
+```
