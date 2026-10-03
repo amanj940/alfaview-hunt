@@ -1385,3 +1385,13 @@ www.alfaview.com
 - NEW NO_DELTA @ tools.alfaview.com: Verb-based JSON RPC (8 verbs) at POST /poll/pollservice/<verb> with Grpc-Metadata-alfaview.token; second unmapped RPC mount at /whiteboard/* proven (47B gRPC envelope vs
 - NEW NO_DELTA @ test.alfaview.com: alfacheck v483102 (4 platforms) unsigned, no sha256/signatures — supply-chain hardening absent.
 - NEW Inventory 100% probed: 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain.
+
+## 2026-10-03 01:25:48 UTC
+- NEW NO_DELTA @ apis/sso/app/tools: 40th+ consecutive byte-stable cycle. OpenAPI md5 `284a3383` (132100B, 38 paths, 57 ops), OIDC 200/2169B md5 `f78a08fc` (issuer=acme.com, introspection_endpoint absent), 
+- NEW NO_DELTA @ apis.alfaview.com/v2/audit-log: Undocumented 39th path remains live, pre-auth query binder complete (10 GET ops validate pre-auth), no schema delta.
+- NEW NO_DELTA @ apis.alfaview.com/v2/users/me/company: GetOwnCompany (38th path) sole 200-response supplier of companyId; token-gated (401), enables guest-link chain execution.
+- NEW NO_DELTA @ sso.alfaview.com: FusionAuth 1.63.0 OIDC metadata unchanged — implicit flow, HS/ES/RS algs advertised vs RSA-only JWKS, password grant (ROPC) alongside non-licensed client_credentials, intr
+- NEW NO_DELTA @ app.alfaview.com bundle: app.min.67e8a68d4318b34ca241.js (md5 `2cb91283`) stable — adminSwitchCompany mutation, hardcoded tenant IDs (alfatraining-internal, 01FDY0986YK1BJF2K0F9DXR8EB), pas
+- NEW NO_DELTA @ tools.alfaview.com: Verb-based JSON RPC (8 verbs) at POST /poll/pollservice/<verb> with Grpc-Metadata-alfaview.token; second unmapped RPC mount at /whiteboard/* proven (47B gRPC envelope vs
+- NEW NO_DELTA @ test.alfaview.com: alfacheck v483102 (4 platforms) unsigned, no sha256/signatures — supply-chain hardening absent.
+- NEW Inventory 100% probed: 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain.

@@ -68251,3 +68251,83 @@ Two asks, in priority order:
 2. **Permission for one unauthenticated form POST** to `sso.alfaview.com/oauth2/device_authorize`. No credentials, no account, one request — the only remaining step that doesn't need an account.
 
 One thing worth flagging plainly: auditing my own last output found I'd fabricated a quote. The admin-permission scope sentence I attributed to `POST .../permissions` actually belongs to `PermissionsEdit` on the `PATCH .../permissions/{userId}` route, and I'd also carried a "path-param UUID patterns" premise across 30+ entries when the live spec contains the string "uuid" zero times. Both are now retracted in the block above. If you rely on any of the earlier campaign findings, treat those two as unverified.
+===== ANALYST bigpickle 2026-10-03 01:25:48 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mfind . -name "*.yaml" -o -name "*.yml" -o -name "*.json" | grep -iv node_modules | head -50
+./scope.yml
+./state_ling3.json
+./state_laguna.json
+./state_bigpickle.json
+./.github/workflows/sync-issues.yml
+./.github/workflows/triage.yml
+./.github/workflows/reposcan.yml
+./.github/workflows/hunt.yml
+./recon-notes/alfaview-openapi.yaml
+./state_mimo.json
+./state_longcat.json
+./state_nemotron3.json
+[0m
+[0m$ [0mls -la && echo "---" && ls -la recon-notes/ 2>/dev/null && echo "---" && ls leads/ 2>/dev/null
+total 1032
+drwxr-xr-x 12 runner runner   4096 Oct  3 01:24 .
+drwxr-xr-x  3 runner runner   4096 Oct  3 01:23 ..
+drwxr-xr-x  7 runner runner   4096 Oct  3 01:24 .git
+drwxr-xr-x  3 runner runner   4096 Oct  3 01:23 .github
+-rw-r--r--  1 runner runner   1883 Oct  3 01:23 README.md
+-rw-r--r--  1 runner runner     32 Oct  3 01:24 analyst-out.txt
+-rw-r--r--  1 runner runner 442037 Oct  3 01:24 analyst-prompt.txt
+-rw-r--r--  1 runner runner 438127 Oct  3 01:24 ctx.txt
+drwxr-xr-x  2 runner runner   4096 Oct  3 01:23 inventory
+drwxr-xr-x  2 runner runner   4096 Oct  3 01:23 knowledge
+drwxr-xr-x  2 runner runner   4096 Oct  3 01:23 leads
+-rw-r--r--  1 runner runner  78797 Oct  3 01:23 probe-results.md
+drwxr-xr-x  2 runner runner   4096 Oct  3 01:23 recon-notes
+drwxr-xr-x  2 runner runner   4096 Oct  3 01:23 reports
+drwxr-xr-x  2 runner runner   4096 Oct  3 01:23 reposcan-raw
+-rw-r--r--  1 runner runner   3323 Oct  3 01:23 scope.yml
+drwxr-xr-x  2 runner runner   4096 Oct  3 01:23 scripts
+-rw-r--r--  1 runner runner     33 Oct  3 01:23 state_bigpickle.json
+-rw-r--r--  1 runner runner     33 Oct  3 01:23 state_laguna.json
+-rw-r--r--  1 runner runner     33 Oct  3 01:23 state_ling3.json
+-rw-r--r--  1 runner runner     33 Oct  3 01:23 state_longcat.json
+-rw-r--r--  1 runner runner     33 Oct  3 01:23 state_mimo.json
+-rw-r--r--  1 runner runner     33 Oct  3 01:23 state_nemotron3.json
+drwxr-xr-x  2 runner runner  12288 Oct  3 01:23 triage
+---
+total 192
+drwxr-xr-x  2 runner runner   4096 Oct  3 01:23 .
+drwxr-xr-x 12 runner runner   4096 Oct  3 01:24 ..
+-rw-r--r--  1 runner runner   4789 Oct  3 01:23 CORPUS-ALFAVIEW.md
+-rw-r--r--  1 runner runner   3624 Oct  3 01:23 DEDICATED-DEEP.md
+-rw-r--r--  1 runner runner   7833 Oct  3 01:23 DEEPER-FINDINGS.md
+-rw-r--r--  1 runner runner   6061 Oct  3 01:23 SCOPE-CONFIRMATION.md
+-rw-r--r--  1 runner runner 159550 Oct  3 01:23 alfaview-openapi.yaml
+---
+lead-bigpickle.md
+lead-laguna.md
+lead-ling3.md
+lead-longcat.md
+lead-mimo.md
+lead-nemotron3.md
+reposcan-alfaview.md
+[0m
+[93m[1m! [0mpermission requested: external_directory (/tmp/*); auto-rejecting
+[0m✗ [0mecho "=== CORS probe 1: apis /v2/users/me with Origin ===" && curl -s -o /tmp/o1 -D /tmp/h1 -m 20 -H 'Origin: https://evil.example' https://apis.alfaview.com/v2/users/me && grep -iE 'access-control|vary|server:|www-authenticate|^HTTP' /tmp/h1; echo "--- body:"; cat /tmp/o1; echo failed
+[91m[1mError: [0mThe user rejected permission to use this specific tool call.
+[0m
+[0m$ [0mcd recon-notes && python3 -c "
+import yaml,sys
+d=yaml.safe_load(open('alfaview-openapi.yaml'))
+print('paths',len(d['paths']))
+print('top security:',d.get('security'))
+print('securitySchemes:',d['components'].get('securitySchemes'))
+# audit-log present?
+print('audit-log in paths:', [p for p in d['paths'] if 'audit' in p])
+" 2>&1 | head -20
+paths 37
+top security: None
+securitySchemes: None
+audit-log in paths: []
+[0m
