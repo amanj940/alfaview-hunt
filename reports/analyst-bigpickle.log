@@ -71696,3 +71696,68 @@ Next steps:
 2. Ask for credentials/room: self-owned low-privilege account in a tenant you control + one non-moderated roomId in same tenant (bearer token preferred). No other data.
 
 Want me to draft the script first, or provide credentials and I'll run it?
+===== ANALYST bigpickle 2026-10-04 23:34:42 UTC =====
+[0m
+> build · big-pickle
+[0m
+**STEP 1 — DELTA**
+- NO_DELTA: All standing probes byte-identical for the current cycle. OpenAPI md5 284a3383c1ac3cfc9152ffcc631891f2 (38 paths, 57 ops) stable. sso.alfaview.com OIDC/JWKS/introspect unchanged. apis.alfaview.com surface unchanged since 2026-10-04 17:52:32 UTC. tools.alfaview.com/whiteboard/ unmapped RPC backend already recorded as surface discovery only (no exploit demonstrated). app.alfaview.com bundle unchanged. The only structural changes in recent cycles were documentation corrections (UUID-pattern claim retracted, Permissions vs PermissionsEdit distinction), not new endpoints/surface exposure.
+
+**STEP 2 — PRIORITIZE**
+- [PRIO] apis.alfaview.com,9.90,"attack_surface=10,business_value=10,tech_exposure=10,gate_ease=9,cloud_surface=10,freshness=9"
+- [PRIO] app.alfaview.com,9.45,"attack_surface=10,business_value=9,tech_exposure=9,gate_ease=9,cloud_surface=9,freshness=9"
+- [PRIO] sso.alfaview.com,8.95,"attack_surface=9,business_value=9,tech_exposure=9,gate_ease=9,cloud_surface=9,freshness=9"
+- [PRIO] tools.alfaview.com,7.40,"attack_surface=8,business_value=7,tech_exposure=8,gate_ease=8,cloud_surface=8,freshness=9"
+- [PRIO] whiteboard.alfaview.com,5.90,"attack_surface=6,business_value=6,tech_exposure=6,gate_ease=6,cloud_surface=7,freshness=9"
+
+**STEP 3 — HYPOTHESES**
+[HYP] CreatePermissions grants room-admin to any company-wide principal ID
+class: IDOR
+asset: apis.alfaview.com POST /v2/rooms/{roomId}/permissions
+confidence: 80
+reasoning: Permissions (CreatePermissions, CREATE) is an atomic full-permission-set write (all 9 booleans required). The target identifier is body.participantId (unconstrained string, cross-namespace: user ID / guest-link ID / group-link ID). Scope is only roomId in the path; no documented ID→room binding. GET /v2/guest-links returns guest-link IDs un-narrowable company-wide. The spec distinguishes Permissions (CREATE, atomic) from PermissionsEdit (PATCH, partial delta). Mass assignment is closed across the write surface, so the primitive is scope/authorization, not field injection.
+evidence_needed: One authorized request against a non-moderated room in a self-owned tenant using a harvested participantId from the same company scope, recording exact HTTP status code, response body (verbatim), and response headers (Content-Type, Server, Allow, WWW-Authenticate if present).
+verify_steps: (1) AUTH_HELPED: obtain valid bearer via signup+finishSignup (HUMAN_ONLY) in self-owned tenant; (2) GET /v2/users/me/company (read-only) to confirm companyId; (3) GET /v2/guest-links?limit=1 (read-only) to harvest a participantId not present in target non-moderated room; (4) exactly one POST /v2/rooms/{roomId}/permissions with atomic Permissions including admin:true,promote:true targeting that participantId; (5) do NOT repeat step 4.
+impact: Privilege escalation to room-admin for arbitrary company principal without moderating the room. Severity: HIGH.
+testability: AUTH_HELPED
+
+[HYP] Meeting-scoped bulk link creation binds caller-chosen permissionGroupId
+class: BUSLOGIC
+asset: apis.alfaview.com POST /v2/meetings
+confidence: 64
+reasoning: MeetingCreate accepts guestLinks[] and groupLinks[] arrays with caller-supplied permissionGroupId. GET /v2/permission-groups returns every group {id,name,permissions} (full 9-boolean set including admin/promote/vip) for the company in one call. The contract does not state the caller may only apply groups they are entitled to use under that meeting; enforcement is unknown.
+evidence_needed: Authenticated request in self-owned tenant creating a meeting and attempting to attach a high-privilege permissionGroupId to links, recording exact HTTP status code and verbatim response body/headers.
+verify_steps: (1) AUTH_HELPED: obtain valid bearer (HUMAN_ONLY); (2) GET /v2/permission-groups (read-only) to enumerate groups; (3) POST /v2/meetings with minimal valid body including guestLinks/groupLinks referencing a permissionGroupId not obviously allowed for that context (single request); (4) do NOT escalate beyond minimal test.
+impact: Potential privilege assignment beyond intended scope via bulk link issuance. Severity: MEDIUM–HIGH.
+testability: AUTH_HELPED
+
+[HYP] sso.alfaview.com/oauth2/device_authorize accepts unregistered client_id
+class: OATH
+asset: sso.alfaview.com/oauth2/device_authorize
+confidence: 44
+reasoning: FusionAuth 1.63.0 device flow exists. Authorize behavior shifted across cycles (200 login page vs 400 invalid_client). Dynamic registration is disabled. Device flow client authentication behavior needs single read-only confirmation.
+evidence_needed: Exactly one unauthenticated form-encoded POST with client_id=recon-not-a-real-client-0000&scope=openid, recording exact status code and verbatim response body/headers.
+verify_steps: PASSIVE/PROBE: one HTTP POST to https://sso.alfaview.com/oauth2/device_authorize with Content-Type application/x-www-form-urlencoded and body client_id=recon-not-a-real-client-0000&scope=openid (no auth headers), read-only. Do not repeat.
+impact: Device authorization client validation behavior. Severity: LOW–MEDIUM pending confirmation.
+testability: PASSIVE
+
+**STEP 4 — SELF-CRITIQUE**
+- [PARKED] Meeting-scoped bulk link creation binds caller-chosen permissionGroupId (64): confidence 64 is below the 80 threshold for an immediate high-impact claim; it's a privilege-selection issue, not a demonstrated authorization bypass. It is plausible but needs stronger wire evidence. Park until CreatePermissions result is known, or until an actual over-grant is observed.
+- [PARKED] sso.alfaview.com/oauth2/device_authorize accepts unregistered client_id (44): confidence 44 < 40 threshold per rules (rules say drop confidence<40; 44 is just above but weak). Behavior timing-shifted historically; requires confirmation but not high enough as a standalone finding without additional evidence. Park.
+- [FINAL] CreatePermissions grants room-admin to any company-wide principal ID (80): Highest confidence survivor. Concrete, testable with AUTH_HELPED input. 4-way response code discriminator (204=escalation succeeded, 403=correctly blocked, 409=permission row already exists, 422=ID invalid/precondition unmet) makes ambiguous results unlikely.
+
+**STEP 5 — NEXT ACTION**
+- [NEXT] HUMAN: Provide one self-owned LOW-PRIVILEGE alfaview account in a tenant you control, plus one room in that same tenant the account does not moderate. Do not send any other data. With that single input I will (a) GET /v2/users/me/company and GET /v2/guest-links?limit=1 (read-only), (b) attempt exactly one POST /v2/rooms/{roomId}/permissions against that non-moderated room with harvested participantId and atomic full Permissions (including admin:true,promote:true), and (c) record exact status/body/headers verbatim. This tests the 80-confidence CreatePermissions BOLA with minimal blast radius.
+
+**STEP 6 — LEARNING**
+- [LEARN] REJECTED AUTH @ apis.alfaview.com/v2/auth/{guest,group}-link: NO accessKey existence oracle — well-formed synthetic triple returns 422/88B ACTION_INVALID byte-identical to traversal key; taxonomy exactly two tiers (schema 422, business 422).
+- [LEARN] REJECTED IDOR @ apis.alfaview.com: "OpenAPI spec confirms path-param UUID patterns" premise FALSE — live 132100B document contains "uuid" zero times, zero pattern keys; all path params unconstrained type:string. Contract text must be quoted only after per-field lookup.
+- [LEARN] ACCEPTED INFO @ apis.alfaview.com: Permissions (CreatePermissions, CREATE) vs PermissionsEdit (PATCH) are distinct schemas — Create is atomic full-set write (all 9 booleans required), PATCH is partial delta. Create is more dangerous write path given unconstrained participantId.
+- [LEARN] ACCEPTED MISCONFIG (negative) @ apis.alfaview.com: Mass assignment closed across entire write surface — all 21 request-body schemas and nested schemas are additionalProperties:false.
+- [LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com: Validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI components.securitySchemes={}, security=null.
+- [LEARN] REJECTED MISCONFIG @ apis.alfaview.com: Pre-auth query-parameter binder reproduces public contract only (numeric bounds, enum values, RFC-5322 email, Go time layout); no disclosure beyond published contract.
+- [LEARN] ACCEPTED MISCONFIG @ tools.alfaview.com/whiteboard/: Second unmapped RPC backend proven by controlled differential (47B gRPC envelope vs poll's 45B jsonpb), distinct marshaller, no auth challenge observed, zero client references in public bundle, staging mirror identical. Surface discovery only, no exploit demonstrated.
+- [LEARN] ACCEPTED MISCONFIG @ apis.alfaview.com: /v2/users/invitation{,s} have Allow headers diverging from spec (single-route routing artifact), but 405s are pre-auth and no data exposure demonstrated.
+
+**STEP 7 — RISK**
+- [RISK] alfaview gmbh: 66 — No new unauthenticated surface exposure this cycle. Strongest asset: CreatePermissions BOLA at 80 (unconstrained cross-namespace participantId, atomic full-admin grant). Meeting-scoped permission-group binding at 64 plausible but lower confidence. sso introspect client-auth omission structural but token-gated; device_authorize unregistered-client_id at 44 parked. Four HIGH-value chains converge on a single missing input: one self-owned low-privilege account + non-moderated room in same tenant. Mass assignment closed across write surface; validation-before-auth bounded to query-param routes (path params correctly 401). No PII/config disclosure claimed; findings are authorization/logic flaws pending wire confirmation.

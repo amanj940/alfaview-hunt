@@ -8123,3 +8123,31 @@ testability: PASSIVE
 [LEARN] Prior cycles chased path-parameter formats and found nothing; the spec's own **description prose** is the higher-yield surface. `ParticipantPermissions.participantId` naming three namespaces in one string is a stronger artifact than any enum or `pattern`. Also: distinguishing `Permissions` (create, all-required) from `PermissionsEdit` (patch, all-nullable) by tracing **which path `$ref`s which schema** — a schema can sit unreferenced-by-path yet be live, which is why the orphan-diff method alone produced a misleading 20-name list. Correct true-orphan set is `ErrorModel` (generic RFC7807) and `PaginatedBodyListEvent` (the `/v2/audit-log` envelope).
 [RISK]
 [NEXT]
+## 2026-10-04 23:34:31 UTC [target] (model bigpickle)
+[HYP] CreatePermissions grants room-admin to any company-wide principal ID
+class: IDOR
+asset: apis.alfaview.com POST /v2/rooms/{roomId}/permissions
+confidence: 80
+reasoning: Permissions (CreatePermissions, CREATE) is an atomic full-permission-set write (all 9 booleans required). The target identifier is body.participantId (unconstrained string, cross-namespace: user ID / guest-link ID / group-link ID). Scope is only roomId in the path; no documented ID→room binding. GET /v2/guest-links returns guest-link IDs un-narrowable company-wide. The spec distinguishes Permissions (CREATE, atomic) from PermissionsEdit (PATCH, partial delta). Mass assignment is closed across the write surface, so the primitive is scope/authorization, not field injection.
+evidence_needed: One authorized request against a non-moderated room in a self-owned tenant using a harvested participantId from the same company scope, recording exact HTTP status code, response body (verbatim), and response headers (Content-Type, Server, Allow, WWW-Authenticate if present).
+verify_steps: (1) AUTH_HELPED: obtain valid bearer via signup+finishSignup (HUMAN_ONLY) in self-owned tenant; (2) GET /v2/users/me/company (read-only) to confirm companyId; (3) GET /v2/guest-links?limit=1 (read-only) to harvest a participantId not present in target non-moderated room; (4) exactly one POST /v2/rooms/{roomId}/permissions with atomic Permissions including admin:true,promote:true targeting that participantId; (5) do NOT repeat step 4.
+impact: Privilege escalation to room-admin for arbitrary company principal without moderating the room. Severity: HIGH.
+testability: AUTH_HELPED
+[HYP] Meeting-scoped bulk link creation binds caller-chosen permissionGroupId
+class: BUSLOGIC
+asset: apis.alfaview.com POST /v2/meetings
+confidence: 64
+reasoning: MeetingCreate accepts guestLinks[] and groupLinks[] arrays with caller-supplied permissionGroupId. GET /v2/permission-groups returns every group {id,name,permissions} (full 9-boolean set including admin/promote/vip) for the company in one call. The contract does not state the caller may only apply groups they are entitled to use under that meeting; enforcement is unknown.
+evidence_needed: Authenticated request in self-owned tenant creating a meeting and attempting to attach a high-privilege permissionGroupId to links, recording exact HTTP status code and verbatim response body/headers.
+verify_steps: (1) AUTH_HELPED: obtain valid bearer (HUMAN_ONLY); (2) GET /v2/permission-groups (read-only) to enumerate groups; (3) POST /v2/meetings with minimal valid body including guestLinks/groupLinks referencing a permissionGroupId not obviously allowed for that context (single request); (4) do NOT escalate beyond minimal test.
+impact: Potential privilege assignment beyond intended scope via bulk link issuance. Severity: MEDIUM–HIGH.
+testability: AUTH_HELPED
+[HYP] sso.alfaview.com/oauth2/device_authorize accepts unregistered client_id
+class: OATH
+asset: sso.alfaview.com/oauth2/device_authorize
+confidence: 44
+reasoning: FusionAuth 1.63.0 device flow exists. Authorize behavior shifted across cycles (200 login page vs 400 invalid_client). Dynamic registration is disabled. Device flow client authentication behavior needs single read-only confirmation.
+evidence_needed: Exactly one unauthenticated form-encoded POST with client_id=recon-not-a-real-client-0000&scope=openid, recording exact status code and verbatim response body/headers.
+verify_steps: PASSIVE/PROBE: one HTTP POST to https://sso.alfaview.com/oauth2/device_authorize with Content-Type application/x-www-form-urlencoded and body client_id=recon-not-a-real-client-0000&scope=openid (no auth headers), read-only. Do not repeat.
+impact: Device authorization client validation behavior. Severity: LOW–MEDIUM pending confirmation.
+testability: PASSIVE

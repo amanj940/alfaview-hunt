@@ -4659,3 +4659,22 @@
 - LEARN: PROCEDURAL: auditing own prior output against spec caught two fabrications (UUID-pattern claim; misattributed permission sentence). Contract text must be quoted
 - LEARN: Response codes give a **4-way discriminator** for the authorized test: `204`=escalation succeeded, `403`=correctly blocked, `409`=permission row already exists,
 - LEARN: Prior cycles chased path-parameter formats and found nothing; the spec's own **description prose** is the higher-yield surface. `ParticipantPermissions.particip
+
+## RANKED HYPOTHESES 2026-10-04 23:34:42 UTC
+- [94] sso.alfaview.com/oauth2/introspect: OAuth2 token introspection client authentication fully bypassable on both channels with valid token (from art/lead_nemotron3.txt)
+- [80] apis.alfaview.com: CreatePermissions grants room-admin to any company-wide principal ID (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-nemotron3.txt): HUMAN: Execute unauthenticated signup flow at app.alfaview.com/graphql (mutation Signup → email → FinishSignup) to obtain a valid bearer token; then test intros
+- LEARN: REJECTED IDOR @ apis.alfaview.com: "OpenAPI spec confirms path-param UUID patterns" premise FALSE — live 132100B document contains "uuid" zero times, zero `patt
+- LEARN: REJECTED IDOR @ apis.alfaview.com POST /v2/rooms/{roomId}/permissions: retracted Permissions.admin scope claim — "edit or delete rooms, manage guests" lives on 
+- LEARN: ACCEPTED INFO @ apis.alfaview.com: two distinct permission schemas — Permissions (CREATE, all 9 booleans required = atomic full-set write) vs PermissionsEdit (P
+- LEARN: ACCEPTED INFO @ apis.alfaview.com GET /v2/permission-groups: returns PermissionGroup{id, name, permissions} for every group, name="Admin", permissions full 9-bo
+- LEARN: REJECTED MISCONFIG @ apis.alfaview.com: pre-auth query-parameter binder as standalone finding — reproduces public spec only (numeric bounds, enum values, RFC-53
+- LEARN: REJECTED MISCONFIG @ apis.alfaview.com: 403-declaration asymmetry not behaviorally load-bearing — /v2/permission-groups returns 401 while declaring no 401; whol
+- LEARN: REJECTED AUTH @ sso.alfaview.com/oauth2/userinfo: JOSE algorithm confusion tested (alg=none, HS256 with RSA pubkey, HS256 random, RS256 self-signed) — all byte-
+- LEARN: REJECTED OATH @ sso.alfaview.com/oauth2/logout: post_logout_redirect_uri and redirect_uri both ignored; every variant returns 302 → /
+- LEARN: REJECTED AUTH @ apis.alfaview.com/v2/auth/{guest,group}-link: NO accessKey existence oracle — well-formed synthetic triple returns 422/88B ACTION_INVALID byte-i
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: Validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI compon
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com/v2/users/invitation{s}: OpenAPI declares POST only; live server advertises Allow: DELETE,POST on /v2/users/invitation and
+- LEARN: ACCEPTED IDOR @ apis.alfaview.com POST /v2/rooms: public unauthenticated-to-read contract (RoomCreate.permissions exposes participantId namespace collision with
+- LEARN: ACCEPTED BUSLOGIC @ apis.alfaview.com PATCH /v2/rooms/{id}: RoomUpdate.quotas description bare ("The quotas for the room"), no enum/constraints; mass-assignment
+- LEARN: PROCEDURAL: auditing own prior output against spec caught two fabrications (UUID-pattern claim; misattributed permission sentence). Contract text must be quoted
