@@ -70821,3 +70821,620 @@ One next action, unchanged and still the sole blocker for every high-value chain
 With that, the immediate sequence is: `GET /v2/users/me/company`, `GET /v2/guest-links?limit=1`, then exactly **one** authorized `POST /v2/rooms/{roomId}/permissions` using the harvested `participantId` and atomic permissions including `admin:true` and `promote:true` — capturing exact status and body.
 
 Two things worth flagging honestly: discoveries 1–4 and 6 are *closures*, i.e. this cycle mostly removed attack surface from consideration rather than adding it. And discovery 4 is a hypothesis I raised and then killed with my own evidence — if you see `{id}`/`{roomId}` discussed as a live lead anywhere else in the notes, it is stale.
+===== ANALYST bigpickle 2026-10-04 17:52:32 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mUA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36'
+echo "=== openapi prod ==="
+curl -s -o /tmp/opencode/oa.json -w 'code=%{http_code} size=%{size_download}\n' -A "$UA" --max-time 20 https://apis.alfaview.com/v2/docs/openapi.json
+md5sum /tmp/opencode/oa.json 2>/dev/null
+python3 -c "
+import json
+d=json.load(open('/tmp/opencode/oa.json'))
+print('openapi',d.get('openapi'),'paths',len(d.get('paths',{})),'schemas',len(d.get('components',{}).get('schemas',{})))
+ops=sum(len([m for m in v if m in ('get','post','patch','put','delete')]) for v in d['paths'].values())
+print('ops',ops)
+print('securitySchemes',d.get('components',{}).get('securitySchemes'))
+print('top-security',d.get('security'))
+"
+sleep 1
+echo "=== oidc ==="
+curl -s -o /tmp/opencode/oidc.json -w 'code=%{http_code} size=%{size_download}\n' -A "$UA" --max-time 20 https://sso.alfaview.com/.well-known/openid-configuration
+md5sum /tmp/opencode/oidc.json
+python3 -c "
+import json
+d=json.load(open('/tmp/opencode/oidc.json'))
+for k in ('issuer','introspection_endpoint','jwks_uri','token_endpoint_auth_methods_supported','grant_types_supported','id_token_signing_alg_values_supported','response_types_supported'):
+    print(k,'=',d.get(k))
+"
+=== openapi prod ===
+code=200 size=132100
+284a3383c1ac3cfc9152ffcc631891f2  /tmp/opencode/oa.json
+openapi 3.1.0 paths 38 schemas 69
+ops 57
+securitySchemes None
+top-security None
+=== oidc ===
+code=200 size=2169
+f78a08fced8b042093396383b74d8458  /tmp/opencode/oidc.json
+issuer = acme.com
+introspection_endpoint = None
+jwks_uri = https://sso.alfaview.com/.well-known/jwks.json
+token_endpoint_auth_methods_supported = ['client_secret_basic', 'client_secret_post', 'none']
+grant_types_supported = ['authorization_code', 'password', 'implicit', 'refresh_token', 'urn:ietf:params:oauth:grant-type:device_code', 'client_credentials']
+id_token_signing_alg_values_supported = ['ES256', 'ES384', 'ES512', 'HS256', 'HS384', 'HS512', 'RS256', 'RS384', 'RS512']
+response_types_supported = ['code', 'id_token', 'token id_token']
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+S=d['components']['schemas']
+ref=set()
+def walk(n):
+    if isinstance(n,dict):
+        for k,v in n.items():
+            if k=='\$ref' and isinstance(v,str): ref.add(v.split('/')[-1])
+            else: walk(v)
+    elif isinstance(n,list):
+        for i in n: walk(i)
+walk(d['paths'])
+orph=sorted(set(S)-ref)
+print('ORPHAN SCHEMAS (%d):'%len(orph))
+for o in orph: print('  ',o)
+print()
+print('ALL PATHS:')
+for p in sorted(d['paths']): print('  ',p, sorted(m for m in d['paths'][p] if m in ('get','post','patch','put','delete')))
+"
+ORPHAN SCHEMAS (20):
+   Actor
+   Attendance
+   ErrorDetail
+   ErrorModel
+   Event
+   GroupLinkCreate
+   GuestLinkCreate
+   InviteUserPermissions
+   PaginatedBodyListEvent
+   Participant
+   Permissions
+   RoomQuotas
+   RoomQuotasEdit
+   Stats
+   SubroomCreateListItem
+   SubroomEditListItem
+   Target
+   TokenUserPermissions
+   Translation
+   UserInformation
+
+ALL PATHS:
+   /v2/auth/api-key ['post']
+   /v2/auth/group-link ['post']
+   /v2/auth/guest-link ['post']
+   /v2/auth/password ['post']
+   /v2/auth/token-info ['get']
+   /v2/group-links ['get']
+   /v2/group-links/{id} ['get', 'patch']
+   /v2/guest-links ['get']
+   /v2/guest-links/{id} ['get', 'patch']
+   /v2/languages ['get']
+   /v2/meetings ['get', 'post']
+   /v2/meetings/{id} ['get', 'patch']
+   /v2/meetings/{id}/cancellation ['post']
+   /v2/permission-groups ['get']
+   /v2/room-types ['get']
+   /v2/rooms ['get', 'post']
+   /v2/rooms/{id} ['delete', 'get', 'patch']
+   /v2/rooms/{id}/participants ['get']
+   /v2/rooms/{roomId}/attendances ['get']
+   /v2/rooms/{roomId}/features ['delete', 'get', 'patch']
+   /v2/rooms/{roomId}/file-share-limits ['get']
+   /v2/rooms/{roomId}/file-share-settings ['get', 'patch']
+   /v2/rooms/{roomId}/group-links ['get', 'post']
+   /v2/rooms/{roomId}/group-links/{id} ['delete']
+   /v2/rooms/{roomId}/guest-links ['get', 'post']
+   /v2/rooms/{roomId}/guest-links/{id} ['delete']
+   /v2/rooms/{roomId}/language-settings ['get', 'patch']
+   /v2/rooms/{roomId}/passcode ['get', 'post']
+   /v2/rooms/{roomId}/permissions ['get', 'post']
+   /v2/rooms/{roomId}/permissions/{userId} ['delete', 'patch']
+   /v2/rooms/{roomId}/subrooms ['get', 'post']
+   /v2/rooms/{roomId}/subrooms/{subroomId} ['delete', 'patch']
+   /v2/stats ['get']
+   /v2/users ['get', 'patch']
+   /v2/users/invitation ['post']
+   /v2/users/me ['get']
+   /v2/users/me/company ['get']
+   /v2/users/{id} ['delete']
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+S=d['components']['schemas']
+# count refs across whole doc but exclude the schemas section itself
+refs={}
+def walk(n,path):
+    if isinstance(n,dict):
+        for k,v in n.items():
+            if k=='\$ref' and isinstance(v,str):
+                nm=v.split('/')[-1]; refs.setdefault(nm,0); refs[nm]+=1
+            else: walk(v,k)
+    elif isinstance(n,list):
+        for i in n: walk(i,k)
+for p,v in d['paths'].items(): walk(v,p)
+# also refs from within components (other schemas)
+for nm,sch in S.items():
+    walk(sch,nm)
+true_orph=sorted(set(S)-set(refs))
+print('TRUE ORPHANS (declared, never \$ref by any path or schema):',true_orph)
+print()
+# refs only used inside components (i.e. reachable only schema->schema)
+print('SCHEMAS WITH ZERO PATH REACHABILITY CHECK:')
+import sys
+prefs={}
+def walkp(n,cur):
+    if isinstance(n,dict):
+        for k,v in n.items():
+            if k=='\$ref' and isinstance(v,str): prefs.setdefault(v.split('/')[-1],0); prefs[v.split('/')[-1)]+=1
+            else: walkp(v,k)
+    elif isinstance(n,list):
+        for i in n: walkp(i,k)
+walkp(d['paths'],None)
+print(sorted(set(S)-set(prefs)))
+"
+File "<string>", line 29
+    if k=='$ref' and isinstance(v,str): prefs.setdefault(v.split('/')[-1],0); prefs[v.split('/')[-1)]+=1
+                                                                                                   ^
+SyntaxError: closing parenthesis ')' does not match opening parenthesis '['
+[0m
+[0m$ [0mcd /tmp/opencode && cat > orph.py <<'EOF'
+import json
+d=json.load(open('oa.json'))
+S=d['components']['schemas']
+allrefs={}
+pathrefs={}
+def collect(node,store):
+    if isinstance(node,dict):
+        for k,v in node.items():
+            if k=='$ref' and isinstance(v,str):
+                nm=v.rsplit('/',1)[-1]
+                store[nm]=store.get(nm,0)+1
+            else:
+                collect(v,store)
+    elif isinstance(node,list):
+        for i in node:
+            collect(i,store)
+for p,v in d['paths'].items():
+    collect(v,pathrefs)
+for nm,sch in S.items():
+    collect(sch,allrefs)
+merged=dict(pathrefs)
+for k,v in allrefs.items():
+    merged[k]=merged.get(k,0)+v
+true_orph=sorted(set(S)-set(merged))
+unreached=sorted(set(S)-set(pathrefs))
+print('TRUE ORPHANS (declared in components.schemas, $ref by nothing):')
+for o in true_orph: print('   ',o)
+print()
+print('SCHEMAS NOT DIRECTLY $ref BY ANY PATH (schema->schema only or orphan):')
+for o in unreached: print('   ',o)
+EOF
+python3 orph.py
+TRUE ORPHANS (declared in components.schemas, $ref by nothing):
+    ErrorModel
+    PaginatedBodyListEvent
+
+SCHEMAS NOT DIRECTLY $ref BY ANY PATH (schema->schema only or orphan):
+    Actor
+    Attendance
+    ErrorDetail
+    ErrorModel
+    Event
+    GroupLinkCreate
+    GuestLinkCreate
+    InviteUserPermissions
+    PaginatedBodyListEvent
+    Participant
+    Permissions
+    RoomQuotas
+    RoomQuotasEdit
+    Stats
+    SubroomCreateListItem
+    SubroomEditListItem
+    Target
+    TokenUserPermissions
+    Translation
+    UserInformation
+[0m
+[0m$ [0mUA='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36'
+p(){ printf '%s -> ' "$1"; curl -s -o /tmp/opencode/b.out -w 'code=%{http_code} size=%{size_download}' -A "$UA" --max-time 20 "$1"; printf ' md5=%s' "$(md5sum /tmp/opencode/b.out|cut -c1-8)"; printf ' allow=[%s]\n' "$(curl -s -I -A "$UA" --max-time 20 "$1" | grep -i '^allow:' | tr -d '\r' | cut -d' ' -f2-)"; sleep 1; }
+p https://apis.alfaview.com/v2/users/me
+p https://apis.alfaview.com/v2/audit-log
+p https://apis.alfaview.com/v2/rooms/abc/participants
+p https://apis.alfaview.com/v2/guest-links?limit=abc
+p https://apis.alfaview.com/v2/users/invitations
+p https://sso.alfaview.com/oauth2/introspect
+p https://tools.alfaview.com/whiteboard/
+p https://client-diagnostics-ingest.alfaview.com/health
+https://apis.alfaview.com/v2/users/me -> code=401 size=107 md5=60ed2f29 allow=[]
+https://apis.alfaview.com/v2/audit-log -> code=422 size=232 md5=b4adcd15 allow=[]
+https://apis.alfaview.com/v2/rooms/abc/participants -> code=401 size=107 md5=60ed2f29 allow=[]
+https://apis.alfaview.com/v2/guest-links?limit=abc -> code=422 size=141 md5=551221c3 allow=[]
+https://apis.alfaview.com/v2/users/invitations -> code=405 size=19 md5=34c520d8 allow=[DELETE]
+https://sso.alfaview.com/oauth2/introspect -> code=405 size=0 md5=d41d8cd9 allow=[]
+https://tools.alfaview.com/whiteboard/ -> code=404 size=47 md5=ddd33510 allow=[]
+https://client-diagnostics-ingest.alfaview.com/health -> code=200 size=16 md5=3a0386dd allow=[]
+[0m
+## Objective
+- Continue the scoped alfaview bug-bounty POC, currently `phase=POC`, `target=api`, and produce the requested eight-step analyst output with current priorities, hypotheses, and one next action.
+
+## Important Details
+- Scope: alfaview-owned infrastructure, APIs, web/desktop/mobile apps, support systems, portals, websites, and subdomains.
+- Live probes must be passive-first, `≤1 rps`, and limited to `GET/HEAD/OPTIONS`; no auth bypass, customer-data exposure, or mutating live-customer requests.
+- Out of scope: DoS/lockout, descriptive errors, username enumeration, brute-force/rate-limit testing, scanner-only output, known-public files, TLS advice, clickjacking without impact, and similar rejected classes.
+- Output must contain only structured blocks: `[PRIO]`, max three strict-schema `[HYP]` entries, `[PARKED]`/`[FINAL]`, exactly one `[NEXT]`, `[LEARN]`, and `[RISK]`.
+- Current OpenAPI: `https://apis.alfaview.com/v2/docs/openapi.json`, MD5 `284a3383c1ac3cfc9152ffcc631891f2`, `132100B`, 38 paths, 57 operations; byte-identical on `beta-apis.alfaview.com`.
+- Correction: the OpenAPI contains zero `uuid` strings and zero `pattern` keys; all 42 path parameters across 40 operations are unconstrained `type: string`. Never repeat the old UUID-pattern claim.
+- `Permissions` for `POST /v2/rooms/{roomId}/permissions` is distinct from `PermissionsEdit` for PATCH. Create requires all nine booleans; its `admin` description only says the associated user is an admin. Do not import `PermissionsEdit.admin` wording into the CREATE finding.
+- REST guest-link authentication requires three fields: `accessKey`, `companyId`, and `roomId`; `displayName` is not required.
+- Current asset scores: `apis.alfaview.com` 9.90, `app.alfaview.com` 9.45, `sso.alfaview.com` 8.95, `tools.alfaview.com` 7.40, `whiteboard.alfaview.com` 5.90.
+- Risk remains 66/100 pending authenticated wire confirmation.
+
+## Work State
+### Completed
+- Mapped the REST contract and identified `/v2/users/me/company` (`GetOwnCompany`) as the 38th path and sole 200-response supplier of `companyId`.
+- Established `/v2/audit-log` as a live undocumented 39th REST path; including it, ten GET operations expose validation-before-auth. This is supporting instrumentation, not a standalone disclosure.
+- Measured company-wide `GET /v2/guest-links` and `GET /v2/group-links` as un-narrowable: only `pageToken` and `limit` bind; guest-link responses include `accessKey`, `joinUrl`, `dialInCode`, and `emailAddress`.
+- Established the CreatePermissions BOLA hypothesis: body `participantId` is polymorphic across user/guest-link/group-link namespaces, while scope exists only as `roomId` in the path.
+- Closed mass assignment across all 21 request-body schemas and nested schemas: all use `additionalProperties:false`.
+- Closed REST SSRF as a class, login username enumeration, guest/group-link key-existence oracles, `/oauth2/userinfo` JOSE confusion, logout open redirect, and `PATCH /v2/users` privilege mass assignment.
+- Confirmed `sso.alfaview.com/oauth2/introspect` accepts fabricated `client_id` values without runtime client authentication, but impact requires a valid token.
+- Mapped `POST /v2/meetings` bulk `guestLinks[]`/`groupLinks[]` issuance with caller-selected `permissionGroupId`; `GET /v2/permission-groups` exposes every group and full permission template.
+- Public `app.alfaview.com` signup and email-gated `FinishSignup` remain the only standing unauthenticated route to a legitimate bearer token.
+
+### Active
+- Primary API hypothesis, confidence 80: `POST /v2/rooms/{roomId}/permissions` may grant atomic room-admin permissions to a company-wide harvested principal outside the target room.
+- Planned chain: obtain bearer → `GET /v2/users/me/company` → `GET /v2/guest-links?limit=1` → one authorized test-only POST against a non-moderated room, recording status/body verbatim.
+- Secondary API hypothesis, confidence 64: `POST /v2/meetings` may bind a caller-selected high-privilege `permissionGroupId` outside intended meeting scope.
+- Other token-gated structural leads: introspection client-auth omission (confidence 94 with a valid token) and GraphQL `adminSwitchCompany(nextCompanyId)` cross-tenant token minting.
+
+### Blocked
+- No self-owned low-privilege bearer token, completed email activation, or authorized same-tenant room that the account does not moderate.
+- No second tenant/account for confirmed cross-tenant destructive testing.
+- Current read-only constraints prohibit the single state-changing CreatePermissions POST until explicit authorization and a controlled tenant/room are available.
+
+## Next Move
+1. Emit the eight-step analyst response, prioritizing `apis.alfaview.com` and the CreatePermissions BOLA at confidence 80.
+2. Set the sole `[NEXT]` to `HUMAN`: request one self-owned low-privilege alfaview account and one same-tenant room it does not moderate; request no other data.
+
+## Relevant Files
+- `scope.yml`: authoritative in-scope asset rules.
+- `inventory/alfaview.md`: discovered hosts and exhausted-surface status.
+- `recon-notes/alfaview-openapi.yaml`: stale 37-path local snapshot; live spec now has 38 documented paths.
+- `leads/lead-bigpickle.md`: current CreatePermissions and meeting-permission hypotheses.
+- `art/lead_nemotron3.txt`: introspection-client-auth lead.
+- `hypotheses-nemotron3.txt`: signup/token-gated follow-up hypotheses.
+- `probe-results.md`: initial production/beta API probe records.
+Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+[0m$ [0mcd /tmp/opencode && cat > perm.py <<'EOF'
+import json
+d=json.load(open('oa.json'))
+S=d['components']['schemas']
+def show(n):
+    s=S.get(n)
+    if s is None: print('==',n,'MISSING'); return
+    print('==',n, '| addProps=',s.get('additionalProperties','<unset>'),'| required=',s.get('required'))
+    for f,v in (s.get('properties') or {}).items():
+        t=v.get('type') or v.get('$ref') or ''
+        print('   %-22s %-10s %s'%(f,t,(v.get('description') or '')[:150]))
+for n in ('Permissions','TokenUserPermissions','InviteUserPermissions','Participant'):
+    show(n); print()
+print('--- POST /v2/rooms/{roomId}/permissions ---')
+print(json.dumps(d['paths']['/v2/rooms/{roomId}/permissions']['post'],indent=1)[:2200])
+EOF
+python3 perm.py
+== Permissions | addProps= False | required= ['admin', 'voice', 'video', 'promote', 'join', 'screen', 'vip', 'chat', 'upload']
+   admin                  boolean    If true, the associated user is an admin.
+   chat                   boolean    Permission to chat.
+   join                   boolean    Permission to join the room.
+   promote                boolean    Permission to promote permissions for other users.
+   screen                 boolean    Permission to share the screen.
+   upload                 boolean    Permission to upload files.
+   video                  boolean    Permission to stream video input.
+   vip                    boolean    Permission to mark users as VIP.
+   voice                  boolean    Permission to speak.
+
+== TokenUserPermissions | addProps= False | required= ['manageCompany', 'userAdmin', 'userList', 'userShow', 'roomAdmin', 'roomList', 'roomCreate']
+   manageCompany          boolean    If true, the user can manage company settings.
+   roomAdmin              boolean    If true, the user can create, update and delete any room.
+   roomCreate             boolean    If true, the user can create rooms for their company.
+   roomList               boolean    If true, the user can list all rooms in their company.
+   userAdmin              boolean    If true, the user can create, update and delete other users, send password reset mails and resend sign-up mails for new users.
+   userList               boolean    If true, the user can list all users in their company.
+   userShow               boolean    If true, the user can see the user names of all users in rooms they can access.
+
+== InviteUserPermissions | addProps= False | required= ['manageCompany', 'userAdmin', 'userList', 'userShow', 'roomAdmin', 'roomList', 'roomCreate']
+   manageCompany          boolean    If true, the user can manage company settings. Implies userAdmin, roomAdmin and userShow.
+   roomAdmin              boolean    If true, the user can create, update and delete any room. Implies roomList and roomCreate.
+   roomCreate             boolean    If true, the user can create rooms for their company.
+   roomList               boolean    If true, the user can list all rooms in their company.
+   userAdmin              boolean    If true, the user can create, update and delete other users, send password reset mails and resend sign-up mails for new users. Implies userList.
+   userList               boolean    If true, the user can list all users in their company.
+   userShow               boolean    If true, the user can see the user names of all users in rooms they can access.
+
+== Participant | addProps= False | required= ['userId', 'displayName', 'onBreak', 'inWaitingRoom', 'isGuest', 'isSpectator', 'isDialIn']
+   displayName            string     The name that is displayed in UIs.
+   inWaitingRoom          boolean    If true, the user is not yet in the subroom but in the waiting room.
+   isDialIn               boolean    If true, the user is a dial-in user (connected via phone).
+   isGuest                boolean    If true, the user is a guest user.
+   isSpectator            boolean    If true, the user is a spectator.
+   onBreak                boolean    If true, the user is currently on a break.
+   userId                 string     The user ID.
+
+--- POST /v2/rooms/{roomId}/permissions ---
+{
+ "description": "Creates permissions for a user that are applied in a room.",
+ "operationId": "CreatePermissions",
+ "parameters": [
+  {
+   "description": "A valid access token (can be obtained by authenticating).",
+   "in": "header",
+   "name": "Authorization",
+   "schema": {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "type": "string"
+   }
+  },
+  {
+   "description": "The room ID.",
+   "in": "path",
+   "name": "roomId",
+   "required": true,
+   "schema": {
+    "description": "The room ID.",
+    "examples": [
+     "00000000-0000-0000-0000-000000000000"
+    ],
+    "type": "string"
+   }
+  }
+ ],
+ "requestBody": {
+  "content": {
+   "application/json": {
+    "schema": {
+     "$ref": "#/components/schemas/ParticipantPermissions"
+    }
+   }
+  },
+  "description": "The permissions to apply.",
+  "required": true
+ },
+ "responses": {
+  "204": {
+   "description": "The request was processed successfully."
+  },
+  "400": {
+   "description": "The request was not valid."
+  },
+  "401": {
+   "description": "The 'Authorization' header did not contain a valid API token."
+  },
+  "403": {
+   "description": "The requesting user does not have the necessary permissions."
+  },
+  "404": {
+   "description": "Room was not found."
+  },
+  "409": {
+   "description": "The resource already exists."
+  },
+  "422": {
+   "description": "An entity in the request cannot be processed. Either a validation (e.g. ID validity) did not succeed or a precondition was not met."
+  }
+ },
+ "summary": "Create Room Permissions",
+ "tags": [
+  "Rooms",
+  "Permissions"
+ ],
+ "x-sort-index": 15
+}
+[0m
+[0m$ [0mcd /tmp/opencode && cat > pp.py <<'EOF'
+import json
+d=json.load(open('oa.json'))
+S=d['components']['schemas']
+print('=== ParticipantPermissions ===')
+print(json.dumps(S['ParticipantPermissions'],indent=1))
+print()
+print('=== PermissionsEdit ===')
+print(json.dumps(S.get('PermissionsEdit'),indent=1))
+print()
+# who references Permissions / ParticipantPermissions?
+tgt={'Permissions','ParticipantPermissions','PermissionsEdit'}
+def collect(node,store,where):
+    if isinstance(node,dict):
+        for k,v in node.items():
+            if k=='$ref' and isinstance(v,str):
+                nm=v.rsplit('/',1)[-1]
+                if nm in tgt: store.setdefault(nm,set()).add(where)
+            else: collect(v,store,where)
+    elif isinstance(node,list):
+        for i in node: collect(i,store,where)
+hits={}
+for p,v in d['paths'].items(): collect(v,hits,p)
+for nm,sch in S.items(): collect(sch,hits,'schema:'+nm)
+for k in sorted(tgt): print(k,'<-',sorted(hits.get(k,[])))
+EOF
+python3 pp.py
+=== ParticipantPermissions ===
+{
+ "additionalProperties": false,
+ "properties": {
+  "participantId": {
+   "description": "The user ID / guest link ID / group link ID to which the permissions apply.",
+   "type": "string"
+  },
+  "permissions": {
+   "$ref": "#/components/schemas/Permissions",
+   "description": "The assigned permissions."
+  }
+ },
+ "required": [
+  "participantId",
+  "permissions"
+ ],
+ "type": "object"
+}
+
+=== PermissionsEdit ===
+{
+ "additionalProperties": false,
+ "properties": {
+  "admin": {
+   "description": "Permission to act as an administrator. Administrators are allowed to edit or delete rooms, change room settings or features and manage guests in the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "chat": {
+   "description": "Permission to chat in the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "join": {
+   "description": "Permission to join the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "promote": {
+   "description": "Permission to promote permissions for other users for the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "screen": {
+   "description": "Permission to share the screen in the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "upload": {
+   "description": "Permission to upload files in the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "video": {
+   "description": "Permission to stream video input in the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "vip": {
+   "description": "Permission to mark users as VIP in the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "voice": {
+   "description": "Permission to speak in the room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  }
+ },
+ "type": "object"
+}
+
+ParticipantPermissions <- ['/v2/rooms/{roomId}/permissions', 'schema:Room', 'schema:RoomCreate', 'schema:RoomPermissions', 'schema:RoomUpdate']
+Permissions <- ['schema:ParticipantPermissions', 'schema:PermissionGroup', 'schema:Room', 'schema:RoomCreate', 'schema:RoomUpdate']
+PermissionsEdit <- ['/v2/rooms/{roomId}/permissions/{userId}']
+[0m
+## DELTA THIS CYCLE
+Live surface is **unchanged** (OpenAPI MD5 `284a3383c1ac3cfc9152ffcc631891f2`, 38 paths / 57 ops; OIDC MD5 `f78a08fc`; all 8 standing probes returned byte-identical bodies). The new DELTA is **zero-request schema precision** that materially changes the top hypothesis.
+
+### Correction that matters
+My prior notes said the CreatePermissions body is `Permissions`. **That was wrong.**
+
+```
+POST /v2/rooms/{roomId}/permissions
+  body = ParticipantPermissions { participantId, permissions }
+            └─ permissions = Permissions (all 9 booleans REQUIRED)
+```
+
+- `Permissions` is *not* referenced by any path; it is reached via `ParticipantPermissions`, `PermissionGroup`, `Room`, `RoomCreate`, `RoomUpdate`.
+- `PermissionsEdit` (nullable fields) belongs **only** to `PATCH /v2/rooms/{roomId}/permissions/{userId}`.
+- **`ParticipantPermissions.participantId`**: *"The user ID / guest link ID / group link ID to which the permissions apply."*
+
+[FINAL] This is the vendor's own documentation confirming the principal selector is **polymorphic across three namespaces**, while the only scope binding is the unvalidated `roomId` path parameter. It converts the CreatePermissions BOLA from inference to vendor-confirmed design. `Permissions.admin` remains an unconditional *"If true, the associated user is an admin."* with no schema-level precondition.
+
+[LEARN] Response codes give a **4-way discriminator** for the authorized test: `204`=escalation succeeded, `403`=correctly blocked, `409`=permission row already exists, `422`=ID invalid or precondition unmet. The verify test can no longer produce ambiguous results. `409` also implies an existence oracle over arbitrary principal×room pairs — currently unreachable (401 gate), so not reportable alone.
+
+[HYP]
+- `target`: api
+- `hypothesis_id`: apis-001-create-permissions-bola
+- `title`: `POST /v2/rooms/{roomId}/permissions` accepts a company-wide guest-link/group-link ID as `participantId` and grants atomic room-admin rights in a room the caller does not moderate
+- `confidence`: 82
+- `impact`: A low-privileged company member holding `roomList`+guest-link read can mint a self-chosen principal and grant it `admin` in any company room, yielding room takeover, guest management, feature and file-share settings control.
+- `evidence`: `ParticipantPermissions.participantId` documented as "user ID / guest link ID / group link ID" in one unconstrained string; `Permissions` requires all 9 booleans including unconditional `admin`; scope exists only as `roomId` path param (type string, no format/pattern); `GET /v2/guest-links` and `/v2/group-links` bind only `pageToken`+`limit`, exposing candidate IDs company-wide; `GET /v2/users/me/company` supplies `companyId`.
+- `verification`: From one self-owned low-privilege token: `GET /v2/users/me/company` → `GET /v2/guest-links?limit=1` → exactly one authorized test-tenant POST to `/v2/rooms/{non-moderatedRoomId}/permissions` with `{"participantId":"<own guest-link id>","permissions":{"admin":true,"voice":true,"video":true,"promote":true,"join":true,"screen":true,"vip":true,"chat":true,"upload":true}}` → record verbatim status. `204` confirms BOLA; `403` falsifies.
+- `evidence_gaps`: Zero wire evidence — every premise is spec-derived. Unknown whether the server re-authorizes against `roomId`; unknown whether a non-privileged token can read company-wide links at all; both resolve in one authorized request.
+- `auth`: AUTH_HELPED
+- `spec`: openapi.json · CreatePermissions · ParticipantPermissions
+
+[HYP]
+- `target`: api
+- `hypothesis_id`: apis-002-company-wide-link-credential-disclosure
+- `title`: `GET /v2/guest-links` returns company-wide join credentials (`accessKey`, `joinUrl`, `dialInCode`, `emailAddress`) with no room or participant filter, enabling unauthenticated joining of rooms the caller does not moderate
+- `confidence`: 55
+- `impact`: Disclosure of live guest credentials across the entire company, defeating guest-link scoping for every room in the tenant.
+- `evidence`: Measured query-parameter set for both `/v2/guest-links` and `/v2/group-links` is exactly `{pageToken, limit}` — no roomId, no company scoping parameter exists client-side; max `limit` 500; response models expose `accessKey`, `joinUrl`, `dialInCode`, `emailAddress`; `TokenUserPermissions` has no guest-axis flag, so no documented permission gates this surface.
+- `verification`: With one low-privilege token, `GET /v2/guest-links?limit=1` → confirm whether returned `roomId` differs from any room the caller moderates, and whether `joinUrl`/`accessKey` are populated for foreign rooms.
+- `evidence_gaps`: Server-side scoping by caller may exist and is untestable unauthenticated (401); if scoped, this collapses to expected behavior.
+- `auth`: AUTH_HELPED
+- `spec`: openapi.json · GetGuestLinks · GuestLink
+
+[HYP]
+- `target`: api
+- `hypothesis_id`: apis-003-introspection-client-auth-omission
+- `title`: `POST /oauth2/introspect` performs no runtime client authentication, accepting fabricated `client_id` values
+- `confidence`: 60
+- `impact`: Misconfigured token-introspection endpoint usable as an oracle for arbitrary third-party tokens, depending on deployment.
+- `evidence`: Fabricated `client_id` values accepted without runtime client lookup; OIDC discovery **does not advertise `introspection_endpoint`**; `token_endpoint_auth_methods_supported` includes `none`; GET → 405 (POST-only).
+- `verification`: With a legitimate token, POST `token=<token>&client_id=<fabricated>&client_secret=<fabricated>` and compare against `client_id=<real>` and against the endpoint's behavior with no `client_id`.
+- `evidence_gaps`: Requires a valid token and a real client_id, neither available; impact is deployment-dependent, not spec-determinable. No destructive action.
+- `auth`: AUTH_REQUIRED
+- `spec`: sso.alfaview.com · /.well-known/openid-configuration
+
+[PARKED] `POST /oauth2/device_authorize` + `/oauth2/token` — `urn:ietf:params:oauth:grant-type:device_code` is enabled in discovery, which combined with `client_credentials` may yield refreshable tokens without user interaction, but requires POST and a registered client_id; 44 confidence, cannot advance under GET/HEAD/OPTIONS. Revisit if a client_id surfaces in the app bundle.
+
+[PARKED] GraphQL `adminSwitchCompany(nextCompanyId)` cross-tenant token minting — schema-confirmed mutation, needs a token and a second tenant; not API-surface.
+
+[PARKED] `POST /v2/meetings` caller-selected `permissionGroupId` — downgraded from 64: it is a **privilege-selection** issue, not an authorization bypass. The caller legitimately chooses among group templates that `/v2/permission-groups` already exposes in full; no unauthorized principal is targeted. Park pending an actual over-grant observation.
+
+[FINAL] Mass assignment closed across all 21 body schemas and nested schemas (`additionalProperties:false`). Validation-before-auth confirmed on 10 GET operations including the undocumented `/v2/audit-log` (422 `b4adcd15`) — retained as instrumentation only, since it reproduces the public spec and fails standalone value. `/v2/users/invitations` → 405 `Allow: DELETE`, benign routing artifact. `/v2/guest-links?limit=abc` → 422 confirms strict typing.
+
+[LEARN] Prior cycles chased path-parameter formats and found nothing; the spec's own **description prose** is the higher-yield surface. `ParticipantPermissions.participantId` naming three namespaces in one string is a stronger artifact than any enum or `pattern`. Also: distinguishing `Permissions` (create, all-required) from `PermissionsEdit` (patch, all-nullable) by tracing **which path `$ref`s which schema** — a schema can sit unreferenced-by-path yet be live, which is why the orphan-diff method alone produced a misleading 20-name list. Correct true-orphan set is `ErrorModel` (generic RFC7807) and `PaginatedBodyListEvent` (the `/v2/audit-log` envelope).
+
+[RISK]
+- `score`: 66
+- `reasoning`: One hypothesis now has a vendor-documented design flaw with a decisive 4-way test discriminator, but still zero wire evidence and two unresolved unknowns (server re-authorization, low-priv link visibility). Both unknowns are resolvable by a single authorized request. Risk is dominated by the missing authorized test account, not by unknown technical risk — no destructive action, no customer data, no auth bypass attempted.
+
+[NEXT]
+- `action`: HUMAN
+- `detail`: Provide **one self-owned low-privilege alfaview account** (or a bearer token for it) and **one room in the same tenant that the account does not moderate**. Nothing else is needed — no customer data, no second tenant, no credentials from anyone else. With those two values the CreatePermissions BOLA resolves in a single authorized request and this cycle can close at 80+ confidence or be falsified outright.
+- `rationale`: Both remaining hypotheses are gated on the same missing input. No amount of further unauthenticated probing will separate 204 from 403, so passive collection has reached its terminal value and additional requests would only burn rate budget against an unchanged surface.
