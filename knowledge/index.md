@@ -1118,3 +1118,4 @@
 - 2026-10-04 ACCEPTED INFO @ apis.alfaview.com: Permissions (CreatePermissions, CREATE) vs PermissionsEdit (PATCH) are distinct schemas — Create is atomic full-set write, PATCH is partial delta. Create is more dangerous write path
 - 2026-10-04 ACCEPTED INFO @ apis.alfaview.com GET /v2/permission-groups: Returns every group {id,name,permissions} (full 9-boolean set including admin/promote/vip) for the company in one call; enumeration source for permissionGroupId test
 - 2026-10-04 REJECTED MISCONFIG @ apis.alfaview.com: Pre-auth query-parameter binder reproduces public spec only (numeric bounds, enum values, RFC-5322 email, Go time layout); no disclosure beyond published contract
+- 2026-10-04 REJECTED MISCONFIG @ apis.alfaview.com: pre-auth query-parameter binder as standalone finding — reproduces public spec only (numeric bounds, enum values, RFC-5322 email, Go time layout); no disclosure beyond published contract

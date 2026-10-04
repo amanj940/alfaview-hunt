@@ -70170,3 +70170,654 @@ STEP 6 — LEARNING
 
 STEP 7 — RISK
 [RISK] alfaview gmbh: 66 (unchanged). No new unauthenticated surface exposure this cycle; strongest asset remains CreatePermissions BOLA at 80 (unconstrained cross-namespace participantId, atomic full-admin grant). Meeting-scoped permission-group binding at 64 is plausible but lower confidence. The introspect client-auth omission is structural but token-gated; device_authorize unregistered-client_id is decisive either way (44). Four HIGH-value chains converge on a single missing input: one self-owned low-privilege account + non-moderated room in same tenant. Mass assignment is closed across write surface; validation-before-auth bounded to query-param routes (path params correctly 401). No PII/config disclosure claimed; findings are authorization/logic flaws pending wire confirmation.
+===== ANALYST bigpickle 2026-10-04 13:31:54 UTC =====
+[0m
+> build · big-pickle
+[0m
+[0m$ [0mls -la /home/runner/work/alfaview-hunt/alfaview-hunt/ 2>/dev/null && echo "---RECON---" && ls -la /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/ 2>/dev/null | head -50
+total 1096
+drwxr-xr-x 12 runner runner   4096 Oct  4 13:26 .
+drwxr-xr-x  3 runner runner   4096 Oct  4 13:26 ..
+drwxr-xr-x  7 runner runner   4096 Oct  4 13:26 .git
+drwxr-xr-x  3 runner runner   4096 Oct  4 13:26 .github
+-rw-r--r--  1 runner runner   1883 Oct  4 13:26 README.md
+-rw-r--r--  1 runner runner     32 Oct  4 13:26 analyst-out.txt
+-rw-r--r--  1 runner runner 471508 Oct  4 13:26 analyst-prompt.txt
+-rw-r--r--  1 runner runner 467598 Oct  4 13:26 ctx.txt
+drwxr-xr-x  2 runner runner   4096 Oct  4 13:26 inventory
+drwxr-xr-x  2 runner runner   4096 Oct  4 13:26 knowledge
+drwxr-xr-x  2 runner runner   4096 Oct  4 13:26 leads
+-rw-r--r--  1 runner runner  81369 Oct  4 13:26 probe-results.md
+drwxr-xr-x  2 runner runner   4096 Oct  4 13:26 recon-notes
+drwxr-xr-x  2 runner runner   4096 Oct  4 13:26 reports
+drwxr-xr-x  2 runner runner   4096 Oct  4 13:26 reposcan-raw
+-rw-r--r--  1 runner runner   3323 Oct  4 13:26 scope.yml
+drwxr-xr-x  2 runner runner   4096 Oct  4 13:26 scripts
+-rw-r--r--  1 runner runner     33 Oct  4 13:26 state_bigpickle.json
+-rw-r--r--  1 runner runner     33 Oct  4 13:26 state_laguna.json
+-rw-r--r--  1 runner runner     33 Oct  4 13:26 state_ling3.json
+-rw-r--r--  1 runner runner     33 Oct  4 13:26 state_longcat.json
+-rw-r--r--  1 runner runner     33 Oct  4 13:26 state_mimo.json
+-rw-r--r--  1 runner runner     33 Oct  4 13:26 state_nemotron3.json
+drwxr-xr-x  2 runner runner  12288 Oct  4 13:26 triage
+---RECON---
+total 192
+drwxr-xr-x  2 runner runner   4096 Oct  4 13:26 .
+drwxr-xr-x 12 runner runner   4096 Oct  4 13:26 ..
+-rw-r--r--  1 runner runner   4789 Oct  4 13:26 CORPUS-ALFAVIEW.md
+-rw-r--r--  1 runner runner   3624 Oct  4 13:26 DEDICATED-DEEP.md
+-rw-r--r--  1 runner runner   7833 Oct  4 13:26 DEEPER-FINDINGS.md
+-rw-r--r--  1 runner runner   6061 Oct  4 13:26 SCOPE-CONFIRMATION.md
+-rw-r--r--  1 runner runner 159550 Oct  4 13:26 alfaview-openapi.yaml
+[0m
+[0m$ [0mfind /home/runner/work/alfaview-hunt/alfaview-hunt -maxdepth 2 -name "*.yaml" -o -maxdepth 2 -name "*.json" -o -maxdepth 2 -name "*.yml" 2>/dev/null | head -30
+/home/runner/work/alfaview-hunt/alfaview-hunt/scope.yml
+/home/runner/work/alfaview-hunt/alfaview-hunt/state_ling3.json
+/home/runner/work/alfaview-hunt/alfaview-hunt/state_laguna.json
+/home/runner/work/alfaview-hunt/alfaview-hunt/state_bigpickle.json
+/home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/alfaview-openapi.yaml
+/home/runner/work/alfaview-hunt/alfaview-hunt/state_mimo.json
+/home/runner/work/alfaview-hunt/alfaview-hunt/state_longcat.json
+/home/runner/work/alfaview-hunt/alfaview-hunt/state_nemotron3.json
+[0m
+I'll start by grounding my contract claims against the local snapshot, then run a small set of read-only probes.
+[0m$ [0mcat /home/runner/work/alfaview-hunt/alfaview-hunt/scope.yml
+programs:
+  alfaview:
+    name: alfaview gmbh Bug Bounty
+    disclosure_policy: via bugs.olivermaicher.eu (Oliver Maicher private program) - report + PoC + contact + payment
+    assets:
+      - name: "All company-owned infrastructure, alfaview web and desktop applications, mobile applications, APIs, backend systems, support systems, customer portals, websites, and domains operated by alfaview gmbh, including alfaview.com and company-operated subdomains"
+        priority: In
+    out_of_scope:
+- "Network level Denial of Service attacks"
+      - "Application Denial of Service by locking user accounts"
+      - "Descriptive error messages or headers (e.g. Stack Traces, banner grabbing)"
+      - "Disclosure of known public files or directories (e.g. robots.txt)"
+      - "Outdated software / library versions"
+      - "OPTIONS / TRACE HTTP method enabled"
+      - "CSRF on logout"
+      - "CSRF on forms that are available to anonymous users"
+      - "Cookies that lack HTTP Only or Secure settings for non-sensitive data"
+      - "Self-XSS and issues exploitable only through Self-XSS"
+      - "Reports resulting from automated scanning utilities without additional details or a POC demonstrating a specific exploit"
+      - "Attacks requiring physical access to a user's device"
+      - "Attacks dependent upon social engineering of employees or vendors"
+      - "Username enumeration based on login or forgot password pages"
+      - "Enforcement policies for brute force, rate limiting, or account lockout"
+      - "SSL/TLS best practices"
+      - "SSL attacks such as BEAST, BREACH, Renegotiation attack"
+      - "Clickjacking, without additional details demonstrating a specific exploit"
+      - "Mail configuration issues including SPF, DKIM, DMARC settings"
+      - "Use of a known-vulnerable library without a description of an exploit specific to our implementation"
+      - "Password and account recovery policies"
+      - "Presence of autocomplete functionality in form fields"
+      - "Publicly accessible login panels"
+      - "Lack of email address verification during account registration or account invitation"
+      - "Lack of email address verification password restore"
+      - "Session control during email/password changes"
+      - "Social engineering, physical attacks, and DoS/DDoS testing (per program notes)"
+      - "Exposure of customer/employee/financial/authentication data during testing (per program notes)"
+    github_orgs:
+      - none-configured
+
+rules:
+  passive_first: false          # deep-hunt agent: active probes allowed when scoped
+  max_requests_per_second: 1    # never hammer live infra
+  no_doom: true                 # no DoS/DDoS, no account-lockout attacks
+  account_creation: restricted  # only on test/sandbox assets, never live customer data
+  no_data_modification: true    # no writes/deletes on live customer data
+  no_pre_disclosure: true       # never disclose before program response
+  poc_required: true            # scanner output alone is REJECTED
+  redact_secrets_in_commits: true
+
+models:
+  - { id: opencode/big-pickle, name: bigpickle }
+  - { id: opencode/nemotron-3-ultra-free, name: nemotron3 }
+  - { id: opencode/longcat-2.0-free, name: longcat }
+  - { id: opencode/ling-3.0-flash-free, name: ling3 }
+  - { id: opencode/laguna-s-2.1-free, name: laguna }
+[0m
+Let me fetch the live spec once and diff it against my stored 37-path snapshot — a zero-auth, high-yield primitive that has found real surface before.
+[0m$ [0mcd /tmp/opencode && curl -s -o live.json -w "HTTP:%{http_code} SIZE:%{size_download}\n" https://apis.alfaview.com/v2/docs/openapi.json --max-time 25 && md5sum live.json
+HTTP:200 SIZE:132100
+284a3383c1ac3cfc9152ffcc631891f2  live.json
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('live.json'))
+print('openapi',d.get('openapi'))
+print('paths',len(d['paths']))
+ops=0
+for p,v in d['paths'].items():
+    for m in v:
+        if m in ('get','post','patch','delete','put'): ops+=1
+print('operations',ops)
+print('securitySchemes',d.get('components',{}).get('securitySchemes','ABSENT'))
+print('top security',d.get('security','ABSENT'))
+print('uuid occurrences',json.dumps(d).lower().count('uuid'))
+print('pattern keys',json.dumps(d).count('\"pattern\"'))
+"
+openapi 3.1.0
+paths 38
+operations 57
+securitySchemes ABSENT
+top security ABSENT
+uuid occurrences 0
+pattern keys 0
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('live.json'))
+# enumerate non-body, non-path params per operation -- these are the pre-auth binder candidates
+rows=[]
+for p,v in sorted(d['paths'].items()):
+    for m,op in v.items():
+        if m not in ('get','post','patch','delete','put'): continue
+        ps=op.get('parameters',[])
+        hp=[x for x in ps if x.get('in')=='header' and x.get('name','').lower()!='authorization']
+        qp=[x for x in ps if x.get('in')=='query']
+        if hp:
+            rows.append((m.upper(),p,[x['name'] for x in hp],[x['name'] for x in qp]))
+print('--- operations with NON-Authorization HEADER params (never mapped) ---')
+for r in rows: print(r)
+"
+--- operations with NON-Authorization HEADER params (never mapped) ---
+[0m
+Spec is byte-stable (md5 `284a3383`, 132100B). Since path-set diffs are exhausted, let me mechanically verify my load-bearing claims and then build a map I have **not** produced before.
+## Objective
+- Continue the scoped alfaview gmbh bug hunt in POC phase (`target: api`), prioritizing validated IDOR/BOLA and authentication flaws.
+
+## Important Details
+- Scope: company-owned alfaview infrastructure, applications, APIs, portals, websites, and subdomains; report channel `bugs.olivermaicher.eu`.
+- Use passive-first testing, ≤1 rps, and GET/HEAD/OPTIONS for live probes. No brute-force, descriptive-error-only findings, customer-data exposure, or mutations against customer systems.
+- Current priorities: `apis.alfaview.com` 9.90, `app.alfaview.com` 9.45, `sso.alfaview.com` 8.95, `tools.alfaview.com` 7.40.
+- Live OpenAPI: `https://apis.alfaview.com/v2/docs/openapi.json`, MD5 `284a3383c1ac3cfc9152ffcc631891f2`, 132100 B, 38 paths/57 operations; identical on beta.
+- Important retraction: the OpenAPI contains zero `uuid` occurrences and zero `pattern` keys; all 42 path parameters are unconstrained `type: string`.
+- Strongest API hypothesis: `POST /v2/rooms/{roomId}/permissions` may grant atomic nine-boolean permissions to a polymorphic `participantId` without documented ID→room binding; confidence 80, contract-proven but zero wire evidence.
+- Chain: unscoped `GET /v2/guest-links` can supply `id`/`accessKey`, then `POST /v2/rooms/{roomId}/permissions` targets that principal.
+- `/v2/users/me/company` is the sole 200-response supplier of `companyId`; `/v2/audit-log` is a live undocumented 39th path.
+- Secondary hypotheses: meeting-scoped `permissionGroupId` misuse on `POST /v2/meetings` at 64; OAuth introspection client-auth omission at 94 but valid-token impact remains unmeasured.
+- Risk score: 66, unchanged.
+
+## Work State
+### Completed
+- Verified production/beta API contracts and authentication gates.
+- Mapped CreatePermissions and guest-link credential-harvest → privilege-grant chain.
+- Confirmed mass assignment is closed: all 21 request-body schemas and nested schemas use `additionalProperties: false`.
+- Retracted the false UUID-pattern and conflated `Permissions.admin` claims.
+- Closed guest/group-link existence-oracle, SSO JWT-confusion, logout-redirect, SSRF, and pre-auth parameter-enumeration avenues.
+- Confirmed GraphQL signup is anonymous but email activation is `HUMAN_ONLY`.
+
+### Active
+- Validate CreatePermissions BOLA using one controlled, low-privilege account and a same-tenant room it does not moderate.
+- Validate meeting permission-group scope after the BOLA test.
+- Preserve `POST /v2/oauth2/introspect`-style token-impact testing until a legitimate token is available.
+
+### Blocked
+- No self-owned low-privilege bearer/account or same-tenant non-moderated room has been provided.
+- Signup activation requires a human-controlled email.
+- Introspection impact requires a valid token; fabricated tokens only return inactive.
+- No report has been submitted and no mutating POC has been executed.
+
+## Next Move
+1. Request one self-owned LOW-PRIVILEGE alfaview account in a controlled tenant plus one room in that tenant the account does not moderate; request no other data.
+2. With that input, run `GET /v2/users/me/company`, `GET /v2/guest-links?limit=1`, then exactly one authorized `POST /v2/rooms/{roomId}/permissions` using the harvested `participantId` and atomic permissions including `admin:true` and `promote:true`; record the exact status and body.
+
+## Relevant Files
+- `art/lead_bigpickle.txt`: CreatePermissions BOLA evidence and verification plan.
+- `art/lead_nemotron3.txt`: OAuth introspection finding and token-gated validation plan.
+- `hypotheses-bigpickle.txt`: ranked API hypotheses and human-only next action.
+- `hypotheses-nemotron3.txt`: ranked introspection hypotheses and signup-token next action.
+- `recon-notes/alfaview-openapi.yaml`: stale 37-path local snapshot; live contract now has 38 paths.
+- `inventory/alfaview.md`: alfaview host inventory and exhausted surfaces.
+- `scope.yml`: authoritative in-scope asset definitions.
+Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+Header-param avenue is now **mechanically closed** (zero non-Authorization header params across all 57 ops). Let me build the complete query-parameter inventory — that's the actual pre-auth validation surface where the `email` 422 was found.
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('live.json'))
+rows=[]
+for p,v in sorted(d['paths'].items()):
+    for m,op in v.items():
+        if m not in ('get','post','patch','delete','put'): continue
+        ps=op.get('parameters',[])
+        qp=[x for x in ps if x.get('in')=='query']
+        if qp:
+            rows.append((m.upper(),p,[(x['name'],json.dumps(x.get('schema',{}))) for x in qp]))
+print('operations with query params:',len(rows))
+for m,p,qs in rows:
+    print(m,p)
+    for n,s in qs: print('    ',n,s)
+"
+operations with query params: 9
+GET /v2/group-links
+     pageToken {"description": "For pagination: Pass the nextPageToken from the last successful request to obtain the next page. Omit on first request.", "type": "string"}
+     limit {"default": 100, "description": "For pagination: Limit the number of returned group links.", "format": "int32", "maximum": 500, "minimum": 0, "type": "integer"}
+GET /v2/guest-links
+     pageToken {"description": "For pagination: Pass the nextPageToken from the last successful request to obtain the next page. Omit on first request.", "type": "string"}
+     limit {"default": 100, "description": "For pagination: Limit the number of returned guest links.", "format": "int32", "maximum": 500, "minimum": 0, "type": "integer"}
+GET /v2/meetings
+     from {"description": "The earliest time at which the meeting is scheduled to be ongoing.", "examples": ["2024-09-22T11:00:00Z"], "format": "date-time", "type": "string"}
+     to {"description": "The latest time at which the meeting is scheduled to be ongoing.", "examples": ["2024-09-22T12:00:00Z"], "format": "date-time", "type": "string"}
+GET /v2/rooms
+     roomTypes {"description": "Filters the result by room type.\n - 'room' is used for normal rooms.\n - 'departments' are unjoinable rooms that can hold multiple child rooms to help improving room structuring.\n - 'meeting' marks temporary meeting rooms.", "items": {"enum": ["department", "room", "meeting"], "type": "string"}, "type": ["array", "null"]}
+     pageToken {"description": "For pagination: Pass the nextPageToken from the last successful request to obtain the next page. Omit on first request.", "type": "string"}
+     limit {"default": 50, "description": "For pagination: Set a limit on the number of returned rooms.", "format": "int32", "maximum": 50, "minimum": 0, "type": "integer"}
+GET /v2/rooms/{roomId}/attendances
+     from {"description": "The start time of the time period to consider in the report.", "examples": ["2024-09-22T11:00:00Z"], "format": "date-time", "type": "string"}
+     to {"description": "The end time of the time period to consider in the report.", "examples": ["2024-09-22T12:00:00Z"], "format": "date-time", "type": "string"}
+GET /v2/rooms/{roomId}/group-links
+     pageToken {"description": "For pagination: Pass the nextPageToken from the last successful request to obtain the next page. Omit on first request.", "type": "string"}
+     limit {"default": 100, "description": "For pagination: Limit the number of returned group links.", "format": "int32", "maximum": 500, "minimum": 0, "type": "integer"}
+GET /v2/rooms/{roomId}/guest-links
+     pageToken {"description": "For pagination: Pass the nextPageToken from the last successful request to obtain the next page. Omit on first request.", "type": "string"}
+     limit {"default": 100, "description": "For pagination: Limit the number of returned guest links.", "format": "int32", "maximum": 500, "minimum": 0, "type": "integer"}
+GET /v2/stats
+     from {"description": "The start time of the time period to consider in the report. The earliest start time can be exactly 62 days in the past.", "examples": ["2024-09-22T11:00:00Z"], "format": "date-time", "type": "string"}
+     to {"description": "The end time of the time period to consider in the report.", "examples": ["2024-09-22T12:00:00Z"], "format": "date-time", "type": "string"}
+     stepDurationHours {"description": "The duration of the time periods to group the report results in hours.", "format": "int64", "minimum": 1, "type": "integer"}
+GET /v2/users
+     emailAddress {"description": "The email address.", "examples": ["user@provider.com"], "format": "email", "type": "string"}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('live.json'))
+def reqs(op):
+    rb=op.get('requestBody')
+    if not rb: return None
+    ref=rb.get('content',{}).get('application/json',{}).get('schema',{}).get('\$ref')
+    if ref:
+        name=ref.split('/')[-1]; sch=d['components']['schemas'].get(name,{})
+        return name,sorted((sch.get('required') or [])),len(sch.get('properties') or {})
+    return 'INLINE',[],0
+print('%-6s %-52s %-8s %s'%('METHOD','PATH','SCOPE','BODY(required)/props'))
+for p,v in sorted(d['paths'].items()):
+    for m,op in v.items():
+        if m not in ('post','patch','delete','put'): continue
+        segs=[s for s in p.split('/') if s]
+        # scope heuristic
+        scope='COMPANY' if 'companies' in p else ('USER-ME' if '{userId}' not in p and 'me' in p else ('ROOM' if '{roomId}' in p else 'UNSCOPED?'))
+        r=reqs(op)
+        if r: body='%s req=%s props=%d'%(r[0],','.join(r[1]) or '-',r[2])
+        else: body='(no body)'
+        print('%-6s %-52s %-8s %s'%(m.upper(),p,scope,body))
+"
+METHOD PATH                                                 SCOPE    BODY(required)/props
+POST   /v2/auth/api-key                                     UNSCOPED? APICredentials req=clientId,companyId,key props=3
+POST   /v2/auth/group-link                                  UNSCOPED? AuthenticateGroupLinkRequestBody req=accessKey,companyId,displayName,roomId props=5
+POST   /v2/auth/guest-link                                  UNSCOPED? AuthenticateGuestLinkRequestBody req=accessKey,companyId,roomId props=4
+POST   /v2/auth/password                                    UNSCOPED? PasswordCredentials req=password,username props=2
+PATCH  /v2/group-links/{id}                                 UNSCOPED? GroupLinkUpdate req=- props=5
+PATCH  /v2/guest-links/{id}                                 UNSCOPED? GuestLinkUpdate req=displayName,sendEmail props=9
+POST   /v2/meetings                                         USER-ME  MeetingCreate req=end,roomFeatures,start,timezone,title,waitingRoomEnabled props=13
+PATCH  /v2/meetings/{id}                                    USER-ME  MeetingUpdate req=- props=6
+POST   /v2/meetings/{id}/cancellation                       USER-ME  MeetingCancellation req=sendNotification props=2
+POST   /v2/rooms                                            UNSCOPED? RoomCreate req=displayName,type,waitingRoomEnabled props=11
+DELETE /v2/rooms/{id}                                       UNSCOPED? (no body)
+PATCH  /v2/rooms/{id}                                       UNSCOPED? RoomUpdate req=- props=9
+DELETE /v2/rooms/{roomId}/features                          ROOM     (no body)
+PATCH  /v2/rooms/{roomId}/features                          ROOM     RoomFeaturesEdit req=- props=14
+PATCH  /v2/rooms/{roomId}/file-share-settings               ROOM     RoomSettingsUpdate req=- props=3
+POST   /v2/rooms/{roomId}/group-links                       ROOM     CreateGroupLinksRequestBody req=create props=2
+DELETE /v2/rooms/{roomId}/group-links/{id}                  ROOM     (no body)
+POST   /v2/rooms/{roomId}/guest-links                       ROOM     CreateGuestLinksRequestBody req=create props=3
+DELETE /v2/rooms/{roomId}/guest-links/{id}                  ROOM     (no body)
+PATCH  /v2/rooms/{roomId}/language-settings                 ROOM     LanguageSettingsEdit req=- props=4
+POST   /v2/rooms/{roomId}/passcode                          ROOM     (no body)
+POST   /v2/rooms/{roomId}/permissions                       ROOM     ParticipantPermissions req=participantId,permissions props=2
+DELETE /v2/rooms/{roomId}/permissions/{userId}              ROOM     (no body)
+PATCH  /v2/rooms/{roomId}/permissions/{userId}              ROOM     PermissionsEdit req=- props=9
+POST   /v2/rooms/{roomId}/subrooms                          ROOM     SubroomEdit req=- props=1
+DELETE /v2/rooms/{roomId}/subrooms/{subroomId}              ROOM     (no body)
+PATCH  /v2/rooms/{roomId}/subrooms/{subroomId}              ROOM     SubroomEdit req=- props=1
+PATCH  /v2/users                                            UNSCOPED? UserUpdate req=- props=6
+POST   /v2/users/invitation                                 UNSCOPED? UserInvitation req=permissions,user props=2
+DELETE /v2/users/{id}                                       UNSCOPED? (no body)
+[0m
+Complete query-param inventory: 9 ops. Only `GET /v2/users?emailAddress=` is semantically validated (already closed as pre-auth oracle); the rest are pagination/date/enum. **Query-param avenue fully mapped and closed.**
+
+Now the write surface — the cheapest exploit path is an *unscoped* mutation needing only a second principal's ID. Let me enumerate every mutation mechanically.
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('live.json'))
+S=d['components']['schemas']
+# verify additionalProperties across ALL schemas that are reachable as request bodies
+refs=set()
+for p,v in d['paths'].items():
+    for m,op in v.items():
+        rb=op.get('requestBody')
+        if rb:
+            r=rb.get('content',{}).get('application/json',{}).get('schema',{}).get('\$ref')
+            if r: refs.add(r.split('/')[-1])
+seen=set(); openbodies=[]; nested_open=[]
+def walk(name):
+    if name in seen or name not in S: return
+    seen.add(name)
+    sch=S[name]
+    ap=sch.get('additionalProperties','MISSING')
+    if ap=='MISSING': openbodies.append(name)
+    elif ap is not False: nested_open.append((name,ap))
+    for pn,pv in (sch.get('properties') or {}).items():
+        pv=pv if isinstance(pv,dict) else {}
+        r=pv.get('\$ref')
+        if r: walk(r.split('/')[-1])
+        else:
+            for k,vv in (pv.get('properties') or {}).items():
+                vv=vv if isinstance(vv,dict) else {}
+                rr=vv.get('\$ref')
+                if rr: walk(rr.split('/')[-1])
+for r in refs: walk(r)
+print('top-level request-body schemas:',len(refs))
+print('reachable schemas walked:',len(seen))
+print('MISSING additionalProperties (=> mass-assignable):',openbodies or 'NONE')
+print('additionalProperties not False:',nested_open or 'NONE')
+"
+top-level request-body schemas: 21
+reachable schemas walked: 25
+MISSING additionalProperties (=> mass-assignable): NONE
+additionalProperties not False: NONE
+[0m
+Two mechanical results. **Mass assignment is now *proven*, not asserted:** 21 top-level + 25 reachable schemas, zero missing `additionalProperties`. And the write map surfaced something genuinely new — look at the parameter names:
+
+- `PATCH/DELETE /v2/rooms/{id}` → generic `{id}`
+- `/v2/rooms/{roomId}/*` → semantic `{roomId}`
+
+Every **unscoped** mutation uses generic `{id}`; every **room-scoped** one uses `{roomId}`. Let me map that fully.
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json,re
+d=json.load(open('live.json'))
+print('%-6s %-50s %s'%('METHOD','PATH','PATH PARAM NAMES'))
+gen={}
+for p,v in sorted(d['paths'].items()):
+    for m,op in v.items():
+        if m not in ('get','post','patch','delete','put'): continue
+        names=re.findall(r'{(\w+)}',p)
+        # declared params
+        decl=[x['name'] for x in op.get('parameters',[]) if x.get('in')=='path']
+        sem=[n for n in names if n not in ('id','userId')] or names
+        flag=''
+        if 'id' in names: flag=' <-- GENERIC {id}'
+        print('%-6s %-50s %-28s decl=%s%s'%(m.upper(),p,','.join(names),','.join(decl) or '-',flag))
+        if 'id' in names: gen.setdefault(m.upper()+' '+p,0)
+" 2>&1 | head -60
+METHOD PATH                                               PATH PARAM NAMES
+POST   /v2/auth/api-key                                                                decl=-
+POST   /v2/auth/group-link                                                             decl=-
+POST   /v2/auth/guest-link                                                             decl=-
+POST   /v2/auth/password                                                               decl=-
+GET    /v2/auth/token-info                                                             decl=-
+GET    /v2/group-links                                                                 decl=-
+GET    /v2/group-links/{id}                               id                           decl=id <-- GENERIC {id}
+PATCH  /v2/group-links/{id}                               id                           decl=id <-- GENERIC {id}
+GET    /v2/guest-links                                                                 decl=-
+GET    /v2/guest-links/{id}                               id                           decl=id <-- GENERIC {id}
+PATCH  /v2/guest-links/{id}                               id                           decl=id <-- GENERIC {id}
+GET    /v2/languages                                                                   decl=-
+GET    /v2/meetings                                                                    decl=-
+POST   /v2/meetings                                                                    decl=-
+GET    /v2/meetings/{id}                                  id                           decl=id <-- GENERIC {id}
+PATCH  /v2/meetings/{id}                                  id                           decl=id <-- GENERIC {id}
+POST   /v2/meetings/{id}/cancellation                     id                           decl=id <-- GENERIC {id}
+GET    /v2/permission-groups                                                           decl=-
+GET    /v2/room-types                                                                  decl=-
+GET    /v2/rooms                                                                       decl=-
+POST   /v2/rooms                                                                       decl=-
+DELETE /v2/rooms/{id}                                     id                           decl=id <-- GENERIC {id}
+GET    /v2/rooms/{id}                                     id                           decl=id <-- GENERIC {id}
+PATCH  /v2/rooms/{id}                                     id                           decl=id <-- GENERIC {id}
+GET    /v2/rooms/{id}/participants                        id                           decl=id <-- GENERIC {id}
+GET    /v2/rooms/{roomId}/attendances                     roomId                       decl=roomId
+DELETE /v2/rooms/{roomId}/features                        roomId                       decl=roomId
+GET    /v2/rooms/{roomId}/features                        roomId                       decl=roomId
+PATCH  /v2/rooms/{roomId}/features                        roomId                       decl=roomId
+GET    /v2/rooms/{roomId}/file-share-limits               roomId                       decl=roomId
+GET    /v2/rooms/{roomId}/file-share-settings             roomId                       decl=roomId
+PATCH  /v2/rooms/{roomId}/file-share-settings             roomId                       decl=roomId
+GET    /v2/rooms/{roomId}/group-links                     roomId                       decl=roomId
+POST   /v2/rooms/{roomId}/group-links                     roomId                       decl=roomId
+DELETE /v2/rooms/{roomId}/group-links/{id}                roomId,id                    decl=id,roomId <-- GENERIC {id}
+GET    /v2/rooms/{roomId}/guest-links                     roomId                       decl=roomId
+POST   /v2/rooms/{roomId}/guest-links                     roomId                       decl=roomId
+DELETE /v2/rooms/{roomId}/guest-links/{id}                roomId,id                    decl=id,roomId <-- GENERIC {id}
+GET    /v2/rooms/{roomId}/language-settings               roomId                       decl=roomId
+PATCH  /v2/rooms/{roomId}/language-settings               roomId                       decl=roomId
+GET    /v2/rooms/{roomId}/passcode                        roomId                       decl=roomId
+POST   /v2/rooms/{roomId}/passcode                        roomId                       decl=roomId
+GET    /v2/rooms/{roomId}/permissions                     roomId                       decl=roomId
+POST   /v2/rooms/{roomId}/permissions                     roomId                       decl=roomId
+DELETE /v2/rooms/{roomId}/permissions/{userId}            roomId,userId                decl=roomId,userId
+PATCH  /v2/rooms/{roomId}/permissions/{userId}            roomId,userId                decl=roomId,userId
+GET    /v2/rooms/{roomId}/subrooms                        roomId                       decl=roomId
+POST   /v2/rooms/{roomId}/subrooms                        roomId                       decl=roomId
+DELETE /v2/rooms/{roomId}/subrooms/{subroomId}            roomId,subroomId             decl=roomId,subroomId
+PATCH  /v2/rooms/{roomId}/subrooms/{subroomId}            roomId,subroomId             decl=roomId,subroomId
+GET    /v2/stats                                                                       decl=-
+GET    /v2/users                                                                       decl=-
+PATCH  /v2/users                                                                       decl=-
+POST   /v2/users/invitation                                                            decl=-
+GET    /v2/users/me                                                                    decl=-
+GET    /v2/users/me/company                                                            decl=-
+DELETE /v2/users/{id}                                     id                           decl=id <-- GENERIC {id}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('live.json'))
+S=d['components']['schemas']
+def show(n):
+    s=S[n]; print('==',n,'== additionalProperties=',s.get('additionalProperties'))
+    for k,v in (s.get('properties') or {}).items():
+        v=v if isinstance(v,dict) else {}
+        t=v.get('type') or v.get('\$ref','').split('/')[-1] or v.get('allOf','')
+        print('   %-22s %s %s'%(k,json.dumps(t)[:60],('DEFAULT='+json.dumps(v['default'])) if 'default' in v else ''))
+for n in ('Permissions','PermissionsEdit','ParticipantPermissions','GuestLinkUpdate','GroupLinkUpdate'):
+    if n in S: show(n)
+"
+== Permissions == additionalProperties= False
+   admin                  "boolean" 
+   chat                   "boolean" 
+   join                   "boolean" 
+   promote                "boolean" 
+   screen                 "boolean" 
+   upload                 "boolean" 
+   video                  "boolean" 
+   vip                    "boolean" 
+   voice                  "boolean" 
+== PermissionsEdit == additionalProperties= False
+   admin                  ["boolean", "null"] 
+   chat                   ["boolean", "null"] 
+   join                   ["boolean", "null"] 
+   promote                ["boolean", "null"] 
+   screen                 ["boolean", "null"] 
+   upload                 ["boolean", "null"] 
+   video                  ["boolean", "null"] 
+   vip                    ["boolean", "null"] 
+   voice                  ["boolean", "null"] 
+== ParticipantPermissions == additionalProperties= False
+   participantId          "string" 
+   permissions            "Permissions" 
+== GuestLinkUpdate == additionalProperties= False
+   dialInAllowed          "boolean" 
+   displayName            "string" 
+   emailAddress           "string" 
+   locale                 "string" 
+   permissionGroupId      ["string", "null"] 
+   sendEmail              "boolean" 
+   timezone               ["string", "null"] 
+   validFrom              "string" 
+   validUntil             "string" 
+== GroupLinkUpdate == additionalProperties= False
+   description            ["string", "null"] 
+   dialInAllowed          ["boolean", "null"] 
+   permissionGroupId      ["string", "null"] 
+   validFrom              ["string", "null"] 
+   validUntil             ["string", "null"]
+[0m
+This is a complete map, and it **refutes** my own naming-inconsistency hypothesis in its strong form — `{id}` vs `{roomId}` is cosmetic in Express/FastAPI/Spring, which bind by position. I'm downgrading that rather than promoting it (same discipline as the earlier UUID retraction).
+
+But it exposed something I'd genuinely missed. Let me confirm:
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('live.json'))
+S=d['components']['schemas']
+P=set((S.get('Permissions') or {}).get('properties') or {})
+E=set((S.get('PermissionsEdit') or {}).get('properties') or {})
+print('Permissions fields   :',sorted(P))
+print('PermissionsEdit fields:',sorted(E))
+print('PATCH-ONLY (not in create):',sorted(E-P) or 'none')
+print('CREATE-ONLY (not in patch):',sorted(P-E) or 'none')
+print()
+print('GuestLinkUpdate fields:',sorted((S.get('GuestLinkUpdate') or {}).get('properties') or {}))
+print('GroupLinkUpdate fields:',sorted((S.get('GroupLinkUpdate') or {}).get('properties') or {}))
+"
+Permissions fields   : ['admin', 'chat', 'join', 'promote', 'screen', 'upload', 'video', 'vip', 'voice']
+PermissionsEdit fields: ['admin', 'chat', 'join', 'promote', 'screen', 'upload', 'video', 'vip', 'voice']
+PATCH-ONLY (not in create): none
+CREATE-ONLY (not in patch): none
+
+GuestLinkUpdate fields: ['dialInAllowed', 'displayName', 'emailAddress', 'locale', 'permissionGroupId', 'sendEmail', 'timezone', 'validFrom', 'validUntil']
+GroupLinkUpdate fields: ['description', 'dialInAllowed', 'permissionGroupId', 'validFrom', 'validUntil']
+[0m
+Final mechanical confirmations: `Permissions` (create, 9 booleans) and `PermissionsEdit` (patch, 9 nullable booleans) have **identical field sets** — no PATCH-only escalation field exists. And `PATCH /v2/guest-links/{id}` requires `displayName`+`sendEmail` yet permits re-binding **`permissionGroupId`** on an *unscoped* route — that's the escalation primitive, now sharpened.
+
+Let me confirm the live auth gate is unchanged with a few read-only probes (GET/HEAD only, spaced).
+[0m$ [0mcd /tmp/opencode && printf "%-40s " "HEAD /v2/rooms"; curl -s -I -o /dev/null -w "HEAD:%{http_code}\n" "https://apis.alfaview.com/v2/rooms" --max-time 20; sleep 2; printf "%-40s " "GET /v2/docs/openapi.json"; curl -s -o /dev/null -w "GET:%{http_code} type:%{content_type}\n" "https://apis.alfaview.com/v2/docs/openapi.json" --max-time 20
+HEAD /v2/rooms                           HEAD:401
+GET /v2/docs/openapi.json                GET:200 type:application/openapi+json
+[0m
+[0m$ [0mcd /tmp/opencode && for p in "/v2/rooms/00000000-0000-0000-0000-000000000000/participants" "/v2/permission-groups" "/v2/guest-links"; do printf "%-52s " "$p"; curl -s -o /dev/null -w "GET:%{http_code} len:%{size_download}\n" -H "Accept: application/json" "https://apis.alfaview.com$p" --max-time 20; sleep 2; done
+/v2/rooms/00000000-0000-0000-0000-000000000000/participants GET:401 len:107
+/v2/permission-groups                                GET:401 len:107
+/v2/guest-links                                      GET:401 len:107
+[0m
+[0m$ [0mls -la /home/runner/work/alfaview-hunt/alfaview-hunt/leads/ 2>/dev/null | head -20
+total 3444
+drwxr-xr-x  2 runner runner    4096 Oct  4 13:26 .
+drwxr-xr-x 12 runner runner    4096 Oct  4 13:26 ..
+-rw-r--r--  1 runner runner 1304286 Oct  4 13:26 lead-bigpickle.md
+-rw-r--r--  1 runner runner   10200 Oct  4 13:26 lead-laguna.md
+-rw-r--r--  1 runner runner   10000 Oct  4 13:26 lead-ling3.md
+-rw-r--r--  1 runner runner   10400 Oct  4 13:26 lead-longcat.md
+-rw-r--r--  1 runner runner      18 Oct  4 13:26 lead-mimo.md
+-rw-r--r--  1 runner runner 2136644 Oct  4 13:26 lead-nemotron3.md
+-rw-r--r--  1 runner runner   30492 Oct  4 13:26 reposcan-alfaview.md
+[0m
+Auth gate unchanged — uniform `401` with identical 107-byte bodies (no length oracle). Spec still open at 200.
+
+Let me record this cycle's mechanically-verified findings.
+[0m$ [0mcat >> /home/runner/work/alfaview-hunt/alfaview-hunt/leads/lead-bigpickle.md <<'EOF'
+
+---
+
+## CYCLE 2026-10-04 — MECHANICAL VERIFICATION PASS (target: api)
+
+Live spec re-fetched: **md5 `284a3383c1ac3cfc9152ffcc631891f2`, 132100 B, 38 paths / 57 ops** —
+byte-identical to prior snapshot. **No structural delta.** Path-set diffing is therefore exhausted.
+
+Everything below was derived mechanically from the live spec, not from recall.
+
+### A. UPGRADED FROM ASSERTION TO PROOF — mass assignment is CLOSED
+Walked every schema reachable from every request body:
+- 21 top-level request-body schemas, 25 reachable schemas total.
+- `additionalProperties` MISSING (i.e. mass-assignable): **NONE**.
+- `additionalProperties` present but not `False`: **NONE**.
+
+This replaces the prior prose assertion with a reproducible check. **Closed, permanently.**
+
+### B. NEW MECHANICAL CLOSURE — zero non-Authorization header params
+Enumerated all 57 operations for header parameters other than `Authorization`:
+**result: none.** The `Grpc-Metadata-alfaview.token` header class is tools-only and has no
+analogue on `apis.alfaview.com`. Header-binding pre-auth surface on the API: **closed.**
+
+### C. COMPLETE query-param inventory (9 operations) — closed
+Only `GET /v2/users?emailAddress` is semantically validated (`format: email`); it is the
+already-closed pre-auth 422 oracle. All others are `pageToken`/`limit` pagination,
+`from`/`to` date-time filters, or the `roomTypes` enum. No further pre-auth
+validation-oracle surface exists. **Class closed.**
+
+### D. SELF-REFUTED — `{id}` vs `{roomId}` naming inconsistency is COSMETIC
+Built the full path-param map. Unscoped routes use a generic `{id}`
+(`/v2/rooms/{id}`, `/v2/users/{id}`, `/v2/guest-links/{id}`, `/v2/group-links/{id}`,
+`/v2/meetings/{id}`); room-scoped routes use `{roomId}`; nested resources use
+`{roomId}` + `{id}`/`{userId}`/`{subroomId}`.
+Hypothesis was: an authorization layer keyed on the *named* param would leave
+`PATCH/DELETE /v2/rooms/{id}` unbound. **Downgraded, not promoted** — Express, FastAPI
+and Spring all bind path params by position, so the name is documentation only.
+Recorded as refuted so it is not re-proposed.
+
+### E. NEW — MISSING BRIDGE STEP IN THE CreatePermissions CHAIN
+`GET /v2/rooms/{id}/participants` is the only operation that discloses *who* is in a room,
+and it was **absent** from the previously documented 3-step chain. It is the step that
+tells the tester *which* `participantId` to target. Corrected 4-step chain:
+1. `GET /v2/rooms` -> company room ID set (self-visible)
+2. `GET /v2/rooms/{id}/participants` -> victim principal IDs in target room
+3. `GET /v2/guest-links?limit=1` -> harvest attacker-controlled `participantId`
+4. `POST /v2/rooms/{roomId}/permissions` -> atomic grant incl. `admin`, `promote`
+Still **contract-proven, zero wire evidence.** Confidence unchanged at 80.
+
+### F. CONFIRMED — permission schema symmetry, no PATCH-only escalation field
+`Permissions` (create) and `PermissionsEdit` (patch) expose the **identical 9 fields**
+(`admin, chat, join, promote, screen, upload, video, vip, voice`); create is
+non-nullable booleans, patch is nullable (partial update). `additionalProperties:false`
+on both. Set difference PATCH-only = **none**; CREATE-only = **none**.
+There is no hidden field reachable only through the PATCH verb.
+
+### G. SHARPENED — the unscoped-mutation escalation primitive
+`PATCH /v2/guest-links/{id}` is on an **unscoped** route yet its `GuestLinkUpdate` body
+(9 fields) permits re-binding **`permissionGroupId`** (nullable) and extending
+**`validUntil`** / flipping **`dialInAllowed`**. Note the schema *requires*
+`displayName` + `sendEmail`, so the PATCH is effectively a near-full-replace that still
+allows privilege re-pointing. `PATCH /v2/group-links/{id}` likewise allows
+`permissionGroupId` re-binding. Escalation primitive for a stolen link ID, not standalone.
+
+### H. LIVE GATE RE-CONFIRMED (read-only, <=1 rps, GET/HEAD only)
+`GET /v2/rooms/{id}/participants`, `GET /v2/permission-groups`, `GET /v2/guest-links`
+-> all **401**, all **107 bytes** (uniform -> no response-length oracle).
+`HEAD /v2/rooms` -> 401. `GET /v2/docs/openapi.json` -> 200 `application/openapi+json`.
+
+### STATE
+Risk score **66**, unchanged. No new information-disclosure or auth-bypass class found.
+The entire remaining high-value surface is still gated on one artifact: a self-owned
+low-privilege bearer token.
+EOF
+echo "appended"; wc -c /home/runner/work/alfaview-hunt/alfaview-hunt/leads/lead-bigpickle.md
+appended
+1308642 /home/runner/work/alfaview-hunt/alfaview-hunt/leads/lead-bigpickle.md
+[0m
+Cycle complete. Here's the structured output.
+
+## SUMMARY
+
+Passive + read-only cycle on `apis.alfaview.com`. Live spec re-fetched byte-identical (md5 `284a3383`, 132100 B, 38 paths/57 ops), so path-set diffing is exhausted. I shifted to mechanical verification of load-bearing claims and completed the write-surface map. Result: three permanent closures, one self-refuted hypothesis, and one genuine gap closed in the top chain. No new disclosure or auth-bypass class. Risk score unchanged at 66.
+
+## DISCOVERIES
+
+1. **Mass assignment — CLOSED BY PROOF (was assertion)** — Walking every schema reachable from every request body: 21 top-level request-body schemas, 25 reachable total. `additionalProperties` MISSING: **NONE**. Present-but-not-`False`: **NONE**. Reproducible, not prose.
+
+2. **Header-param pre-auth surface — CLOSED** — Enumerated all 57 ops for non-`Authorization` header params: **zero**. The `Grpc-Metadata-alfaview.token` class is tools-only; no analogue on the API.
+
+3. **Query-param oracle class — CLOSED** — Complete inventory is 9 ops. Only `GET /v2/users?emailAddress` is semantically validated, and that is the already-closed pre-auth 422. Rest are `pageToken`/`limit`, `from`/`to`, `roomTypes` enum.
+
+4. **SELF-REFUTED — `{id}` vs `{roomId}` is cosmetic** — Full path-param map built. I hypothesized an authorization layer keyed on the *named* param would leave `PATCH/DELETE /v2/rooms/{id}` unbound. **Downgraded, not promoted**: Express/FastAPI/Spring bind by position, so the name is documentation only. Logged as refuted so it is not re-proposed.
+
+5. **GAP CLOSED — missing bridge step in the CreatePermissions chain** — `GET /v2/rooms/{id}/participants` is the only op that discloses *who* is in a room, and it was **absent** from my documented 3-step chain. It is the step that tells you *which* `participantId` to target. Corrected 4-step chain: `GET /v2/rooms` → `GET /v2/rooms/{id}/participants` → `GET /v2/guest-links?limit=1` → `POST /v2/rooms/{roomId}/permissions`. Contract-proven, still zero wire evidence; confidence held at 80.
+
+6. **Permission schema symmetry — no PATCH-only escalation field** — `Permissions` (create) and `PermissionsEdit` (patch) expose the identical 9 fields (`admin, chat, join, promote, screen, upload, video, vip, voice`); create non-nullable, patch nullable. `additionalProperties:false` on both. PATCH-only difference: **none**. CREATE-only: **none**.
+
+7. **SHARPENED — unscoped-mutation escalation primitive** — `PATCH /v2/guest-links/{id}` sits on an **unscoped** route, yet `GuestLinkUpdate` permits re-binding `permissionGroupId` and extending `validUntil` / flipping `dialInAllowed`. The schema *requires* `displayName`+`sendEmail`, so it is effectively a near-full-replace that still allows privilege re-pointing. `PATCH /v2/group-links/{id}` likewise allows `permissionGroupId` re-binding.
+
+8. **Live gate re-confirmed** (GET/HEAD only, ≤1 rps) — `GET /v2/rooms/{id}/participants`, `/v2/permission-groups`, `/v2/guest-links` → all `401`, all **107 bytes** (uniform → no response-length oracle). `HEAD /v2/rooms` → 401. Spec still `200 application/openapi+json`.
+
+## POCs
+
+None run. No mutating request was issued. All live traffic this cycle was `GET`/`HEAD` against the public spec and three auth-gated endpoints, which returned uniform 401s. The only viable POC remains blocked on a token.
+
+## NEXT
+
+One next action, unchanged and still the sole blocker for every high-value chain:
+
+**Provide one self-owned LOW-PRIVILEGE alfaview account in a controlled tenant, plus one room in that tenant the account does not moderate. No other data.**
+
+With that, the immediate sequence is: `GET /v2/users/me/company`, `GET /v2/guest-links?limit=1`, then exactly **one** authorized `POST /v2/rooms/{roomId}/permissions` using the harvested `participantId` and atomic permissions including `admin:true` and `promote:true` — capturing exact status and body.
+
+Two things worth flagging honestly: discoveries 1–4 and 6 are *closures*, i.e. this cycle mostly removed attack surface from consideration rather than adding it. And discovery 4 is a hypothesis I raised and then killed with my own evidence — if you see `{id}`/`{roomId}` discussed as a live lead anywhere else in the notes, it is stale.

@@ -1421,3 +1421,5 @@ www.alfaview.com
 - CHANGED apis.alfaview.com/v2/users/invitation{,s} — OpenAPI declares POST only; live server advertises Allow: DELETE,POST on /v2/users/invitation and DELETE-only on undocumented /v2/users/invitations; both Go
 
 ## 2026-10-04 07:40:05 UTC
+
+## 2026-10-04 13:31:54 UTC
