@@ -4646,3 +4646,16 @@
 - LEARN: ACCEPTED IDOR @ apis.alfaview.com POST /v2/rooms: public unauthenticated-to-read contract (RoomCreate.permissions exposes participantId namespace collision with
 - LEARN: ACCEPTED BUSLOGIC @ apis.alfaview.com PATCH /v2/rooms/{id}: RoomUpdate.quotas description bare ("The quotas for the room"), no enum/constraints; mass-assignment
 - LEARN: PROCEDURAL: auditing own prior output against spec caught two fabrications (UUID-pattern claim; misattributed permission sentence). Contract text must be quoted
+
+## RANKED HYPOTHESES 2026-10-04 20:46:07 UTC
+- [80] apis.alfaview.com: CreatePermissions grants room-admin to any company-wide principal ID (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): HUMAN: Provide one self-owned LOW-PRIVILEGE alfaview account in a tenant you control, plus one room in that same tenant the account does not moderate. Do not se
+- LEARN: ACCEPTED MISCONFIG (negative) @ apis.alfaview.com: Mass assignment closed across entire write surface — all 21 request-body schemas and nested schemas are addit
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com POST /v2/meetings: Second meeting-scoped bulk credential-issuance path with caller-supplied permissionGroupId; three dist
+- LEARN: ACCEPTED MISCONFIG @ tools.alfaview.com/whiteboard/: Second unmapped RPC backend proven by controlled differential (47B gRPC envelope vs poll's 45B jsonpb), dis
+- LEARN: PROCEDURAL: Auditing prior output against spec caught two fabrications (UUID-pattern claim; misattributed permission sentence). Contract text must be quoted onl
+- LEARN: ACCEPTED IDOR (chain) @ apis.alfaview.com: guest-links enumeration → CreatePermissions composes credential-harvest → privilege-grant chain; both halves contract
+- LEARN: REJECTED IDOR @ apis.alfaview.com: "OpenAPI spec confirms path-param UUID patterns" premise FALSE — live 132100B document contains "uuid" zero times, zero patte
+- LEARN: PROCEDURAL: auditing own prior output against spec caught two fabrications (UUID-pattern claim; misattributed permission sentence). Contract text must be quoted
+- LEARN: Response codes give a **4-way discriminator** for the authorized test: `204`=escalation succeeded, `403`=correctly blocked, `409`=permission row already exists,
+- LEARN: Prior cycles chased path-parameter formats and found nothing; the spec's own **description prose** is the higher-yield surface. `ParticipantPermissions.particip
