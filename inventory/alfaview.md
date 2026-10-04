@@ -1419,3 +1419,5 @@ www.alfaview.com
 - CHANGED tools.alfaview.com/whiteboard/ — second unmapped RPC backend confirmed by controlled differential (47B gRPC envelope vs poll's 45B jsonpb); distinct marshaller; no auth challenge; zero client referenc
 - CHANGED apis.alfaview.com — validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI components.securitySchemes={}, security=null
 - CHANGED apis.alfaview.com/v2/users/invitation{,s} — OpenAPI declares POST only; live server advertises Allow: DELETE,POST on /v2/users/invitation and DELETE-only on undocumented /v2/users/invitations; both Go
+
+## 2026-10-04 07:40:05 UTC

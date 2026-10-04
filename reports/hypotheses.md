@@ -4581,3 +4581,30 @@
 - LEARN: ACCEPTED IDOR @ apis.alfaview.com POST /v2/rooms: public unauthenticated-to-read contract (RoomCreate.permissions exposes participantId namespace collision with
 - LEARN: ACCEPTED BUSLOGIC @ apis.alfaview.com PATCH /v2/rooms/{id}: RoomUpdate.quotas description bare ("The quotas for the room"), no enum/constraints; mass-assignment
 - LEARN: PROCEDURAL: auditing own prior output against spec caught second fabrication (scope sentence on sibling schema) that 38 cycles never surfaced; contract text mus
+
+## RANKED HYPOTHESES 2026-10-04 07:40:05 UTC
+- [94] sso.alfaview.com/oauth2/introspect: OAuth2 token introspection client authentication fully bypassable on both channels with valid token (from art/lead_nemotron3.txt)
+- [80] apis.alfaview.com: CreatePermissions grants room-admin to any company-wide principal ID (from art/lead_bigpickle.txt)
+- NEXT(hypotheses-bigpickle.txt): HUMAN: Provide one self-owned LOW-PRIVILEGE alfaview account in a tenant you control, plus one room in that same tenant the account does not moderate. Do not se
+- NEXT(hypotheses-nemotron3.txt): HUMAN: Execute unauthenticated signup flow at app.alfaview.com/graphql (mutation Signup → email → FinishSignup) to obtain a valid bearer token; then test intros
+- LEARN: ACCEPTED IDOR (chain) @ apis.alfaview.com: guest-links enumeration → CreatePermissions composes credential-harvest → privilege-grant chain; both halves contract
+- LEARN: REJECTED IDOR @ apis.alfaview.com: "OpenAPI spec confirms path-param UUID patterns" premise FALSE — live 132100B document contains "uuid" zero times, zero patte
+- LEARN: PROCEDURAL: auditing own prior output against spec caught two fabrications (UUID-pattern claim; misattributed permission sentence). Contract text must be quoted
+- LEARN: ACCEPTED IDOR (chain) @ apis.alfaview.com: guest-links enumeration → CreatePermissions composes credential-harvest → privilege-grant chain; both halves contract
+- LEARN: ACCEPTED MISCONFIG (negative) @ apis.alfaview.com: Mass assignment closed across entire write surface — all 21 request-body schemas and nested schemas are addit
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com POST /v2/meetings: Second meeting-scoped bulk credential-issuance path with caller-supplied permissionGroupId; three dist
+- LEARN: ACCEPTED MISCONFIG @ tools.alfaview.com/whiteboard/: Second unmapped RPC backend proven by controlled differential (47B gRPC envelope vs poll's 45B jsonpb), dis
+- LEARN: PROCEDURAL: Auditing prior output against spec caught two fabrications (UUID-pattern claim; misattributed permission sentence). Contract text must be quoted onl
+- LEARN: REJECTED IDOR @ apis.alfaview.com POST /v2/rooms/{roomId}/permissions: Retracted earlier impact claim conflating Permissions.admin (CreatePermissions body) with
+- LEARN: ACCEPTED INFO @ apis.alfaview.com: Permissions (CreatePermissions, CREATE) vs PermissionsEdit (PATCH) are distinct schemas — Create is atomic full-set write, PA
+- LEARN: ACCEPTED INFO @ apis.alfaview.com GET /v2/permission-groups: Returns every group {id,name,permissions} (full 9-boolean set including admin/promote/vip) for the 
+- LEARN: REJECTED IDOR @ apis.alfaview.com: "OpenAPI spec confirms path-param UUID patterns" premise FALSE — live 132100B document contains "uuid" zero times, zero `patt
+- LEARN: REJECTED MISCONFIG @ apis.alfaview.com: Pre-auth query-parameter binder reproduces public spec only (numeric bounds, enum values, RFC-5322 email, Go time layout
+- LEARN: REJECTED MISCONFIG @ apis.alfaview.com: 403-declaration asymmetry not behaviorally load-bearing — /v2/permission-groups returns 401 while declaring no 401; whol
+- LEARN: REJECTED AUTH @ sso.alfaview.com/oauth2/userinfo: JOSE algorithm confusion tested (alg=none, HS256 with RSA pubkey, HS256 random, RS256 self-signed) — all byte-
+- LEARN: REJECTED OATH @ sso.alfaview.com/oauth2/logout: post_logout_redirect_uri and redirect_uri both ignored; every variant returns 302 → /
+- LEARN: REJECTED AUTH @ apis.alfaview.com/v2/auth/{guest,group}-link: NO accessKey existence oracle — well-formed synthetic triple returns 422/88B ACTION_INVALID byte-i
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com: Validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI compon
+- LEARN: ACCEPTED MISCONFIG @ apis.alfaview.com/v2/users/invitation{s}: OpenAPI declares POST only; live server advertises Allow: DELETE,POST on /v2/users/invitation and
+- LEARN: ACCEPTED IDOR @ apis.alfaview.com POST /v2/rooms: public unauthenticated-to-read contract (RoomCreate.permissions exposes participantId namespace collision with
+- LEARN: ACCEPTED BUSLOGIC @ apis.alfaview.com PATCH /v2/rooms/{id}: RoomUpdate.quotas description bare ("The quotas for the room"), no enum/constraints; mass-assignment
