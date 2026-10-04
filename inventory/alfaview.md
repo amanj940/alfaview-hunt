@@ -1405,3 +1405,17 @@ www.alfaview.com
 ## 2026-10-03 19:27:58 UTC
 
 ## 2026-10-03 22:26:26 UTC
+
+## 2026-10-04 02:06:18 UTC
+- NEW apis.alfaview.com OpenAPI md5 rotated to `284a3383c1ac3cfc9152ffcc631891f2` (132100B, 38 paths, 57 ops) — byte-identical on beta-apis.alfaview.com
+- NEW /v2/users/me/company (GetOwnCompany) identified as 38th OpenAPI path — sole 200-response supplier of companyId across 57 ops; enables guest-link chain execution by authorized tester
+- NEW /v2/audit-log live undocumented 39th path — pre-auth query binder complete (10 GET ops now validate pre-auth); mirrors GraphQL ListAuditEvents
+- NEW POST /v2/rooms — RoomCreate.permissions exposes participantId namespace collision with RoomPermissions.participantId
+- NEW PATCH /v2/rooms/{id} — RoomUpdate.quotas description bare ("The quotas for the room"), no enum/constraints; mass-assignment surface undocumented
+- NEW POST /v2/meetings — second meeting-scoped bulk credential-minting path (guestLinks/groupLinks arrays with caller-supplied permissionGroupId); three distinct issuance routes with caller-chosen permissi
+- NEW POST /v2/rooms/{roomId}/permissions (CreatePermissions) — BOLA write with polymorphic participantId (user ID / guest link ID / group link ID) granting admin+promote; scope only in path, no ID→room bin
+- CHANGED sso.alfaview.com/oauth2/introspect — 30+ consecutive stable cycles: fabricated client_id accepted on POST-body and Basic (200 {"active":false}); token_endpoint_auth_methods advertises client_secret_ba
+- CHANGED app.alfaview.com public bundle stable at app.min.67e8a68d4318b34ca241.js (md5 2cb9128353b1f7444e222b4f61e4ffa5) — adminSwitchCompany mutation mints cross-tenant admin tokens with no administration pro
+- CHANGED tools.alfaview.com/whiteboard/ — second unmapped RPC backend confirmed by controlled differential (47B gRPC envelope vs poll's 45B jsonpb); distinct marshaller; no auth challenge; zero client referenc
+- CHANGED apis.alfaview.com — validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI components.securitySchemes={}, security=null
+- CHANGED apis.alfaview.com/v2/users/invitation{,s} — OpenAPI declares POST only; live server advertises Allow: DELETE,POST on /v2/users/invitation and DELETE-only on undocumented /v2/users/invitations; both Go
