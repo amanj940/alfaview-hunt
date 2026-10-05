@@ -1,22 +1,10 @@
-## 2026-10-05 02:21:42 UTC [target] (model nemotron3)
-[NEW] `apis.alfaview.com/v2/users/me/company` (GetOwnCompany) confirmed as 38th OpenAPI path — sole 200-response supplier of `companyId` across 57 ops; enables guest-link chain execution by authorized tester
-[NEW] `apis.alfaview.com GET /v2/audit-log` live undocumented 39th path; pre-auth query binder complete (10 GET ops now validate pre-auth); mirrors GraphQL `ListAuditEvents`
-[NEW] `apis.alfaview.com POST /v2/rooms` — `RoomCreate.permissions` exposes `participantId` namespace collision with `RoomPermissions.participantId`
-[NEW] `apis.alfaview.com PATCH /v2/rooms/{id}` — `RoomUpdate.quotas` description bare ("The quotas for the room"), no enum/constraints; mass-assignment surface on quota fields undocumented
-[NEW] `apis.alfaview.com POST /v2/meetings` — second meeting-scoped bulk credential-minting path (`guestLinks`/`groupLinks` arrays with caller-supplied `permissionGroupId`); three distinct issuance routes with caller-chosen permission groups
-[NEW] `apis.alfaview.com POST /v2/rooms/{roomId}/permissions` (CreatePermissions) — BOLA write with polymorphic `participantId` (user ID / guest link ID / group link ID) granting `admin`+`promote`; scope only in path, no ID→room binding documented; target ID obtainable from un-narrowable `GET /v2/guest-links`
-[NEW] `tools.alfaview.com/whiteboard/` — second unmapped RPC backend confirmed by controlled differential (47B gRPC envelope vs poll's 45B jsonpb); distinct marshaller; no auth challenge; zero client references in bundle; staging mirror byte-identical
-[CHANGED] `apis.alfaview.com` OpenAPI md5 stable at `284a3383c1ac3cfc9152ffcc631891f2` (132100B, 38 paths, 57 ops) for 4+ cycles; byte-identical on beta-apis.alfaview.com
-[CHANGED] `sso.alfaview.com/oauth2/introspect` — 30+ consecutive stable cycles: fabricated `client_id` accepted on POST-body and Basic channels (200 `{"active":false}`); `token_endpoint_auth_methods_supported` advertises `client_secret_basic/post/none` with no runtime verification; `introspection_endpoint` absent from discovery while endpoint live (OPTIONS 405)
-[CHANGED] `app.alfaview.com` public bundle stable at `app.min.67e8a68d4318b34ca241.js` (md5 `2cb9128353b1f7444e222b4f61e4ffa5`) carrying `adminSwitchCompany` mutation + hardcoded tenant IDs (`alfatraining-internal`, `01FDY0986YK1BJF2K0F9DXR8EB`)
-[CHANGED] `apis.alfaview.com`: validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI `components.securitySchemes={}`, `security=null`
-[CHANGED] `apis.alfaview.com/v2/users/invitation{s}`: OpenAPI declares POST only; live server advertises `Allow: DELETE,POST` on `/v2/users/invitation` and DELETE-only on undocumented `/v2/users/invitations`; both Go router (19B text/plain), both 405 before 401
-[CHANGED] `test.alfaview.com`: alfacheck v483102 (4 platforms) unsigned; index page no sha256/signatures — supply-chain hardening absent across releases
+## 2026-10-05 09:15:09 UTC [target] (model nemotron3)
+[NEW] NO_DELTA @ full surface: OpenAPI MD5 `284a3383` (132100B, 38 paths, 57 ops) stable 4+ cycles; byte-identical on beta-apis. sso.alfaview.com OIDC 200/2169B md5 `f78a08fc` (issuer=acme.com, introspection_endpoint absent), JWKS 200/16257B md5 `3f8d456c` (7×RS256). introspect OPTIONS 405, authorize 200/6189B, tools.whiteboard 404/47B, poll 501/55B, app.alfaview.com bundle md5 `2cb91283` — all byte-identical to prior cycle; zero new endpoints, zero regressions.
+[CHANGED] Inventory 100% probed — 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain.
 [PRIO] sso.alfaview.com/oauth2/introspect,9.15,attack_surface=10,business_value=10,tech_exposure=10,gate_ease=10,cloud_surface=5,freshness=10
-[PRIO] apis.alfaview.com/v2/guest-links + /v2/group-links,8.60,attack_surface=9,business_value=10,tech_exposure=9,gate_ease=1,cloud_surface=5,freshness=5
+[PRIO] apis.alfaview.com/v2/guest-links,8.60,attack_surface=9,business_value=10,tech_exposure=9,gate_ease=1,cloud_surface=5,freshness=5
 [PRIO] app.alfaview.com/graphql (adminSwitchCompany),8.45,attack_surface=9,business_value=10,tech_exposure=9,gate_ease=1,cloud_surface=5,freshness=5
 [PRIO] apis.alfaview.com/v2/rooms/{roomId}/permissions (CreatePermissions),7.85,attack_surface=8,business_value=9,tech_exposure=8,gate_ease=1,cloud_surface=5,freshness=3
-[PRIO] apis.alfaview.com (validation-before-auth),6.90,attack_surface=7,business_value=5,tech_exposure=7,gate_ease=10,cloud_surface=5,freshness=5
 [PRIO] apis.alfaview.com/v2/meetings,6.75,attack_surface=7,business_value=8,tech_exposure=7,gate_ease=1,cloud_surface=5,freshness=3
 [PRIO] tools.alfaview.com/whiteboard/,6.45,attack_surface=6,business_value=6,tech_exposure=7,gate_ease=5,cloud_surface=4,freshness=5
 [HYP] OAuth2 token introspection client authentication fully bypassable on both channels with valid token

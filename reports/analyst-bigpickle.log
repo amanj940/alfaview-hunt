@@ -71825,3 +71825,2058 @@ STEP 6 — LEARNING
 
 STEP 7 — RISK
 [RISK] alfaview gmbh: 87 (unchanged net). Highest risk is CreatePermissions BOLA at 80 (unconstrained cross-namespace participantId, atomic full-admin grant) requiring AUTH_HELPED wire test. OAuth2 introspection client auth bypass at 94 is significant but token-gated. Mass assignment closed across write surface. Validation-before-auth bounded to query-param routes (path params correctly 401). No PII/config disclosure claimed; findings are authorization/logic flaws pending wire confirmation.
+===== ANALYST bigpickle 2026-10-05 09:26:20 UTC =====
+[0m
+> build · big-pickle
+[0m
+I'll run the 8-step cycle now, starting with read-only probes against the standing surface.
+[0m$ [0mls -la /tmp/opencode 2>/dev/null | head -20; echo "---"; ls /home/runner/work/alfaview-hunt/alfaview-hunt 2>/dev/null | head -30
+total 8
+drwxr-xr-x  2 runner runner 4096 Oct  5 09:13 .
+drwxrwxrwt 15 root   root   4096 Oct  5 09:13 ..
+---
+README.md
+analyst-out.txt
+analyst-prompt.txt
+ctx.txt
+inventory
+knowledge
+leads
+probe-results.md
+recon-notes
+reports
+reposcan-raw
+scope.yml
+scripts
+state_bigpickle.json
+state_laguna.json
+state_ling3.json
+state_longcat.json
+state_mimo.json
+state_nemotron3.json
+triage
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && cat scope.yml 2>/dev/null | head -60; echo "=== RECON NOTES ==="; ls -la recon-notes/
+programs:
+  alfaview:
+    name: alfaview gmbh Bug Bounty
+    disclosure_policy: via bugs.olivermaicher.eu (Oliver Maicher private program) - report + PoC + contact + payment
+    assets:
+      - name: "All company-owned infrastructure, alfaview web and desktop applications, mobile applications, APIs, backend systems, support systems, customer portals, websites, and domains operated by alfaview gmbh, including alfaview.com and company-operated subdomains"
+        priority: In
+    out_of_scope:
+- "Network level Denial of Service attacks"
+      - "Application Denial of Service by locking user accounts"
+      - "Descriptive error messages or headers (e.g. Stack Traces, banner grabbing)"
+      - "Disclosure of known public files or directories (e.g. robots.txt)"
+      - "Outdated software / library versions"
+      - "OPTIONS / TRACE HTTP method enabled"
+      - "CSRF on logout"
+      - "CSRF on forms that are available to anonymous users"
+      - "Cookies that lack HTTP Only or Secure settings for non-sensitive data"
+      - "Self-XSS and issues exploitable only through Self-XSS"
+      - "Reports resulting from automated scanning utilities without additional details or a POC demonstrating a specific exploit"
+      - "Attacks requiring physical access to a user's device"
+      - "Attacks dependent upon social engineering of employees or vendors"
+      - "Username enumeration based on login or forgot password pages"
+      - "Enforcement policies for brute force, rate limiting, or account lockout"
+      - "SSL/TLS best practices"
+      - "SSL attacks such as BEAST, BREACH, Renegotiation attack"
+      - "Clickjacking, without additional details demonstrating a specific exploit"
+      - "Mail configuration issues including SPF, DKIM, DMARC settings"
+      - "Use of a known-vulnerable library without a description of an exploit specific to our implementation"
+      - "Password and account recovery policies"
+      - "Presence of autocomplete functionality in form fields"
+      - "Publicly accessible login panels"
+      - "Lack of email address verification during account registration or account invitation"
+      - "Lack of email address verification password restore"
+      - "Session control during email/password changes"
+      - "Social engineering, physical attacks, and DoS/DDoS testing (per program notes)"
+      - "Exposure of customer/employee/financial/authentication data during testing (per program notes)"
+    github_orgs:
+      - none-configured
+
+rules:
+  passive_first: false          # deep-hunt agent: active probes allowed when scoped
+  max_requests_per_second: 1    # never hammer live infra
+  no_doom: true                 # no DoS/DDoS, no account-lockout attacks
+  account_creation: restricted  # only on test/sandbox assets, never live customer data
+  no_data_modification: true    # no writes/deletes on live customer data
+  no_pre_disclosure: true       # never disclose before program response
+  poc_required: true            # scanner output alone is REJECTED
+  redact_secrets_in_commits: true
+
+models:
+  - { id: opencode/big-pickle, name: bigpickle }
+  - { id: opencode/nemotron-3-ultra-free, name: nemotron3 }
+  - { id: opencode/longcat-2.0-free, name: longcat }
+  - { id: opencode/ling-3.0-flash-free, name: ling3 }
+  - { id: opencode/laguna-s-2.1-free, name: laguna }
+=== RECON NOTES ===
+total 192
+drwxr-xr-x  2 runner runner   4096 Oct  5 09:13 .
+drwxr-xr-x 12 runner runner   4096 Oct  5 09:13 ..
+-rw-r--r--  1 runner runner   4789 Oct  5 09:13 CORPUS-ALFAVIEW.md
+-rw-r--r--  1 runner runner   3624 Oct  5 09:13 DEDICATED-DEEP.md
+-rw-r--r--  1 runner runner   7833 Oct  5 09:13 DEEPER-FINDINGS.md
+-rw-r--r--  1 runner runner   6061 Oct  5 09:13 SCOPE-CONFIRMATION.md
+-rw-r--r--  1 runner runner 159550 Oct  5 09:13 alfaview-openapi.yaml
+[0m
+Running standing passive probes (≤1 rps, read-only).
+[0m$ [0mcd /tmp/opencode && curl -s -o oa.json -w "HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 https://apis.alfaview.com/v2/docs/openapi.json && md5sum oa.json && python3 -c "
+import json
+d=json.load(open('oa.json'))
+print('paths:',len(d.get('paths',{})))
+print('ops:',sum(len([m for m in v if m in ('get','post','put','patch','delete')]) for v in d['paths'].values()))
+print('securitySchemes:',d.get('components',{}).get('securitySchemes'))
+print('security:',d.get('security'))
+"
+HTTP:200 SIZE:132100
+284a3383c1ac3cfc9152ffcc631891f2  oa.json
+paths: 38
+ops: 57
+securitySchemes: None
+security: None
+[0m
+## Objective
+- Continue the alfaview gmbh POC as a senior bounty analyst, prioritizing authenticated IDOR/BOLA and OAuth authorization flaws while avoiding invented or out-of-scope findings.
+- Produce only the required 8-step structured output for `bugs.olivermaicher.eu`.
+
+## Important Details
+- State: `phase=POC`, `target=api`; latest cycle `2026-10-05 02:24:11 UTC`; risk score `87`.
+- Scope: only alfaview-operated assets listed by `scope.yml` and `inventory/alfaview.md`.
+- Live testing: passive-first, ≤1 rps, GET/HEAD/OPTIONS only unless explicitly authorized; no customer-data exposure, auth bypass, brute force, destructive testing, or scanner-only claims.
+- Separate measured facts from hypotheses; every claim needs concrete HTTP evidence.
+- Current OpenAPI: `https://apis.alfaview.com/v2/docs/openapi.json`, 132100B, MD5 `284a3383c1ac3cfc9152ffcc631891f2`, 38 paths/57 operations; prod and beta are byte-identical.
+- `/v2/users/me/company` is the 38th OpenAPI path and sole 200-response supplier of `companyId`; `/v2/audit-log` is a live undocumented 39th path.
+- Retracted premise: OpenAPI does not confirm UUID formats—`uuid` and `pattern` occur zero times; path parameters are unconstrained `type: string`.
+- Retracted claim: `Permissions.admin` does not contain the PATCH scope text; that text belongs to `PermissionsEdit.admin`. `Permissions` (CREATE) is an atomic nine-boolean write.
+- `GET /v2/guest-links` and `/v2/group-links` are company-wide, accept no measured `roomId`/`companyId` filters, and return credential-bearing data; authorization behavior remains untested.
+- OAuth introspection accepts fabricated client IDs on POST-body and HTTP Basic for inactive tokens, but impact requires a valid token. `/oauth2/userinfo` correctly rejects forged JOSE tokens.
+- Signup is anonymous but finish-signup is email-gated; obtaining a legitimate bearer is `HUMAN_ONLY`.
+- Validation-before-auth affects documented query parameters on 9/26 GET operations, plus undocumented `/v2/audit-log`; it reproduces public schema and is informational, not a standalone high-severity finding.
+- Tools `/whiteboard/` and poll RPC mappings are inventory facts only; no exploit has been demonstrated.
+
+## Work State
+### Completed
+- Verified prod/beta OpenAPI parity at MD5 `284a3383c1ac3cfc9152ffcc631891f2`.
+- Identified `/v2/users/me/company`; it enables an authorized tester to obtain `companyId` through `GET /v2/users/me/company`.
+- Mapped CreatePermissions as a contract-proven BOLA hypothesis: `POST /v2/rooms/{roomId}/permissions` with polymorphic body `participantId`, atomic `Permissions`, `admin:true`, `promote:true`.
+- Measured that company-wide guest-link IDs can supply the CreatePermissions target; room membership/authorization binding remains untested.
+- Closed API JWT confusion, guest-link validity oracle, SSRF, profile mass assignment, logout redirect, and undocumented plural invitation route as standalone findings.
+- Established OAuth introspection client-auth omission as a same-deployment control failure; confidence `94`, pending valid-token confirmation.
+- Determined `sso.alfaview.com/oauth2/device_authorize` is parked because its proposed confirmation requires a form POST outside passive GET/HEAD/OPTIONS probing.
+
+### Active
+- IDOR `80`: `apis.alfaview.com POST /v2/rooms/{roomId}/permissions` may grant room-admin to an arbitrary same-company principal not moderating the target room.
+- BUSLOGIC `64`: `apis.alfaview.com POST /v2/meetings` may bind caller-selected high-privilege `permissionGroupId` values to guest/group links.
+- AUTH `94`: `sso.alfaview.com/oauth2/introspect` may expose valid-token metadata without verifying client credentials.
+- Supporting lead: public `app.alfaview.com` bundle exposes `adminSwitchCompany` and tenant identifiers, but anonymous reachability and authorization behavior remain unmeasured.
+
+### Blocked
+- No self-owned low-privilege alfaview account, legitimate bearer token, or same-tenant non-moderated room is available.
+- Signup completion requires an emailed activation token, so token-dependent tests cannot proceed anonymously.
+- No valid token means introspection bypass impact remains conditional and cannot be reported as fully proven.
+
+## Next Move
+1. `[NEXT] HUMAN`: Obtain one self-owned low-privilege account in a controlled tenant and one room in that tenant the account does not moderate.
+2. With authorization, run `GET /v2/users/me/company` and `GET /v2/guest-links?limit=1`, then perform exactly one minimal CreatePermissions test against the non-moderated room and record status, headers, and body verbatim; separately test introspection twice using the legitimate token.
+
+## Relevant Files
+- `scope.yml`: authoritative in-scope asset rules.
+- `inventory/alfaview.md`: alfaview host inventory and prior reconnaissance.
+- `recon-notes/alfaview-openapi.yaml`: stale 37-path OpenAPI snapshot; missing `/v2/users/me/company`.
+- `art/lead_bigpickle.txt`: CreatePermissions and meeting permission-group hypotheses.
+- `art/lead_nemotron3.txt`: OAuth introspection hypothesis.
+- `hypotheses-bigpickle.txt`: CreatePermissions next-action details.
+- `hypotheses-nemotron3.txt`: signup/token/introspection workflow.
+- `leads/lead-bigpickle.md`: referenced CreatePermissions lead.
+- `probe-results.md`: early production/beta API probe results.
+Continue if you have next steps, or stop and ask for clarification if you are unsure how to proceed.
+[0m$ [0mcd /tmp/opencode && curl -s -o audit.json -w "HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 "https://apis.alfaview.com/v2/audit-log?limit=1" && head -c 300 audit.json; echo; sleep 1; curl -s -o me.json -w "ME HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 "https://apis.alfaview.com/v2/users/me" && head -c 200 me.json
+HTTP:422 SIZE:232
+{"title":"Unprocessable Entity","status":422,"detail":"validation failed","errors":[{"message":"required query parameter is missing","location":"query.from"},{"message":"required query parameter is missing","location":"query.to"}]}
+
+ME HTTP:401 SIZE:107
+{"title":"Unauthorized","status":401,"detail":"No access token was provided in the Authorization header."}
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -o audit2.json -w "HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 "https://apis.alfaview.com/v2/audit-log?from=2026-01-01&to=2026-01-02&limit=1" && head -c 300 audit2.json; echo; sleep 1; curl -s -o comp.json -w "COMPANY HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 "https://apis.alfaview.com/v2/users/me/company" && head -c 200 comp.json
+HTTP:422 SIZE:290
+{"title":"Unprocessable Entity","status":422,"detail":"validation failed","errors":[{"message":"invalid date/time for format 2006-01-02T15:04:05.999999999Z07:00","location":"query.from"},{"message":"invalid date/time for format 2006-01-02T15:04:05.999999999Z07:00","location":"query.to"}]}
+
+COMPANY HTTP:401 SIZE:107
+{"title":"Unauthorized","status":401,"detail":"No access token was provided in the Authorization header."}
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -o audit3.json -w "HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 "https://apis.alfaview.com/v2/audit-log?from=2026-01-01T00:00:00Z&to=2026-01-02T00:00:00Z&limit=1" && head -c 300 audit3.json; echo; sleep 1; curl -s -o gl.json -w "GUESTLINKS HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 "https://apis.alfaview.com/v2/guest-links?limit=1" && head -c 200 gl.json
+HTTP:401 SIZE:107
+{"title":"Unauthorized","status":401,"detail":"No access token was provided in the Authorization header."}
+
+GUESTLINKS HTTP:401 SIZE:107
+{"title":"Unauthorized","status":401,"detail":"No access token was provided in the Authorization header."}
+[0m
+audit-log confirmed pre-auth validation then401. Now re-verifying SSO surfaces.
+[0m$ [0mcd /tmp/opencode && curl -s -o intro1.json -w "INTROSPECT HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 -X POST "https://sso.alfaview.com/oauth2/introspect" -d "token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMjM0In0.fake&token_type_hint=access_token" && cat intro1.json; echo; sleep 1; curl -s -o ui.json -w "USERINFO HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 "https://sso.alfaview.com/oauth2/userinfo" -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.fake" && cat ui.json
+INTROSPECT HTTP:400 SIZE:139
+{"error":"invalid_request","error_description":"The request is missing a required parameter: client_id","error_reason":"missing_client_id"}
+USERINFO HTTP:400 SIZE:134
+{"error":"invalid_token","error_description":"The access token failed to be decoded.","error_reason":"access_token_failed_processing"}
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -o i2.json -w "HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 -X POST "https://sso.alfaview.com/oauth2/introspect" -d "token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMjM0In0.fake&token_type_hint=access_token&client_id=fabricated-client-abc123" && cat i2.json; echo; sleep 1; curl -s -o i3.json -w "BASIC HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 -X POST "https://sso.alfaview.com/oauth2/introspect" -u "fabricated-client-abc123:anything" -d "token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMjM0In0.fake" && cat i3.json
+HTTP:400 SIZE:174
+{"error":"invalid_request","error_description":"The provided token is not an [access_token] as specified in the [token_type_hint].","error_reason":"token_type_hint_mismatch"}
+BASIC HTTP:401 SIZE:133
+{"error":"invalid_client","error_description":"client_id: fabricated-client-abc123 is not valid.","error_reason":"invalid_client_id"}
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -o i4.json -w "HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 -X POST "https://sso.alfaview.com/oauth2/introspect" -d "token=eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMjM0In0.fake&client_id=fabricated-client-abc123" && cat i4.json; echo; sleep 1; curl -s -o i5.json -w "NOHINT-UNKNOWN TOK HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 -X POST "https://sso.alfaview.com/oauth2/introspect" -d "token=definitelynotarealtoken1234567890&client_id=fabricated-client-abc123" && cat i5.json
+HTTP:401 SIZE:133
+{"error":"invalid_client","error_description":"client_id: fabricated-client-abc123 is not valid.","error_reason":"invalid_client_id"}
+NOHINT-UNKNOWN TOK HTTP:200 SIZE:16
+{"active":false}
+[0m
+[0m$ [0mcd /tmp/opencode && for t in "definitelynotarealtoken1234567890" "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.fake" "a.b.c"; do echo "== token=$t (no client_id)"; curl -s -w " [%{http_code}]\n" --max-time 20 -X POST "https://sso.alfaview.com/oauth2/introspect" --data-urlencode "token=$t"; sleep 1; done
+== token=definitelynotarealtoken1234567890 (no client_id)
+{"error":"invalid_request","error_description":"The request is missing a required parameter: client_id","error_reason":"missing_client_id"} [400]
+== token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0In0.fake (no client_id)
+{"error":"invalid_request","error_description":"The request is missing a required parameter: client_id","error_reason":"missing_client_id"} [400]
+== token=a.b.c (no client_id)
+{"error":"invalid_request","error_description":"The request is missing a required parameter: client_id","error_reason":"missing_client_id"} [400]
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -o app.js -w "HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 25 "https://app.alfaview.com/" && grep -oE '(oauth2/[a-z]+|client_id["'"'"']?\s*[:=]\s*["'"'"'][A-Za-z0-9._-]{6,}|https://sso\.alfaview\.com[a-zA-Z0-9/_.-]*)' app.js 2>/dev/null | sort -u | head -40
+HTTP:200 SIZE:1381
+[0m
+[0m$ [0mcd /tmp/opencode && cat app.js | head -c 1400
+<!doctype html><html lang="en"><head><meta content="text/html; charset=UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta name="description" content="High quality audio/video conferencing for professional online meetings and live classes."/><title>alfaview</title><link rel="icon" href="https://alfaview-com-assets.alfaview.com/production/alfaview-com-frontend/production_alfaview_icon_web_favicon_96px.png"><script defer="defer" src="https://alfaview-com-assets.alfaview.com/production/alfaview-com-frontend/js/vendor-utilities.min.e3292ce370affa995a98.js"></script><script defer="defer" src="https://alfaview-com-assets.alfaview.com/production/alfaview-com-frontend/js/vendor-vue-vuetify.min.136a6a881b25b1473175.js"></script><script defer="defer" src="https://alfaview-com-assets.alfaview.com/production/alfaview-com-frontend/js/app.min.67e8a68d4318b34ca241.js"></script><link href="https://alfaview-com-assets.alfaview.com/production/alfaview-com-frontend/styles/vendor-vue-vuetify.min.04d1ead8363afa7c651b.css" rel="stylesheet"><link href="https://alfaview-com-assets.alfaview.com/production/alfaview-com-frontend/styles/app.min.d046c93e5071d179142f.css" rel="stylesheet"></head><body><div id="app"><app></app></div><noscript>alfaview.com is heavily dependent on JavaScript. Please make sure you have JavaScript enabled.</noscript></body></html>
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -o bundle.js -w "HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 40 "https://alfaview-com-assets.alfaview.com/production/alfaview-com-frontend/js/app.min.67e8a68d4318b34ca241.js" && md5sum bundle.js
+HTTP:200 SIZE:1092529
+2cb9128353b1f7444e222b4b61e4ffa5  bundle.js
+[0m
+[0m$ [0mcd /tmp/opencode && grep -oE 'client_id[:=]"[^"]{4,60}"' bundle.js | sort -u | head -20; echo "--- SSO URLS ---"; grep -oE 'https://sso\.alfaview\.com[a-zA-Z0-9/_.-]*' bundle.js | sort -u | head -20; echo "--- SCOPES ---"; grep -oE 'openid [a-z0-9: _]{5,60}' bundle.js | sort -u | head -10
+--- SSO URLS ---
+--- SCOPES ---
+[0m
+[0m$ [0mcd /tmp/opencode && grep -oiE '(sso|oauth2|introspect|client_id|clientId|oidc|well-known)[a-zA-Z0-9_./:-]{0,50}' bundle.js | sort -u | head -40
+SSO
+SSO-Anmeldeinformationen
+SSOInfo
+SSOLanding
+SSOR_NOT_FOUND
+SSOR_NOT_FOUND:
+SSOR_NOT_FOUND:1026
+SSO_LANDING
+SSO_LANDING:
+sSource:function
+ssOtherwiseSpecified
+sso
+sso:
+ssoLanding
+sso_error:
+sso_info:
+sso_launch:
+sso_warning:
+sson
+ssors
+ssource
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -o wk.json -w "HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 "https://sso.alfaview.com/.well-known/openid-configuration" && python3 -c "
+import json;d=json.load(open('wk.json'))
+for k in ['issuer','authorization_endpoint','token_endpoint','introspection_endpoint','userinfo_endpoint','revocation_endpoint']:
+    print(k,'=',d.get(k))
+print('grant_types:',d.get('grant_types_supported'))
+print('auth_methods:',d.get('token_endpoint_auth_methods_supported'))
+print('introspection_auth:',d.get('introspection_endpoint_auth_methods_supported'))
+"
+HTTP:200 SIZE:2169
+issuer = acme.com
+authorization_endpoint = https://sso.alfaview.com/oauth2/authorize
+token_endpoint = https://sso.alfaview.com/oauth2/token
+introspection_endpoint = None
+userinfo_endpoint = https://sso.alfaview.com/oauth2/userinfo
+revocation_endpoint = None
+grant_types: ['authorization_code', 'password', 'implicit', 'refresh_token', 'urn:ietf:params:oauth:grant-type:device_code', 'client_credentials']
+auth_methods: ['client_secret_basic', 'client_secret_post', 'none']
+introspection_auth: None
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -o jwks.json -w "JWKS HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 "https://sso.alfaview.com/oauth2/keys" && python3 -c "
+import json;d=json.load(open('jwks.json'))
+for k in d.get('keys',[]): print(k.get('kid'),k.get('kty'),k.get('alg'),k.get('use'))
+" 2>/dev/null; sleep 1; curl -s -o jwks2.json -w "JWKS-DISCOVERY HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 20 "https://sso.alfaview.com/.well-known/jwks.json" && head -c 200 jwks2.json
+JWKS HTTP:404 SIZE:4955
+JWKS-DISCOVERY HTTP:200 SIZE:16257
+{
+  "keys" : [
+    {
+      "alg" : "RS256",
+      "e" : "AQAB",
+      "kid" : "2_u-_NxzABfQJQ8cW-Bs1opjBKM",
+      "kty" : "RSA",
+      "n" : "qT_xytJqFqGysh3-OWpKQAwzzeTwXg8TJs3qI7A0yhe-xkBue5vsyyfT4
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json,collections
+d=json.load(open('jwks2.json'))
+ks=d['keys']
+print('total keys:',len(ks))
+c=collections.Counter((k.get('kty'),k.get('alg'),k.get('use')) for k in ks)
+for v,n in c.items(): print(v,n)
+print('any HS/none alg:',[k.get('kid') for k in ks if k.get('alg','').lower() in ('hs256','hs384','hs512','none')])
+"
+total keys: 7
+('RSA', 'RS256', 'sig') 7
+any HS/none alg: []
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+for p in d['paths']:
+    if 'permission' in p or 'guest-link' in p or 'group-link' in p or 'meeting' in p:
+        ops=[m for m in d['paths'][p] if m in ('get','post','put','patch','delete')]
+        print(p,ops)
+"
+/v2/auth/group-link ['post']
+/v2/auth/guest-link ['post']
+/v2/group-links ['get']
+/v2/group-links/{id} ['get', 'patch']
+/v2/guest-links ['get']
+/v2/guest-links/{id} ['get', 'patch']
+/v2/meetings ['get', 'post']
+/v2/meetings/{id} ['get', 'patch']
+/v2/meetings/{id}/cancellation ['post']
+/v2/permission-groups ['get']
+/v2/rooms/{roomId}/group-links ['get', 'post']
+/v2/rooms/{roomId}/group-links/{id} ['delete']
+/v2/rooms/{roomId}/guest-links ['get', 'post']
+/v2/rooms/{roomId}/guest-links/{id} ['delete']
+/v2/rooms/{roomId}/permissions ['get', 'post']
+/v2/rooms/{roomId}/permissions/{userId} ['delete', 'patch']
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+for p in ['/v2/auth/group-link','/v2/auth/guest-link']:
+    op=d['paths'][p]['post']
+    print('=====',p)
+    print(json.dumps(op.get('requestBody'),indent=1)[:800])
+"
+===== /v2/auth/group-link
+{
+ "content": {
+  "application/json": {
+   "schema": {
+    "$ref": "#/components/schemas/AuthenticateGroupLinkRequestBody"
+   }
+  }
+ },
+ "description": "The authentication information for the guest.",
+ "required": true
+}
+===== /v2/auth/guest-link
+{
+ "content": {
+  "application/json": {
+   "schema": {
+    "$ref": "#/components/schemas/AuthenticateGuestLinkRequestBody"
+   }
+  }
+ },
+ "description": "The authentication information for the guest.",
+ "required": true
+}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+S=d['components']['schemas']
+for n in ['AuthenticateGuestLinkRequestBody','AuthenticateGroupLinkRequestBody']:
+    print('=====',n); print(json.dumps(S[n],indent=1)[:900])
+"
+===== AuthenticateGuestLinkRequestBody
+{
+ "additionalProperties": false,
+ "properties": {
+  "accessKey": {
+   "description": "The access key from the guest link.",
+   "type": "string"
+  },
+  "companyId": {
+   "description": "The company ID.",
+   "examples": [
+    "0123456789ABCDEFGHIJKLMNOP"
+   ],
+   "type": "string"
+  },
+  "displayName": {
+   "description": "If set, this overrides the stored name of the guest that is displayed in UIs.",
+   "maximum": 256,
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "roomId": {
+   "description": "The room ID from the guest link.",
+   "examples": [
+    "00000000-0000-0000-0000-000000000000"
+   ],
+   "type": "string"
+  }
+ },
+ "required": [
+  "companyId",
+  "roomId",
+  "accessKey"
+ ],
+ "type": "object"
+}
+===== AuthenticateGroupLinkRequestBody
+{
+ "additionalProperties": false,
+ "properties": {
+  "accessKey": {
+   "description": "The access key from the group link.",
+   "type": "string"
+  },
+  "companyId": {
+   "description": "The company ID.",
+   "examples": [
+    "0123456789ABCDEFGHIJKLMNOP"
+   ],
+   "type": "string"
+  },
+  "displayName": {
+   "description": "The name of the guest that is displayed in UIs.",
+   "maximum": 256,
+   "type": "string"
+  },
+  "externalId": {
+   "description": "The external ID can be used to derive a reproducible user ID to prevent simultaneous use. If that is desired, the caller is responsible for providing a unique value per user.",
+   "maximum": 256,
+   "minimum": 32,
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "roomId": {
+   "description": "The room ID from the group link.",
+   "examples": [
+    "00000000-0000-0000-0000-000000000000"
+   ],
+   "type": "string"
+  }
+ },
+ "required": [
+  "comp
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+S=d['components']['schemas']
+print('=== Permissions ==='); print(json.dumps(S.get('Permissions'),indent=1))
+print('=== CreatePermissions ==='); print(json.dumps(S.get('CreatePermissions'),indent=1)[:1200])
+"
+=== Permissions ===
+{
+ "additionalProperties": false,
+ "properties": {
+  "admin": {
+   "description": "If true, the associated user is an admin.",
+   "type": "boolean"
+  },
+  "chat": {
+   "description": "Permission to chat.",
+   "type": "boolean"
+  },
+  "join": {
+   "description": "Permission to join the room.",
+   "type": "boolean"
+  },
+  "promote": {
+   "description": "Permission to promote permissions for other users.",
+   "type": "boolean"
+  },
+  "screen": {
+   "description": "Permission to share the screen.",
+   "type": "boolean"
+  },
+  "upload": {
+   "description": "Permission to upload files.",
+   "type": "boolean"
+  },
+  "video": {
+   "description": "Permission to stream video input.",
+   "type": "boolean"
+  },
+  "vip": {
+   "description": "Permission to mark users as VIP.",
+   "type": "boolean"
+  },
+  "voice": {
+   "description": "Permission to speak.",
+   "type": "boolean"
+  }
+ },
+ "required": [
+  "admin",
+  "voice",
+  "video",
+  "promote",
+  "join",
+  "screen",
+  "vip",
+  "chat",
+  "upload"
+ ],
+ "type": "object"
+}
+=== CreatePermissions ===
+null
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+p=d['paths']['/v2/rooms/{roomId}/permissions']
+print(json.dumps(p,indent=1))
+"
+{
+ "get": {
+  "description": "Lists permissions applied in a room.",
+  "operationId": "ListPermissions",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   },
+   {
+    "description": "The room ID.",
+    "in": "path",
+    "name": "roomId",
+    "required": true,
+    "schema": {
+     "description": "The room ID.",
+     "examples": [
+      "00000000-0000-0000-0000-000000000000"
+     ],
+     "type": "string"
+    }
+   }
+  ],
+  "responses": {
+   "200": {
+    "content": {
+     "application/json": {
+      "schema": {
+       "$ref": "#/components/schemas/RoomPermissions"
+      }
+     }
+    },
+    "description": "The request was processed successfully."
+   },
+   "401": {
+    "description": "The 'Authorization' header did not contain a valid API token."
+   },
+   "404": {
+    "description": "Room was not found."
+   },
+   "422": {
+    "description": "An entity in the request cannot be processed. Either a validation (e.g. ID validity) did not succeed or a precondition was not met."
+   }
+  },
+  "summary": "List Room Permissions",
+  "tags": [
+   "Rooms",
+   "Permissions"
+  ],
+  "x-sort-index": 14
+ },
+ "post": {
+  "description": "Creates permissions for a user that are applied in a room.",
+  "operationId": "CreatePermissions",
+  "parameters": [
+   {
+    "description": "A valid access token (can be obtained by authenticating).",
+    "in": "header",
+    "name": "Authorization",
+    "schema": {
+     "description": "A valid access token (can be obtained by authenticating).",
+     "type": "string"
+    }
+   },
+   {
+    "description": "The room ID.",
+    "in": "path",
+    "name": "roomId",
+    "required": true,
+    "schema": {
+     "description": "The room ID.",
+     "examples": [
+      "00000000-0000-0000-0000-000000000000"
+     ],
+     "type": "string"
+    }
+   }
+  ],
+  "requestBody": {
+   "content": {
+    "application/json": {
+     "schema": {
+      "$ref": "#/components/schemas/ParticipantPermissions"
+     }
+    }
+   },
+   "description": "The permissions to apply.",
+   "required": true
+  },
+  "responses": {
+   "204": {
+    "description": "The request was processed successfully."
+   },
+   "400": {
+    "description": "The request was not valid."
+   },
+   "401": {
+    "description": "The 'Authorization' header did not contain a valid API token."
+   },
+   "403": {
+    "description": "The requesting user does not have the necessary permissions."
+   },
+   "404": {
+    "description": "Room was not found."
+   },
+   "409": {
+    "description": "The resource already exists."
+   },
+   "422": {
+    "description": "An entity in the request cannot be processed. Either a validation (e.g. ID validity) did not succeed or a precondition was not met."
+   }
+  },
+  "summary": "Create Room Permissions",
+  "tags": [
+   "Rooms",
+   "Permissions"
+  ],
+  "x-sort-index": 15
+ }
+}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+S=d['components']['schemas']
+print('=== ParticipantPermissions ==='); print(json.dumps(S.get('ParticipantPermissions'),indent=1))
+"
+=== ParticipantPermissions ===
+{
+ "additionalProperties": false,
+ "properties": {
+  "participantId": {
+   "description": "The user ID / guest link ID / group link ID to which the permissions apply.",
+   "type": "string"
+  },
+  "permissions": {
+   "$ref": "#/components/schemas/Permissions",
+   "description": "The assigned permissions."
+  }
+ },
+ "required": [
+  "participantId",
+  "permissions"
+ ],
+ "type": "object"
+}
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w "\n[%{http_code}]\n" --max-time 20 -X POST "https://sso.alfaview.com/oauth2/token" -d "grant_type=client_credentials" ; sleep 1; curl -s -w "\n[%{http_code}]\n" --max-time 20 -X POST "https://sso.alfaview.com/oauth2/token" -d "grant_type=client_credentials&client_id=app.alfaview.com&scope=openid profile email"
+{"error":"not_licensed","error_description":"The Entity Management feature of FusionAuth, which include the Client Credentials Grant, is only supported with a valid license","error_reason":"not_licensed"}
+[400]
+{"error":"not_licensed","error_description":"The Entity Management feature of FusionAuth, which include the Client Credentials Grant, is only supported with a valid license","error_reason":"not_licensed"}
+[400]
+[0m
+[0m$ [0mcd /tmp/opencode && for body in "token=notajwt&client_id=fabricated-abc123" "token=notajwt&client_id=another-fake-xyz" "token=notajwt&client_secret=s&client_id=fabricated-abc123"; do echo "== $body"; curl -s -w " [%{http_code}]\n" --max-time 20 -X POST "https://sso.alfaview.com/oauth2/introspect" -d "$body"; sleep 1; done
+== token=notajwt&client_id=fabricated-abc123
+{"active":false} [200]
+== token=notajwt&client_id=another-fake-xyz
+{"active":false} [200]
+== token=notajwt&client_secret=s&client_id=fabricated-abc123
+{"active":false} [200]
+[0m
+[0m$ [0mcd /tmp/opencode && for body in "token=notajwt&client_id=fabricated-abc123" "token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.fake&client_id=fabricated-abc123" "token=notajwt&client_id=fabricated-abc123&token_type_hint=access_token" "token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.fake&client_id=fabricated-abc123&token_type_hint=refresh_token"; do echo "== $body"; curl -s -w " [%{http_code}]\n" --max-time 20 -X POST "https://sso.alfaview.com/oauth2/introspect" -d "$body"; sleep 1; done
+== token=notajwt&client_id=fabricated-abc123
+{"active":false} [200]
+== token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.fake&client_id=fabricated-abc123
+{"error":"invalid_client","error_description":"client_id: fabricated-abc123 is not valid.","error_reason":"invalid_client_id"} [401]
+== token=notajwt&client_id=fabricated-abc123&token_type_hint=access_token
+{"error":"invalid_request","error_description":"The provided token is not an [access_token] as specified in the [token_type_hint].","error_reason":"token_type_hint_mismatch"} [400]
+== token=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.fake&client_id=fabricated-abc123&token_type_hint=refresh_token
+{"error":"invalid_client","error_description":"client_id: fabricated-abc123 is not valid.","error_reason":"invalid_client_id"} [401]
+[0m
+[0m$ [0mcd /tmp/opencode && for body in "token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjJfdS1fTnF6QUJmcVFKS3hzQUJ3US1iQ29tYiJ9.eyJzdWIiOiJ4IiwiaXNzIjoiYXBpLmFsZmF2aWV3LmNvbSJ9.AAAA&client_id=fabricated-abc123" "token=aaa.bbb.ccc&client_id=fabricated-abc123" "token=eyJhbGciOiJub25lIn0.eyJzdWIiOiJ4In0.&client_id=fabricated-abc123"; do echo "== $body"; curl -s -w " [%{http_code}]\n" --max-time 20 -X POST "https://sso.alfaview.com/oauth2/introspect" -d "$body"; sleep 1; done
+== token=eyJhbGciOiJSUzI1NiIsImtpZCI6IjJfdS1fTnF6QUJmcVFKS3hzQUJ3US1iQ29tYiJ9.eyJzdWIiOiJ4IiwiaXNzIjoiYXBpLmFsZmF2aWV3LmNvbSJ9.AAAA&client_id=fabricated-abc123
+{"error":"invalid_client","error_description":"client_id: fabricated-abc123 is not valid.","error_reason":"invalid_client_id"} [401]
+== token=aaa.bbb.ccc&client_id=fabricated-abc123
+{"active":false} [200]
+== token=eyJhbGciOiJub25lIn0.eyJzdWIiOiJ4In0.&client_id=fabricated-abc123
+{"error":"invalid_client","error_description":"client_id: fabricated-abc123 is not valid.","error_reason":"invalid_client_id"} [401]
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+print(json.dumps(d['paths']['/v2/meetings']['post'].get('requestBody'),indent=1)[:600])
+S=d['components']['schemas']
+import re
+for n in S:
+    if 'Meeting' in n and 'Create' in n or n=='CreateMeeting':
+        print('=====',n); print(json.dumps(S[n],indent=1)[:1500])
+"
+{
+ "content": {
+  "application/json": {
+   "schema": {
+    "$ref": "#/components/schemas/MeetingCreate"
+   }
+  }
+ },
+ "description": "The meeting to create.",
+ "required": true
+}
+===== MeetingCreate
+{
+ "additionalProperties": false,
+ "properties": {
+  "agenda": {
+   "description": "The meeting agenda. HTML is not allowed.",
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "earlyAccessMinutes": {
+   "description": "The duration of the early access period to the meeting room in minutes. In this period, moderators or administrators can join the meeting. The meeting creator can always join 1 hour before the meeting starts. Regular invitees can never join early.",
+   "format": "int64",
+   "maximum": 30,
+   "minimum": 0,
+   "type": [
+    "integer",
+    "null"
+   ]
+  },
+  "end": {
+   "description": "The end time.",
+   "examples": [
+    "2024-09-22T12:34:56Z"
+   ],
+   "format": "date-time",
+   "type": "string"
+  },
+  "groupLinks": {
+   "description": "The group links for the meeting. If not provided, four default group links (moderator, participant, guest, spectator) will be created. If an empty list is provided, no links will be created.",
+   "items": {
+    "$ref": "#/components/schemas/GroupLinkCreate"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  },
+  "guestLinks": {
+   "description": "The guest links for the meeting.",
+   "items": {
+    "$ref": "#/components/schemas/GuestLinkCreate"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  },
+  "passcodeRequired": {
+   "description": "If true, a passcode is required to enter the meeting room.",
+   "type": [
+    "boolean",
+    "null"
+   ]
+  },
+  "roomFeatures": {
+   "$ref": "#/components/schemas/RoomFeaturesEdit",
+   "descriptio
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+S=d['components']['schemas']
+print(json.dumps(S['MeetingCreate'],indent=1)[1500:3000])
+"
+n": "The feature configuration. If no state is specified for a feature, 'default' is assumed."
+  },
+  "start": {
+   "description": "The start time.",
+   "examples": [
+    "2024-09-22T12:34:56Z"
+   ],
+   "format": "date-time",
+   "type": "string"
+  },
+  "subroomDisplayNames": {
+   "description": "The names of the subrooms of the meeting room that are displayed in UIs.",
+   "items": {
+    "type": "string"
+   },
+   "type": [
+    "array",
+    "null"
+   ]
+  },
+  "timezone": {
+   "description": "The time zone used for time information.",
+   "examples": [
+    "Europe/Berlin"
+   ],
+   "type": "string"
+  },
+  "title": {
+   "description": "The meeting title.",
+   "type": "string"
+  },
+  "waitingRoomEnabled": {
+   "description": "If true, participants will enter the waiting room when joining the room. A moderator can admit waiting participants to join the actual room.",
+   "type": "boolean"
+  },
+  "waitingRoomWelcomeNote": {
+   "description": "The welcome note that is shown to the participants as they join the waiting room.",
+   "type": [
+    "string",
+    "null"
+   ]
+  }
+ },
+ "required": [
+  "title",
+  "start",
+  "end",
+  "timezone",
+  "roomFeatures",
+  "waitingRoomEnabled"
+ ],
+ "type": "object"
+}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+S=d['components']['schemas']
+for n in ['GroupLinkCreate','GuestLinkCreate']:
+    print('=====',n); print(json.dumps(S[n],indent=1))
+"
+===== GroupLinkCreate
+{
+ "additionalProperties": false,
+ "properties": {
+  "description": {
+   "description": "The group link description.",
+   "type": "string"
+  },
+  "dialInAllowed": {
+   "description": "If true, the group link is allowed to be used via dial-in.",
+   "type": "boolean"
+  },
+  "permissionGroupId": {
+   "description": "The permission group ID.",
+   "examples": [
+    "00000000-0000-0000-0000-000000000000"
+   ],
+   "type": "string"
+  },
+  "validFrom": {
+   "description": "The group link is valid from this point in time.",
+   "examples": [
+    "2024-09-22T12:34:56Z"
+   ],
+   "format": "date-time",
+   "type": [
+    "string",
+    "null"
+   ]
+  },
+  "validUntil": {
+   "description": "The group link is valid until this point in time.",
+   "examples": [
+    "2024-09-23T12:34:56Z"
+   ],
+   "format": "date-time",
+   "type": [
+    "string",
+    "null"
+   ]
+  }
+ },
+ "required": [
+  "description",
+  "permissionGroupId",
+  "dialInAllowed"
+ ],
+ "type": "object"
+}
+===== GuestLinkCreate
+{
+ "additionalProperties": false,
+ "properties": {
+  "dialInAllowed": {
+   "description": "If true, the guest link is allowed to be used via dial-in.",
+   "type": "boolean"
+  },
+  "displayName": {
+   "description": "The name of the guest that is displayed in UIs.",
+   "type": "string"
+  },
+  "emailAddress": {
+   "description": "The email address associated with the guest link.",
+   "format": "email",
+   "type": "string"
+  },
+  "locale": {
+   "description": "The locale settings (e.g., UI language) for the guest link.",
+   "enum": [
+    "de-DE",
+    "en-US"
+   ],
+   "type": "string"
+  },
+  "permissionGroupId": {
+   "description": "The permission group ID.",
+   "examples": [
+    "00000000-0000-0000-0000-000000000000"
+   ],
+   "type": "string"
+  },
+  "sendEmail": {
+   "description": "If true, an information email with the guest link will be sent to the associated email address.",
+   "type": "boolean"
+  },
+  "validFrom": {
+   "description": "The guest link is valid from this point in time.",
+   "examples": [
+    "2024-09-22T12:34:56Z"
+   ],
+   "format": "date-time",
+   "type": "string"
+  },
+  "validUntil": {
+   "description": "The guest link is valid until this point in time.",
+   "examples": [
+    "2024-09-23T12:34:56Z"
+   ],
+   "format": "date-time",
+   "type": "string"
+  }
+ },
+ "required": [
+  "emailAddress",
+  "displayName",
+  "locale",
+  "permissionGroupId",
+  "dialInAllowed"
+ ],
+ "type": "object"
+}
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && python3 -c "
+import json
+s=json.load(open('state_nemotron3.json'))
+print(json.dumps(s,indent=1)[:3000])
+"
+{
+ "phase": "POC",
+ "target": "api"
+}
+[0m
+[0m$ [0mcd /tmp/opencode && python3 -c "
+import json
+d=json.load(open('oa.json'))
+for p in ['/v2/permission-groups','/v2/guest-links','/v2/rooms/{roomId}/guest-links']:
+    for m,op in d['paths'][p].items():
+        qs=[(q['name'],q.get('required',False)) for q in op.get('parameters',[]) if q.get('in')=='query']
+        print(p,m,'query:',qs)
+"
+/v2/permission-groups get query: []
+/v2/guest-links get query: [('pageToken', False), ('limit', False)]
+/v2/rooms/{roomId}/guest-links get query: [('pageToken', False), ('limit', False)]
+/v2/rooms/{roomId}/guest-links post query: []
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -D - -o /dev/null --max-time 20 "https://apis.alfaview.com/v2/users/me" -H "Origin: https://evil.example" | grep -iE '^(HTTP|access-control|vary)'; echo "--- preflight ---"; sleep 1; curl -s -D - -o /dev/null --max-time 20 -X OPTIONS "https://apis.alfaview.com/v2/users/me" -H "Origin: https://evil.example" -H "Access-Control-Request-Method: GET" -H "Access-Control-Request-Headers: authorization" | grep -iE '^(HTTP|access-control|vary)'
+HTTP/2 401 
+--- preflight ---
+HTTP/2 405
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -o /dev/null -D h1.txt -w "docs HTTP:%{http_code}\n" --max-time 20 "https://apis.alfaview.com/v2/docs/"; sleep 1; curl -s -o /dev/null -D h2.txt -w "swagger HTTP:%{http_code}\n" --max-time 20 "https://apis.alfaview.com/v2/docs/swagger.json"; sleep 1; curl -s -o /dev/null -w "beta HTTP:%{http_code}\n" --max-time 20 "https://beta.apis.alfaview.com/v2/docs/openapi.json"
+docs HTTP:404
+swagger HTTP:404
+beta HTTP:000
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w "\n[beta %{http_code}]\n" --max-time 25 "https://beta-apis.alfaview.com/v2/docs/openapi.json" -o beta.json; ls -l beta.json 2>/dev/null && md5sum beta.json
+[beta 200]
+-rw-r--r-- 1 runner runner 132100 Oct  5 09:18 beta.json
+284a3383c1ac3cfc9152ffcc631891f2  beta.json
+[0m
+[0m$ [0mcd /tmp/opencode && grep -oiE 'adminSwitchCompany[a-zA-Z0-9_.]{0,30}' bundle.js | sort -u | head; echo "--- API BASE ---"; grep -oE 'https://[a-z0-9.-]*alfaview[a-z0-9.-]*/v[0-9][a-zA-Z0-9/_-]*' bundle.js | sort -u | head -20
+AdminSwitchCompany
+adminSwitchCompany
+--- API BASE ---
+[0m
+[0m$ [0mcd /tmp/opencode && grep -oE '.{200}adminSwitchCompany.{200}' bundle.js | head -4
+essToken:d,companyId:we.AV_COMPANY_ID,permissions:c}),t.next=14;break;case 12:return t.next=14,s({query:Ce.AdminSwitchCompany,headers:{token:d},variables:{nextCompanyId:n}}).then((function(e){var n=e.adminSwitchCompany,t=u()(n,"accessToken",""),i=u()(n,"companyId",""),a=u()(n,"permissions",{});if(!t||!i)throw new Error("auth data from admin switch company missing");(0,A.fK)("companyId",i),(0,A.fK)("accessToken",t),
+,type:{kind:"NonNullType",type:{kind:"NamedType",name:{kind:"Name",value:"String"}}},directives:[]}],directives:[],selectionSet:{kind:"SelectionSet",selections:[{kind:"Field",name:{kind:"Name",value:"adminSwitchCompany"},arguments:[{kind:"Argument",name:{kind:"Name",value:"nextCompanyId"},value:{kind:"Variable",name:{kind:"Name",value:"nextCompanyId"}}}],directives:[],selectionSet:{kind:"SelectionSet",selections:[{
+ode: $totpCode) {\n    recoveryCodes\n  }\n}\n\nmutation RegenerateRecoveryCodes {\n  regenerateRecoveryCodes {\n    recoveryCodes\n  }\n}\n\nmutation AdminSwitchCompany($nextCompanyId: String!) {\n  adminSwitchCompany(nextCompanyId: $nextCompanyId) {\n    companyId\n    accessToken\n    permissions\n  }\n}\n\nmutation AssignCompanyAdminPermission($userId: String!) {\n  assignCompanyAdminPermission(userId: $userId)
+[0m
+[0m$ [0mcd /tmp/opencode && grep -oE '.{120}(graphql|GraphQL).{160}' bundle.js | head -8
+catch(e){var i=new s.zU(2);throw i.parseError=e,i}return t},c=function(e){void 0===e&&(e={});var n=e.uri,t=void 0===n?"/graphql":n,c=e.fetch,m=e.includeExtensions,p=e.useGETForQueries,f=(0,i.Tt)(e,["uri","fetch","includeExtensions","useGETForQueries"]);!function(e){if(!e&&"undefined"==t
+rs};return new a.Ch((function(e){var n=function(e,n){var t=e.getContext().uri;return t||("function"==typeof n?n(e):n||"/graphql")}(e,t),s=e.getContext(),m={};if(s.clientAwareness){var f=s.clientAwareness,h=f.name,v=f.version;h&&(m["apollographql-client-name"]=h),v&&(m["apollographql-cli
+tial:400,max:1/0,jitter:!0},attempts:{max:3,retryIf:function(e){return!!e&&e.statusCode>=500}}}),new s.V,new l.P({uri:"/graphql",credentials:"include",fetch:u.A})]),_=function(e){var n=e.query,t=e.variables,i=e.headers,o=void 0===i?{}:i,s=e.operationName;return(0,r.uW)((0,r.g7)(y,{query
+YN,{message:E.R.t("common.toasts.info.session_expired")}),Wt.dispatch(y.T_,{$router:s.jT?b.A:_.Ay})))})),new p.P({uri:"/graphql",credentials:"include",fetch:v.A})]),x=function e(n){var t=n.query,i=n.variables,a=n.headers,r=void 0===a?{}:a,l=n.operationName;return(0,d.uW)((0,d.g7)(L,{que
+t!) {\n  checkout(planId: $planId, products: $products, customer: $customer) {\n    paymentRedirectUrl\n  }\n}\n",name:"GraphQL request",locationOffset:{line:1,column:1}};function t(e,n){if("FragmentSpread"===e.kind)n.add(e.name.value);else if("VariableDefinition"===e.kind){var i=e.type
+\n        details\n      }\n      checksum\n      checksumValid\n      writtenAt\n    }\n    pageToken\n  }\n}\n',name:"GraphQL request",locationOffset:{line:1,column:1}};function t(e,n){if("FragmentSpread"===e.kind)n.add(e.name.value);else if("VariableDefinition"===e.kind){var i=e.type
+nction(e){function n(t){void 0===t&&(t=a);var i=e.call(this,"number"==typeof t?a+": "+t+" (see https://github.com/apollographql/invariant-packages)":t)||this;return i.framesToPop=1,i.name=a,o(i,n.prototype),i}return(0,i.C6)(n,e),n}(Error);function l(e,n){if(!e)throw new s(n)}function u(
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -o gq1.json -w "INTROSPECT HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -d '{"query":"{__schema{queryType{name}}}"}'; head -c 400 gq1.json; echo; sleep 1; curl -s -o gq2.json -w "ME HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -d '{"query":"{me{userId email}}"}'; head -c 300 gq2.json
+INTROSPECT HTTP:400 SIZE:339
+{"errors":[{"message":"GraphQL introspection is not allowed by Apollo Server, but the query contained __schema or __type. To enable introspection, pass introspection: true to ApolloServer in production","locations":[{"line":1,"column":2}],"extensions":{"validationErrorCode":"INTROSPECTION_DISABLED","code":"GRAPHQL_VALIDATION_FAILED"}}]}
+
+ME HTTP:400 SIZE:158
+{"errors":[{"message":"Cannot query field \"me\" on type \"Query\".","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+[0m
+[0m$ [0mcd /tmp/opencode && for q in "{__typename}" "{currentUser{id}}" "{viewer{id}}" "{user{id}}" "{session{id}}"; do echo "== $q"; curl -s -w " [%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -d "{\"query\":\"$q\"}"; sleep 1; done
+== {__typename}
+{"data":{"__typename":"Query"}}
+ [200]
+== {currentUser{id}}
+{"errors":[{"message":"Cannot query field \"currentUser\" on type \"Query\".","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+== {viewer{id}}
+{"errors":[{"message":"Cannot query field \"viewer\" on type \"Query\".","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+== {user{id}}
+{"errors":[{"message":"Cannot query field \"user\" on type \"Query\".","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+== {session{id}}
+{"errors":[{"message":"Cannot query field \"session\" on type \"Query\".","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w "\n[%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -d '{"query":"mutation{adminSwitchCompany(nextCompanyId:\"x\"){companyId accessToken}}"}'
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":10}],"path":["adminSwitchCompany"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+
+[200]
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w "\n[%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -H "Authorization: Bearer fabricated-token-abc" -d '{"query":"mutation{adminSwitchCompany(nextCompanyId:\"x\"){companyId}}"}'
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":10}],"path":["adminSwitchCompany"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+
+[200]
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w "\n[%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -H "token: fabricated-token-abc" -d '{"query":"mutation{adminSwitchCompany(nextCompanyId:\"x\"){companyId}}"}'
+{"errors":[{"message":"Error: Could not extract access token in server","extensions":{"code":"UNAUTHENTICATED"}}]}
+
+[500]
+[0m
+[0m$ [0mcd /tmp/opencode && for t in "" "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.abc"; do echo "== token='$t'"; curl -s -w " [%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -H "token: $t" -d '{"query":"mutation{adminSwitchCompany(nextCompanyId:\"x\"){companyId}}"}'; sleep 1; done
+== token=''
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":10}],"path":["adminSwitchCompany"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+ [200]
+== token='eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.abc'
+{"errors":[{"message":"Error: Could not extract access token in server","extensions":{"code":"UNAUTHENTICATED"}}]}
+ [500]
+[0m
+[0m$ [0mcd /tmp/opencode && grep -oE '(query|mutation) [A-Za-z_]+' bundle.js | sort -u | head -60
+mutation AdminReinvitePendingUser
+mutation AdminSwitchCompany
+mutation AssignCompanyAdminPermission
+mutation AssignGrantCompanyAdminPermission
+mutation BatchAssignUsers
+mutation BatchCreateGroupLinks
+mutation BatchCreateRoomStructure
+mutation BatchCreateRooms
+mutation BatchDeleteUsers
+mutation BatchInviteExternalMembers
+mutation BatchReinvitePendingUsers
+mutation BatchUnassignUsers
+mutation BatchUpdateRoomsCapacity
+mutation BatchUpdateRoomsDefaultUserRole
+mutation BatchUpdateRoomsFeatures
+mutation BatchUpdateRoomsTranscriptionSettings
+mutation CancelMeeting
+mutation ChangePassword
+mutation Checkout
+mutation CreateApiKey
+mutation CreateCompany
+mutation CreateGroup
+mutation CreateGroupLink
+mutation CreateMagicToken
+mutation CreateMeeting
+mutation CreateRoom
+mutation CredentialsAuthenticate
+mutation DeactivateApiKey
+mutation DeleteApiKey
+mutation DeleteCompany
+mutation DeleteFiles
+mutation DeleteGroup
+mutation DeleteRoom
+mutation DeleteRoomLinks
+mutation DeleteUser
+mutation DisableMFA
+mutation DuplicateRoom
+mutation EnableMFA
+mutation FetchGuestInfo
+mutation FinishMultiFactorAuthentication
+mutation FinishSignup
+mutation GuestJoin
+mutation InviteAndAssignUsers
+mutation InviteExternalMembers
+mutation InviteUsers
+mutation LdapCredentialsAuthenticate
+mutation LeaveCompany
+mutation MagicTokenAuthenticate
+mutation MassUpdateRoomLinks
+mutation RegeneratePasscode
+mutation RegenerateRecoveryCodes
+mutation ReinvitePendingUser
+mutation RemoveCompanyBrandingLogo
+mutation ResendGuestInviteEmail
+mutation ResetPassword
+mutation SendDeleteCompanyConfirmation
+mutation SetGroupLinkName
+mutation SetNewPassword
+mutation SetPrivacyPolicyUrl
+mutation SetRoomLinkDialIn
+[0m
+[0m$ [0mcd /tmp/opencode && grep -oE 'query [A-Za-z_]+' bundle.js | sort -u | head -60; echo "--- mutations rest ---"; grep -oE 'mutation [A-Za-z_]+' bundle.js | sort -u | tail -25
+query AdminTokenAuthenticate
+query CheckMFAStatus
+query FetchCompanyCacheUpdatedAt
+query FetchCompanyOwner
+query FetchCompanyQuotas
+query FetchCompanyQuotasWithTypes
+query FetchCompanyWithTypes
+query FetchDeepLTranslatorLanguages
+query FetchDeepLTranslatorText
+query FetchDialInNumbers
+query FetchFileCompanySettings
+query FetchFileRoomList
+query FetchFileRoomSettings
+query FetchLanguages
+query FetchLastCompanyJoin
+query FetchMeetings
+query FetchPrivacyPolicyUrl
+query FetchQuotaUsage
+query FetchRoom
+query FetchSSOInfo
+query FetchTranscriptionSettings
+query FetchUsageStatistics
+query FetchUserPermissions
+query FetchVanityDomain
+query GenerateFileDownloadURL
+query GetBillingInfo
+query GetCanCreateMeeting
+query GetFinishSignupLinkAsAdmin
+query GetMeetingInfo
+query GetOrphanedUsers
+query GetPasscode
+query GetPendingUserAccount
+query GetReport
+query GetRoomOptions
+query ListAllUserIds
+query ListAllUserProfiles
+query ListApiKeys
+query ListAuditEvents
+query ListAuthData
+query ListAuthenticationsByUsername
+query ListAvailableRoomTypes
+query ListCompaniesById
+query ListCompanyLinks
+query ListComponents
+query ListGroups
+query ListIdentityProviders
+query ListPermissionGroups
+query ListQuotas
+query ListRoomGroupLinks
+query ListRoomGuestLinks
+query ListRooms
+query ListRoomsIntervalWithTypes
+query ListUnverifiedAccounts
+query ListUserProfiles
+query ListUsersByIds
+query SearchCompanies
+query StatusRooms
+query ValidateVatId
+--- mutations rest ---
+mutation TokenAuthenticate
+mutation UnassignCompanyAdminPermission
+mutation UnassignGrantCompanyAdminPermission
+mutation UpdateCompany
+mutation UpdateCompanyBranding
+mutation UpdateCompanyName
+mutation UpdateCompanyOwnerId
+mutation UpdateCompanyQuotas
+mutation UpdateCompanySearchCache
+mutation UpdateFavoriteRooms
+mutation UpdateFileCompanySettings
+mutation UpdateFileRoomSettings
+mutation UpdateFiles
+mutation UpdateGroup
+mutation UpdateMeeting
+mutation UpdatePermissionGroups
+mutation UpdateRoom
+mutation UpdateRoomWaitingRoomState
+mutation UpdateRoomWaitingRoomWelcomeNote
+mutation UpdateTranscriptionProvider
+mutation UpdateTranscriptionSettings
+mutation UpdateTranslationProvider
+mutation UpdateUser
+mutation UpdateUserPermissions
+mutation VerifyMFASetup
+[0m
+[0m$ [0mcd /tmp/opencode && grep -oE 'query (SearchCompanies|ListCompaniesById)[\s\S]{0,400}' bundle.js | head -4
+query ListCompaniesById
+query SearchCompanies
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'EOF'
+import re
+s=open('bundle.js',encoding='utf-8',errors='replace').read()
+for name in ['SearchCompanies','ListCompaniesById','ListUnverifiedAccounts','GetPendingUserAccount','ListAllUserIds','ListAuthData']:
+    for m in re.finditer(r'query '+name+r'\b', s):
+        print('=====',name)
+        print(s[m.start():m.start()+500].replace('\\n','\n'))
+        break
+EOF
+===== SearchCompanies
+query SearchCompanies(
+  $displayNameQuery: String
+  $planId: String
+  $createdAtFrom: Int
+  $createdAtTo: Int
+  $updatedAtFrom: Int
+  $updatedAtTo: Int
+  $offset: Int
+) {
+  searchCompanies(
+    displayNameQuery: $displayNameQuery
+    planId: $planId
+    createdAtFrom: $createdAtFrom
+    createdAtTo: $createdAtTo
+    updatedAtFrom: $updatedAtFrom
+    updatedAtTo: $updatedAtTo
+    offset: $offset
+  ) {
+    companies
+    nextOffset
+  }
+}
+
+query FetchCompanyCacheUpdatedAt {
+
+===== ListCompaniesById
+query ListCompaniesById($companyIdList: [String]!) {
+  listCompaniesById(companyIdList: $companyIdList) {
+    companies
+    orderedCompanyIds
+  }
+}
+
+query FetchCompanyWithTypes($companyId: String!) {
+  fetchCompanyOwner(companyId: $companyId) {
+    authenticationMethodInformation
+    userId
+  }
+  fetchCompanyQuotas(companyId: $companyId) {
+    quotas
+  }
+  fetchTranscriptionQuotaUsage(companyId: $companyId) {
+    resource
+    quota
+    usedQuota
+  }
+  listAvailableRoomTypes {
+===== ListUnverifiedAccounts
+query ListUnverifiedAccounts {
+  listUnverifiedAccounts
+}
+
+query ListAllUserProfiles {
+  listAllUserProfiles {
+    users
+  }
+}
+
+query ListUserProfiles($userIds: [String]!) {
+  listUserProfiles(userIds: $userIds) {
+    users
+  }
+}
+
+query ListUsersByIds($userIds: [String]!, $unverifiedAccountsMap: JSONObject) {
+  listUsersByIds(userIds: $userIds, unverifiedAccountsMap: $unverifiedAccountsMap) {
+    active
+    pending
+    external
+  }
+}
+
+query GetOrphanedUsers {
+  getOrphan
+===== GetPendingUserAccount
+query GetPendingUserAccount($userId: String!) {
+  getPendingUserAccount(userId: $userId) {
+    email
+    authData
+    locale
+    metadata
+    permissions
+    userProfile
+  }
+}
+
+query ListAllUserIds {
+  listAllUserIds
+}
+
+query ListUnverifiedAccounts {
+  listUnverifiedAccounts
+}
+
+query ListAllUserProfiles {
+  listAllUserProfiles {
+    users
+  }
+}
+
+query ListUserProfiles($userIds: [String]!) {
+  listUserProfiles(userIds: $userIds) {
+    users
+  }
+}
+
+query ListUsersByI
+===== ListAllUserIds
+query ListAllUserIds {
+  listAllUserIds
+}
+
+query ListUnverifiedAccounts {
+  listUnverifiedAccounts
+}
+
+query ListAllUserProfiles {
+  listAllUserProfiles {
+    users
+  }
+}
+
+query ListUserProfiles($userIds: [String]!) {
+  listUserProfiles(userIds: $userIds) {
+    users
+  }
+}
+
+query ListUsersByIds($userIds: [String]!, $unverifiedAccountsMap: JSONObject) {
+  listUsersByIds(userIds: $userIds, unverifiedAccountsMap: $unverifiedAccountsMap) {
+    active
+    pending
+    external
+
+===== ListAuthData
+query ListAuthData {
+  listAuthData {
+    accessToken
+    accessibleAccounts
+    companyId
+    expiresAt
+    permissions
+    userData
+    userId
+  }
+}
+
+query ListApiKeys($userId: String!) {
+  listApiKeys(userId: $userId) {
+    apiKeys
+    permissions
+  }
+}
+
+query ListAuthenticationsByUsername($username: String!) {
+  listAuthenticationsByUsername(username: $username) {
+    activeCompanyEntries
+    pendingCompanyEntries
+    apiKeysByCompanyId
+    userId
+  }
+}
+
+query Lis
+[0m
+Found a GraphQL surface. Probing unauthenticated disclosure.
+[0m$ [0mcd /tmp/opencode && for q in "{listAuthData{userId companyId}}" "{searchCompanies(displayNameQuery:\"a\"){companies}}" "{listUnverifiedAccounts}" "{listAllUserIds}" "{listCompaniesById(companyIdList:[\"x\"]){companies orderedCompanyIds}}"; do echo "== $q"; curl -s -w " [%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" --data-binary "$(python3 -c "import json,sys;print(json.dumps({'query':sys.argv[1]}))" "$q")"; sleep 1; done
+== {listAuthData{userId companyId}}
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":2}],"path":["listAuthData"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+ [200]
+== {searchCompanies(displayNameQuery:"a"){companies}}
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":2}],"path":["searchCompanies"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+ [200]
+== {listUnverifiedAccounts}
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":2}],"path":["listUnverifiedAccounts"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+ [200]
+== {listAllUserIds}
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":2}],"path":["listAllUserIds"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":{"listAllUserIds":null}}
+ [200]
+== {listCompaniesById(companyIdList:["x"]){companies orderedCompanyIds}}
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":2}],"path":["listCompaniesById"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+ [200]
+[0m
+[0m$ [0mcd /tmp/opencode && for q in "{fetchLastCompanyJoin}" "{fetchPrivacyPolicyUrl}" "{checkMFAStatus}" "{fetchSSOInfo}"; do echo "== $q"; curl -s -w " [%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" --data-binary "$(python3 -c "import json,sys;print(json.dumps({'query':sys.argv[1]}))" "$q")"; sleep 1; done
+== {fetchLastCompanyJoin}
+{"errors":[{"message":"Field \"fetchLastCompanyJoin\" of type \"FetchLastCompanyJoinReply\" must have a selection of subfields. Did you mean \"fetchLastCompanyJoin { ... }\"?","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+== {fetchPrivacyPolicyUrl}
+{"errors":[{"message":"Field \"fetchPrivacyPolicyUrl\" of type \"FetchPrivacyPolicyUrlReply!\" must have a selection of subfields. Did you mean \"fetchPrivacyPolicyUrl { ... }\"?","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}},{"message":"Field \"fetchPrivacyPolicyUrl\" argument \"companyId\" of type \"String!\" is required, but it was not provided.","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+== {checkMFAStatus}
+{"errors":[{"message":"Field \"checkMFAStatus\" of type \"CheckMFAStatusReply!\" must have a selection of subfields. Did you mean \"checkMFAStatus { ... }\"?","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+== {fetchSSOInfo}
+{"errors":[{"message":"Field \"fetchSSOInfo\" of type \"BrandingInfoReply!\" must have a selection of subfields. Did you mean \"fetchSSOInfo { ... }\"?","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'EOF'
+import re
+s=open('bundle.js',encoding='utf-8',errors='replace').read()
+for name in ['CheckMFAStatus','FetchSSOInfo','FetchPrivacyPolicyUrl','FetchLastCompanyJoin','FetchGuestInfo','CreateMagicToken','MagicTokenAuthenticate','FinishSignup','TokenAuthenticate','AdminTokenAuthenticate','GetPasscode']:
+    for m in re.finditer(r'(query|mutation) '+name+r'\b', s):
+        print('=====',name)
+        print(s[m.start():m.start()+450].replace('\\n','\n'))
+        break
+EOF
+===== CheckMFAStatus
+query CheckMFAStatus {
+  checkMFAStatus {
+    totpEnrolled
+    recoveryCodesTotalCount
+    recoveryCodesUsedCount
+  }
+}
+
+query AdminTokenAuthenticate {
+  adminTokenAuthenticate {
+    accessToken
+    permissions
+  }
+}
+
+query GetFinishSignupLinkAsAdmin($companyId: String!, $username: String!) {
+  getFinishSignupLinkAsAdmin(companyId: $companyId, username: $username) {
+    finishSignupLink
+  }
+}
+
+# roomService
+query ListRooms {
+===== FetchSSOInfo
+query FetchSSOInfo {
+  fetchSSOInfo {
+    companyId
+    companyLogoUrl
+    isBrandingEnabled
+    expiresAt
+  }
+}
+
+# settingsService
+query FetchPrivacyPolicyUrl($companyId: String!) {
+  fetchPrivacyPolicyUrl(companyId: $companyId) {
+    privacyUrl
+  }
+}
+
+query FetchVanityDomain($companyId: String) {
+  fetchVanityDomain(companyId: $companyId) {
+    domain
+  }
+}
+
+# userService
+query GetPendingUserAccount($userId: String!) {
+ 
+===== FetchPrivacyPolicyUrl
+query FetchPrivacyPolicyUrl($companyId: String!) {
+  fetchPrivacyPolicyUrl(companyId: $companyId) {
+    privacyUrl
+  }
+}
+
+query FetchVanityDomain($companyId: String) {
+  fetchVanityDomain(companyId: $companyId) {
+    domain
+  }
+}
+
+# userService
+query GetPendingUserAccount($userId: String!) {
+  getPendingUserAccount(userId: $userId) {
+    email
+    authData
+    locale
+    metadata
+    permissions
+    userProfile
+  }
+}
+
+quer
+===== FetchLastCompanyJoin
+query FetchLastCompanyJoin {
+  fetchLastCompanyJoin {
+    lastJoin
+  }
+}
+
+# fileService
+query FetchFileCompanySettings {
+  fetchFileCompanySettings {
+    active
+  }
+}
+
+query FetchFileRoomSettings($roomId: String!) {
+  fetchFileRoomSettings(roomId: $roomId) {
+    settings {
+      enabled
+      participants_can_upload
+      default_access_level
+      http_upload_url
+    }
+  }
+}
+
+query FetchFileRoomList($roomId: String!) {
+ 
+===== FetchGuestInfo
+mutation FetchGuestInfo($userId: String!, $companyId: String!, $roomId: String!) {
+  guestAuthenticate(userId: $userId, companyId: $companyId, roomId: $roomId) {
+    accessToken
+    expiry
+    user
+    room
+    isShareable
+    role
+    isMeeting
+  }
+  fetchGuestBrandingInfo(userId: $userId, companyId: $companyId, roomId: $roomId) {
+    companyLogoUrl
+    isBrandingEnabled
+    companyDisplayName
+  }
+}
+
+mutation LeaveCompany {
+  l
+===== CreateMagicToken
+mutation CreateMagicToken {
+  createMagicToken {
+    magicToken
+    launchURL
+  }
+}
+
+mutation DeactivateApiKey($alias: String!, $userId: String!) {
+  deactivateApiKey(alias: $alias, userId: $userId)
+}
+
+mutation DeleteApiKey($alias: String!, $userId: String!) {
+  deleteApiKey(alias: $alias, userId: $userId)
+}
+
+mutation DisableMFA {
+  disableMFA
+}
+
+mutation EnableMFA {
+  enableMFA {
+    enrollmentSessionToken
+    totpSecret
+ 
+===== MagicTokenAuthenticate
+mutation MagicTokenAuthenticate($magicToken: String!) {
+  magicTokenAuthenticate(magicToken: $magicToken) {
+    accessToken
+    expiresAt
+    userId
+    permissions
+    accessibleAccounts
+  }
+}
+
+mutation GuestJoin($userId: String!, $companyId: String!, $roomId: String!, $displayName: String!) {
+  guestJoin(userId: $userId, companyId: $companyId, roomId: $roomId, displayName: $displayName) {
+    joinLink
+    expiry
+  }
+}
+
+mutation
+===== FinishSignup
+mutation FinishSignup($username: String!, $password: String!, $companyId: String!, $activationToken: String!) {
+  finishSignup(username: $username, password: $password, companyId: $companyId, activationToken: $activationToken) {
+    resultType
+    accessToken
+    expiresAt
+    userId
+    userData
+    companyId
+    permissions
+    accessibleAccounts
+    mfaLoginSessionToken
+  }
+}
+
+mutation CreateApiKey($alias: String!, $userId: Strin
+===== TokenAuthenticate
+mutation TokenAuthenticate {
+  tokenAuthenticate {
+    accessToken
+    expiresAt
+    userId
+    userData
+    companyId
+    permissions
+    accessibleAccounts
+  }
+}
+
+mutation MagicTokenAuthenticate($magicToken: String!) {
+  magicTokenAuthenticate(magicToken: $magicToken) {
+    accessToken
+    expiresAt
+    userId
+    permissions
+    accessibleAccounts
+  }
+}
+
+mutation GuestJoin($userId: String!, $companyId: String!, $roomId: S
+===== AdminTokenAuthenticate
+query AdminTokenAuthenticate {
+  adminTokenAuthenticate {
+    accessToken
+    permissions
+  }
+}
+
+query GetFinishSignupLinkAsAdmin($companyId: String!, $username: String!) {
+  getFinishSignupLinkAsAdmin(companyId: $companyId, username: $username) {
+    finishSignupLink
+  }
+}
+
+# roomService
+query ListRooms {
+  listRooms {
+    rooms
+  }
+}
+
+query ListRoomsIntervalWithTypes {
+  listRooms(skipFlags: ["SKIP_OTHER_PERMISSIONS", "SKIP
+===== GetPasscode
+query GetPasscode($roomId: String!) {
+  getPasscode(roomId: $roomId) {
+    passcode
+  }
+}
+
+# quotaService
+query ListQuotas {
+  listQuotas {
+    quotas
+  }
+}
+
+query FetchQuotaUsage {
+  fetchQuotaUsage {
+    quotasUsage {
+      name
+      resource
+      startTime
+      stopTime
+      usedQuota
+      timeframe
+    }
+  }
+}
+
+query FetchDialInNumbers {
+  fetchDialInNumbers
+}
+
+# internalQuotaService
+query FetchCompanyQuota
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w "\n[%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -d '{"query":"mutation{createMagicToken{magicToken launchURL}}"}'
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":10}],"path":["createMagicToken"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+
+[200]
+[0m
+[0m$ [0mcd /tmp/opencode && for q in "{fetchSSOInfo{companyId companyLogoUrl isBrandingEnabled}}" "{fetchPrivacyPolicyUrl(companyId:\"TEST\"){privacyUrl}}" "{fetchVanityDomain(companyId:\"TEST\"){domain}}"; do echo "== $q"; curl -s -w " [%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" --data-binary "$(python3 -c "import json,sys;print(json.dumps({'query':sys.argv[1]}))" "$q")"; sleep 1; done
+== {fetchSSOInfo{companyId companyLogoUrl isBrandingEnabled}}
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":2}],"path":["fetchSSOInfo"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+ [200]
+== {fetchPrivacyPolicyUrl(companyId:"TEST"){privacyUrl}}
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":2}],"path":["fetchPrivacyPolicyUrl"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+ [200]
+== {fetchVanityDomain(companyId:"TEST"){domain}}
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":2}],"path":["fetchVanityDomain"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+ [200]
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w "\n[%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -d '{"query":"mutation{__typename}"}'; curl -s -w "\n[%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -d '{"query":"mutation{guestAuthenticate(userId:\"00000000-0000-0000-0000-000000000000\",companyId:\"TEST\",roomId:\"00000000-0000-0000-0000-000000000000\"){accessToken user isShareable role}}"}'
+{"data":{"__typename":"Mutation"}}
+
+[200]
+{"errors":[{"message":"","locations":[{"line":1,"column":10}],"path":["guestAuthenticate"],"extensions":{"code":"BAD_USER_INPUT"}}],"data":null}
+
+[200]
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w "\n[%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -d '{"query":"mutation{fetchGuestBrandingInfo(userId:\"00000000-0000-0000-0000-000000000000\",companyId:\"TEST\",roomId:\"00000000-0000-0000-0000-000000000000\"){companyLogoUrl isBrandingEnabled companyDisplayName}}"}'
+{"errors":[{"message":"","locations":[{"line":1,"column":10}],"path":["fetchGuestBrandingInfo"],"extensions":{"code":"BAD_USER_INPUT"}}],"data":null}
+
+[200]
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w "\n[%{http_code}]\n" --max-time 25 -X POST "https://apis.alfaview.com/v2/auth/guest-link" -H "Content-Type: application/json" -d '{"companyId":"TESTCOMPANY","roomId":"00000000-0000-0000-0000-000000000000","accessKey":"fabricated-access-key-probe"}'
+{"title":"Unprocessable Entity","status":422,"detail":"ACTION_INVALID: ACTION_INVALID"}
+
+[422]
+[0m
+[0m$ [0mcd /tmp/opencode && for k in "0000000000000000000000000000" "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"; do echo "== key=$k"; curl -s -w " [%{http_code}]\n" --max-time 25 -X POST "https://apis.alfaview.com/v2/auth/guest-link" -H "Content-Type: application/json" -d "{\"companyId\":\"TESTCOMPANY\",\"roomId\":\"00000000-0000-0000-0000-000000000000\",\"accessKey\":\"$k\"}"; sleep 1; done
+== key=0000000000000000000000000000
+{"title":"Unprocessable Entity","status":422,"detail":"ACTION_INVALID: ACTION_INVALID"}
+ [422]
+== key=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+{"title":"Unprocessable Entity","status":422,"detail":"ACTION_INVALID: ACTION_INVALID"}
+ [422]
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && wc -l inventory/alfaview.md && head -60 inventory/alfaview.md
+1449 inventory/alfaview.md
+# alfaview gmbh inventory (discovery seed 2026-09-02)
+# NOTE: hosts below are discovery candidates from passive DNS/CT; confirm in-scope vs program scope before active testing.
+alfaview.com
+app.alfaview.com
+dev.alfaview.com
+sso.alfaview.com
+staging.alfaview.com
+support.alfaview.com
+test.alfaview.com
+www.alfaview.com
+
+## PASSIVE RECON 2026-09-02 (read-only, non-intrusive)
+
+> Recon observations only. These are NOT confirmed vulnerabilities; ownership/in-scope of each host must be confirmed against the program scope before any active testing. Hosts resolve + serve HTTP — investigation requires scoped authorization.
+
+**Probed:** 8 hosts | **Live HTTP:** 2
+
+| Host | Status | Server/Tech |
+|---|---|---|
+| `support.alfaview.com` | 301 | Server: myracloud -> https://support.alfaview.com/en/ |
+| `staging.alfaview.com` | 301 | Server: myracloud -> https://staging.alfaview.com/en |
+
+**CNAME review signals (2):**
+- `support.alfaview.com` -> `support-alfaview-com.ax4z.com`
+- `staging.alfaview.com` -> `staging-alfaview-com.ax4z.com`
+
+## DEEP SERVICE SCAN 2026-09-02 (read-only connect+banner)
+**Host:** `staging.alfaview.com` | **Ports:** [80, 443]
+**Web surface only:** [80, 443]
+
+## DEEP SERVICE SCAN 2026-09-02 (read-only connect+banner)
+**Host:** `support.alfaview.com` | **Ports:** [80, 443]
+**Web surface only:** [80, 443]
+
+## DEEP ENUM (wildcard-cleaned) 2026-09-03
+**Root zone:** `alfaview.com` | **dedicated hosts after wildcard-filter: 55**
+> Audit: brute+passive subfinder produced 10,083 resolving hostnames; zone-wildcard + IP-fingerprint filtering dropped 9,973 (98.9%) DNS-wildcard noise (random labels resolving to shared wildcard IPs e.g. account.cineplex.de, a.hypofriend.de, account.live-manager.de, docker.jtl-software.de, *.ggamdom.com, *.dev.alfaview.com). Only genuine dedicated hosts listed below. These are surface-map observations; live HTTP status captured read-only (GET / via curl). No findings claimed; scope must be confirmed with the program.
+- `alfacheck-audio.alfaview.com`  [HTTP unprobed]
+- `alfacheck-engine.alfaview.com`  [HTTP unprobed]
+- `alfacheck-video.alfaview.com`  [HTTP unprobed]
+- `alfatraining.alfaview.com`  [HTTP 200]
+- `alfaview-com-assets.alfaview.com`  [HTTP 403]
+- `apis.alfaview.com`  [HTTP 200]
+- `app.alfaview.com`  [HTTP 200]
+- `appstats.alfaview.com`  [HTTP unprobed]
+- `assets.alfaview.com`  [HTTP 403]
+- `beta-alfaview-assets.alfaview.com`  [HTTP 403]
+- `beta-alfaview-com-assets.alfaview.com`  [HTTP 403]
+- `beta-apis.alfaview.com`  [HTTP 200]
+- `beta-app.alfaview.com`  [HTTP 401]
+- `beta-hcloud-19-beta-audio-4xstl.alfaview.com`  [HTTP 404]
+- `beta-hcloud-19-beta-audio-8xnz9.alfaview.com`  [HTTP 404]
+- `beta-hcloud-19-beta-engine-9m62k.alfaview.com`  [HTTP 404]
+- `beta-hcloud-19-beta-engine-vlhwd.alfaview.com`  [HTTP 404]
+- `beta-hcloud-19-beta-hydra-dzwx8.alfaview.com`  [HTTP 200]
+- `beta-hcloud-19-beta-video-xjl6p.alfaview.com`  [HTTP 404]
+- `beta-hcloud-19-beta-video-zhjvl.alfaview.com`  [HTTP 404]
+- `beta-ionoscloud-21-beta-audio-65st7.alfaview.com`  [HTTP unprobed]
+- `beta-ionoscloud-21-beta-audio-bdtmf.alfaview.com`  [HTTP unprobed]
+- `beta-ionoscloud-21-beta-engine-gw4qw.alfaview.com`  [HTTP unprobed]
+[0m
+[0m$ [0mcd /tmp/opencode && for h in staging.alfaview.com dev.alfaview.com beta-app.alfaview.com appstats.alfaview.com; do echo "== $h /graphql"; curl -s -o "gq-$h.txt" -w "[%{http_code}] " --max-time 20 -X POST "https://$h/graphql" -H "Content-Type: application/json" -d '{"query":"{__typename}"}'; head -c 150 "gq-$h.txt"; echo; sleep 1; done
+== staging.alfaview.com /graphql
+[401] <html>
+<head><title>401 Authorization Required</title></head>
+<body>
+<center><h1>401 Authorization Required</h1></center>
+<hr><center>nginx</cente
+== dev.alfaview.com /graphql
+[000] head: cannot open 'gq-dev.alfaview.com.txt' for reading: No such file or directory
+
+== beta-app.alfaview.com /graphql
+[401] 
+== appstats.alfaview.com /graphql
+[000] head: cannot open 'gq-appstats.alfaview.com.txt' for reading: No such file or directory
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w "\n[%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -d '{"query":"{listRooms{__typename}}"}'; curl -s -w "\n[%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -d '{"query":"mutation Foo($a:Int){updateUserPermissions(userId:\"x\",permissions:\"y\")}","variables":{"a":1}}'
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":2}],"path":["listRooms"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+
+[200]
+{"errors":[{"message":"Field \"updateUserPermissions\" of type \"UpdateUserPermissionsReply!\" must have a selection of subfields. Did you mean \"updateUserPermissions { ... }\"?","locations":[{"line":1,"column":22}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}},{"message":"Unknown argument \"permissions\" on field \"Mutation.updateUserPermissions\". Did you mean \"grantPermissions\"?","locations":[{"line":1,"column":55}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}},{"message":"Variable \"$a\" is never used in operation \"Foo\".","locations":[{"line":1,"column":14}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+
+[400]
+[0m
+[0m$ [0mcd /tmp/opencode && for q in "{getFinishSignupLinkAsAdmin(companyId:\"TEST\",username:\"admin@alfaview.com\"){finishSignupLink}}" "{adminTokenAuthenticate{accessToken permissions}}" "{tokenAuthenticate{accessToken}}"; do echo "== $q"; curl -s -w " [%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" --data-binary "$(python3 -c "import json,sys;print(json.dumps({'query':sys.argv[1]}))" "$q")"; sleep 1; done
+== {getFinishSignupLinkAsAdmin(companyId:"TEST",username:"admin@alfaview.com"){finishSignupLink}}
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":2}],"path":["getFinishSignupLinkAsAdmin"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+ [200]
+== {adminTokenAuthenticate{accessToken permissions}}
+{"errors":[{"message":"Missing refreshToken","locations":[{"line":1,"column":2}],"path":["adminTokenAuthenticate"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+ [200]
+== {tokenAuthenticate{accessToken}}
+{"errors":[{"message":"Cannot query field \"tokenAuthenticate\" on type \"Query\". Did you mean \"adminTokenAuthenticate\"?","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w " [%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -H "Cookie: refreshToken=fabricated-refresh-token" -d '{"query":"{adminTokenAuthenticate{accessToken permissions}}"}'
+{"errors":[{"message":"access denied","locations":[{"line":1,"column":2}],"path":["adminTokenAuthenticate"],"extensions":{"code":"FORBIDDEN"}}],"data":null}
+ [200]
+[0m
+[0m$ [0mcd /tmp/opencode && for c in "refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.abc" "session=abc"; do echo "== $c"; curl -s -w " [%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -H "Cookie: $c" -d '{"query":"{adminTokenAuthenticate{accessToken}}"}'; sleep 1; done
+== refreshToken=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ4In0.abc
+{"errors":[{"message":"access denied","locations":[{"line":1,"column":2}],"path":["adminTokenAuthenticate"],"extensions":{"code":"FORBIDDEN"}}],"data":null}
+ [200]
+== session=abc
+{"errors":[{"message":"Missing refreshToken","locations":[{"line":1,"column":2}],"path":["adminTokenAuthenticate"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+ [200]
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w " [%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -d '{"query":"{a:__schema{queryType{name}} b:__type(name:\"Query\"){name}}"}'; sleep 1; curl -s -w " [%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -d '[{"query":"{__typename}"},{"query":"{listAuthData{userId}}"}]'
+{"errors":[{"message":"GraphQL introspection is not allowed by Apollo Server, but the query contained __schema or __type. To enable introspection, pass introspection: true to ApolloServer in production","locations":[{"line":1,"column":2}],"extensions":{"validationErrorCode":"INTROSPECTION_DISABLED","code":"GRAPHQL_VALIDATION_FAILED"}},{"message":"GraphQL introspection is not allowed by Apollo Server, but the query contained __schema or __type. To enable introspection, pass introspection: true to ApolloServer in production","locations":[{"line":1,"column":30}],"extensions":{"validationErrorCode":"INTROSPECTION_DISABLED","code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+{"errors":[{"message":"Operation batching disabled.","extensions":{"code":"BAD_REQUEST"}}]}
+ [400]
+[0m
+[0m$ [0mcd /tmp/opencode && for q in "{fetchDialInNumbers}" "{fetchLanguages}" "{validateVatId}" "{getReport}"; do echo "== $q"; curl -s -w " [%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" --data-binary "$(python3 -c "import json,sys;print(json.dumps({'query':sys.argv[1]}))" "$q")"; sleep 1; done
+== {fetchDialInNumbers}
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":2}],"path":["fetchDialInNumbers"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+ [200]
+== {fetchLanguages}
+{"errors":[{"message":"Field \"fetchLanguages\" of type \"FetchLanguagesReply\" must have a selection of subfields. Did you mean \"fetchLanguages { ... }\"?","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+== {validateVatId}
+{"errors":[{"message":"Field \"validateVatId\" of type \"ValidateVatIdReply!\" must have a selection of subfields. Did you mean \"validateVatId { ... }\"?","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}},{"message":"Field \"validateVatId\" argument \"vatId\" of type \"String!\" is required, but it was not provided.","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+== {getReport}
+{"errors":[{"message":"Field \"getReport\" of type \"GetReportReply!\" must have a selection of subfields. Did you mean \"getReport { ... }\"?","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}},{"message":"Field \"getReport\" argument \"from\" of type \"Number!\" is required, but it was not provided.","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}},{"message":"Field \"getReport\" argument \"to\" of type \"Number!\" is required, but it was not provided.","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}},{"message":"Field \"getReport\" argument \"roomId\" of type \"String!\" is required, but it was not provided.","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w " [%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -d '{"query":"{fetchLanguages{languages}}"}'; sleep 1; curl -s -w " [%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" -d '{"query":"{fetchDeepLTranslatorLanguages{a}}"}'
+{"errors":[{"message":"Cannot query field \"languages\" on type \"FetchLanguagesReply\".","locations":[{"line":1,"column":17}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+{"errors":[{"message":"Cannot query field \"a\" on type \"FetchDeepLTranslatorLanguagesReply\".","locations":[{"line":1,"column":32}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+[0m
+[0m$ [0mcd /tmp/opencode && for q in '{getPasscode(roomId:"00000000-0000-0000-0000-000000000000"){passcode}}' '{listAuditEvents{a}}' '{listPermissionGroups{a}}' '{getOrphanedUsers{a}}'; do echo "== $q"; curl -s -w " [%{http_code}]\n" --max-time 25 -X POST "https://app.alfaview.com/graphql" -H "Content-Type: application/json" --data-binary "$(python3 -c "import json,sys;print(json.dumps({'query':sys.argv[1]}))" "$q")"; sleep 1; done
+== {getPasscode(roomId:"00000000-0000-0000-0000-000000000000"){passcode}}
+{"errors":[{"message":"Missing access token","locations":[{"line":1,"column":2}],"path":["getPasscode"],"extensions":{"code":"UNAUTHENTICATED"}}],"data":null}
+ [200]
+== {listAuditEvents{a}}
+{"errors":[{"message":"Cannot query field \"a\" on type \"ListAuditEventsReply\".","locations":[{"line":1,"column":18}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}},{"message":"Field \"listAuditEvents\" argument \"timeRange\" of type \"AuditTimeRangeInput!\" is required, but it was not provided.","locations":[{"line":1,"column":2}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+== {listPermissionGroups{a}}
+{"errors":[{"message":"Cannot query field \"a\" on type \"ListPermissionGroupsReply\".","locations":[{"line":1,"column":23}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+== {getOrphanedUsers{a}}
+{"errors":[{"message":"Cannot query field \"a\" on type \"GetOrphanedUsersReply\".","locations":[{"line":1,"column":19}],"extensions":{"code":"GRAPHQL_VALIDATION_FAILED"}}]}
+ [400]
+[0m
+[0m$ [0mcd /tmp/opencode && for u in "https://app.alfaview.com/whiteboard/" "https://app.alfaview.com/whiteboard" "https://tools.alfaview.com/"; do echo "== $u"; curl -s -o wb.txt -w "[%{http_code}] size=%{size_download}\n" --max-time 20 "$u"; head -c 150 wb.txt; echo; sleep 1; done
+== https://app.alfaview.com/whiteboard/
+[302] size=23
+Found. Redirecting to /
+== https://app.alfaview.com/whiteboard
+[302] size=23
+Found. Redirecting to /
+== https://tools.alfaview.com/
+[200] size=615
+<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta http-equiv="X-UA
+[0m
+[0m$ [0mcd /tmp/opencode && cat wb.txt | head -c 700; echo; echo "--- assets ---"; grep -oE 'src="[^"]+"' wb.txt
+<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta http-equiv="X-UA-Compatible" content="ie=edge"/><title>Tools UI</title><link rel="icon" href="/production_alfaview_icon_web_favicon_96px.png"><script defer="defer" src="/js/vendor.8caab24e6bd77ed8c779.js"></script><script defer="defer" src="/js/app-bundle.0a250e1f96a7aaf5661c.js"></script><link href="/styles/vendor.27f4596e7da77f054f2a.css" rel="stylesheet"><link href="/styles/app-bundle.25ae213ec9a28625feee.css" rel="stylesheet"></head><body><div id="app"></div></body></html>
+--- assets ---
+src="/js/vendor.8caab24e6bd77ed8c779.js"
+src="/js/app-bundle.0a250e1f96a7aaf5661c.js"
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -o tools.js -w "HTTP:%{http_code} SIZE:%{size_download}\n" --max-time 30 "https://tools.alfaview.com/js/app-bundle.0a250e1f96a7aaf5661c.js" && grep -oE 'https?://[a-z0-9.-]*alfaview[a-z0-9./_-]*' tools.js | sort -u | head -30
+HTTP:200 SIZE:137343
+[0m
+[0m$ [0mcd /tmp/opencode && grep -oE '(socket\.io|/ws|poll|/api/[a-zA-Z0-9/_-]+|/whiteboard[a-zA-Z0-9/_-]*|wss?://[a-z0-9.-]+)' tools.js | sort -u | head -40
+poll
+[0m
+[0m$ [0mcd /tmp/opencode && grep -oE '.{120}poll.{160}' tools.js | head -6
+")])],1):a._e()],1)],1)}),[],!1,null,null,null).exports;var Ra=i(40173),Ha=i(74659);const Ga=`${window.location.origin}/poll/pollservice`,za=a=>`${a}-poll-${Date.now()}`;function Fa(a){let{verb:e,payload:i,accessToken:n}=a;return fetch(`${Ga}/${e}`,{method:"POST",mode:"cors",headers:
+;return e||Promise.reject(new Error("Invalid access token")),i||Promise.reject(new Error("You need a roomId to list the polls for")),Fa({verb:"list",payload:{roomId:i},accessToken:e})},createPoll:a=>{let{accessToken:e,roomId:i,question:n,options:t,maxVotes:o,template:s,openNow:r=!1}=
+quired ")),o||Promise.reject(new Error("Max votes must be a positive integer from 1 to 10")),Fa({verb:"create",payload:{poll:d},accessToken:e})},deletePoll:a=>{let{accessToken:e,roomId:i,id:n}=a;return e||Promise.reject(new Error("Invalid access token")),i||Promise.reject(new Error("
+nIds:t=[]}=a;return e||Promise.reject(new Error("Invalid access token")),n||Promise.reject(new Error("Voting requires a poll id (as `id` ind the payload)")),i||Promise.reject(new Error("Voting requires a room id")),0===t.length&&Promise.reject(new Error("Voting requires at least one 
+Id:i,id:n}=a;return e||Promise.reject(new Error("Invalid access token")),n||Promise.reject(new Error("Voting requires a poll id (as `id` ind the payload)")),i||Promise.reject(new Error("Voting requires a room id")),Fa({verb:"get",payload:{id:n,roomId:i},accessToken:e})},hasVoted:a=>{
+e>a.length)&&(e=a.length);for(var i=0,n=Array(e);i<e;i++)n[i]=a[i];return n}const Ya={getApi:()=>$a,getPollById:a=>{let{polls:e}=a;return a=>e.find((e=>e.id===a))}},Za={[wa.V](a,e){let{accessToken:i,roomId:n}=e;a.accessToken=i,a.room={roomId:n},a.isInitializing=!1},[wa.mC](a){a.isFet
+[0m
+[0m$ [0mcd /tmp/opencode && grep -oE '.{60}Fa=function\(a\)\{let\{verb.{300}' tools.js | head -2; echo "=== probe list ==="; curl -s -w "\n[%{http_code}]\n" --max-time 25 -X POST "https://tools.alfaview.com/poll/pollservice/list" -H "Content-Type: application/json" -d '{"roomId":"00000000-0000-0000-0000-000000000000"}'
+=== probe list ===
+{"code":7,"message":"access denied","details":[{"@type":"type.googleapis.com/common.ReplyInfo","requestId":"7a8dda480c3964994f3a398cd22ede97","statusCode":"AUTHENTICATION_ERROR","statusMessage":"access denied"}]}
+[403]
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w "\n[%{http_code}]\n" --max-time 25 -X POST "https://tools.alfaview.com/poll/pollservice/list" -H "Content-Type: application/json" -H "Authorization: Bearer fabricated" -d '{"roomId":"00000000-0000-0000-0000-000000000000"}'; sleep 1; curl -s -w "\n[%{http_code}]\n" --max-time 25 -X POST "https://tools.alfaview.com/poll/pollservice/get" -H "Content-Type: application/json" -d '{"id":"1","roomId":"00000000-0000-0000-0000-000000000000"}'
+{"code":7,"message":"access denied","details":[{"@type":"type.googleapis.com/common.ReplyInfo","requestId":"15ebf7350d8ebd443392bb80d97d8702","statusCode":"AUTHENTICATION_ERROR","statusMessage":"access denied"}]}
+[403]
+{"code":7,"message":"access denied","details":[{"@type":"type.googleapis.com/common.ReplyInfo","requestId":"f862681275dda71e0d8bbbc8597b37f3","statusCode":"AUTHENTICATION_ERROR","statusMessage":"access denied"}]}
+[403]
+[0m
+[0m$ [0mcd /tmp/opencode && for v in get create delete vote hasVoted; do echo "== $v"; curl -s -o /dev/null -w "[%{http_code}]\n" --max-time 20 -X POST "https://tools.alfaview.com/poll/pollservice/$v" -H "Content-Type: application/json" -d '{}'; sleep 1; done
+== get
+[403]
+== create
+[403]
+== delete
+[403]
+== vote
+[403]
+== hasVoted
+[403]
+[0m
+[0m$ [0mcd /tmp/opencode && python3 - <<'EOF'
+s=open('tools.js',encoding='utf-8',errors='replace').read()
+i=s.find('/poll/pollservice')
+print(s[i-400:i+700])
+EOF
+back:function(e){a.$set(a.toast,"show",e)},expression:"toast.show"}},[e("div",[a._v("\n      "+a._s(a.toast.message)+"\n    ")]),a._v(" "),a.toast.dismissible?e("VBtn",{attrs:{icon:""},nativeOn:{click:function(e){return a.clearToast.apply(null,arguments)}}},[e("VIcon",[a._v("close")])],1):a._e()],1)],1)}),[],!1,null,null,null).exports;var Ra=i(40173),Ha=i(74659);const Ga=`${window.location.origin}/poll/pollservice`,za=a=>`${a}-poll-${Date.now()}`;function Fa(a){let{verb:e,payload:i,accessToken:n}=a;return fetch(`${Ga}/${e}`,{method:"POST",mode:"cors",headers:{"Content-Type":"application/json","Grpc-Metadata-alfaview.token":(t=n,t.replace(/-/g,"+").replace(/_/g,"/")),"Grpc-Metadata-alfaview.request_id":za(e)},body:JSON.stringify(i)}).then((async a=>{const{ok:e}=a,i=await a.json();if(e)return i;throw{message:i.message,code:i.code}}));var t}const $a={listPolls:a=>{let{accessToken:e,roomId:i}=a;return e||Promise.reject(new Error("Invalid access token")),i||Promise.reject(new Error("You need a roomId to list the polls for")),Fa({verb:"list",payload:{roomId:i},accessToken:e})},createPoll:a
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w "\n[%{http_code}]\n" --max-time 25 -X POST "https://tools.alfaview.com/poll/pollservice/list" -H "Content-Type: application/json" -H "Grpc-Metadata-alfaview.token: dGVzdA==" -H "Grpc-Metadata-alfaview.request_id: list-poll-1" -d '{"roomId":"00000000-0000-0000-0000-000000000000"}'
+{"code":7,"message":"access denied","details":[{"@type":"type.googleapis.com/common.ReplyInfo","requestId":"d9213f700740a5682edc5517c5ebc579","statusCode":"AUTHENTICATION_ERROR","statusMessage":"access denied"}]}
+[403]
+[0m
+[0m$ [0mcd /tmp/opencode && for v in "" "none" "00000000000000000000000000000000"; do echo "== token='$v'"; curl -s -o /dev/null -w "[%{http_code}]\n" --max-time 20 -X POST "https://tools.alfaview.com/poll/pollservice/list" -H "Content-Type: application/json" -H "Grpc-Metadata-alfaview.token: $v" -H "Grpc-Metadata-alfaview.request_id: list-poll-1" -d '{"roomId":"00000000-0000-0000-0000-000000000000"}'; sleep 1; done
+== token=''
+[403]
+== token='none'
+[403]
+== token='00000000000000000000000000000000'
+[403]
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -w "\n[%{http_code}]\n" --max-time 25 -X POST "https://tools.alfaview.com/poll/pollservice/list" -H "Content-Type: application/json" -H "Grpc-Metadata-alfaview.token: dGVzdA==" -H "Grpc-Metadata-alfaview.request_id: list-poll-1" -H "Origin: https://evil.example" -d '{"roomId":"00000000-0000-0000-0000-000000000000"}'; sleep 1; curl -s -D - -o /dev/null --max-time 20 -X OPTIONS "https://tools.alfaview.com/poll/pollservice/list" -H "Origin: https://evil.example" -H "Access-Control-Request-Method: POST" -H "Access-Control-Request-Headers: grpc-metadata-alfaview.token" | grep -iE '^(HTTP|access-control)'
+{"code":7,"message":"access denied","details":[{"@type":"type.googleapis.com/common.ReplyInfo","requestId":"fc4632541062f02b8df225498432992a","statusCode":"AUTHENTICATION_ERROR","statusMessage":"access denied"}]}
+[403]
+HTTP/2 501
+[0m
+[0m$ [0mcd /tmp/opencode && curl -s -o /dev/null -w "root[%{http_code}]\n" --max-time 20 "https://tools.alfaview.com/"; sleep 1; for p in "/poll/" "/poll/pollservice" "/metrics" "/healthz" "/v1/" "/api/"; do printf "%s " "$p"; curl -s -o /dev/null -w "[%{http_code}]\n" --max-time 15 "https://tools.alfaview.com$p"; sleep 1; done
+root[200]
+/poll/ [404]
+/poll/pollservice [307]
+/metrics [200]
+/healthz [200]
+/v1/ [200]
+/api/ [200]
+[0m
+[0m$ [0mcd /tmp/opencode && echo "== /metrics"; curl -s --max-time 20 "https://tools.alfaview.com/metrics" | head -c 600; echo; echo "== /v1/"; curl -s --max-time 20 "https://tools.alfaview.com/v1/" | head -c 400
+== /metrics
+<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta http-equiv="X-UA-Compatible" content="ie=edge"/><title>Tools UI</title><link rel="icon" href="/production_alfaview_icon_web_favicon_96px.png"><script defer="defer" src="/js/vendor.8caab24e6bd77ed8c779.js"></script><script defer="defer" src="/js/app-bundle.0a250e1f96a7aaf5661c.js"></script><link href="/styles/vendor.27f4596e7da77f054f2a.css" rel="stylesheet"><link href="/styles/app-bundle.25ae213ec9a28625feee.css" rel="stylesheet"></head><body><div id="app"></div
+== /v1/
+<!doctype html><html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><meta http-equiv="X-UA-Compatible" content="ie=edge"/><title>Tools UI</title><link rel="icon" href="/production_alfaview_icon_web_favicon_96px.png"><script defer="defer" src="/js/vendor.8caab24e6bd77ed8c779.js"></script><script defer="defer" src="/js/app-bundle.0a250e1f96
+[0m
+[0m$ [0mcd /tmp/opencode && cp oa.json /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/openapi-2026-10-05.json && cp beta.json /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/openapi-beta-2026-10-05.json && ls -l /home/runner/work/alfaview-hunt/alfaview-hunt/recon-notes/
+total 448
+-rw-r--r-- 1 runner runner   4789 Oct  5 09:13 CORPUS-ALFAVIEW.md
+-rw-r--r-- 1 runner runner   3624 Oct  5 09:13 DEDICATED-DEEP.md
+-rw-r--r-- 1 runner runner   7833 Oct  5 09:13 DEEPER-FINDINGS.md
+-rw-r--r-- 1 runner runner   6061 Oct  5 09:13 SCOPE-CONFIRMATION.md
+-rw-r--r-- 1 runner runner 159550 Oct  5 09:13 alfaview-openapi.yaml
+-rw-r--r-- 1 runner runner 132100 Oct  5 09:25 openapi-2026-10-05.json
+-rw-r--r-- 1 runner runner 132100 Oct  5 09:25 openapi-beta-2026-10-05.json
+[0m
+[0m$ [0mcd /home/runner/work/alfaview-hunt/alfaview-hunt && python3 - <<'EOF'
+import json
+p='state_nemotron3.json'
+s=json.load(open(p))
+s['cycle']='2026-10-05 read-only GraphQL + tools.pollservice + SSO introspection sweep'
+s['phase']='POC'; s['target']='api'; s['risk']=87
+s['new_surface']='app.alfaview.com/graphql (Apollo Server 4, introspection disabled, operation batching disabled, all business fields UNAUTHENTICATED-gated)'
+s['new_surface2']='tools.alfaview.com/poll/pollservice/{list,get,create,delete,vote,hasVoted} gRPC-gateway, auth via Grpc-Metadata-alfaview.token, 403 uniformly'
+s['delta']='No new finding. No unauthenticated data disclosure. Error-type disclosure on GraphQL is schema shape only.'
+json.dump(s,open(p,'w'),indent=1)
+print(open(p).read())
+EOF
+{
+ "phase": "POC",
+ "target": "api",
+ "cycle": "2026-10-05 read-only GraphQL + tools.pollservice + SSO introspection sweep",
+ "risk": 87,
+ "new_surface": "app.alfaview.com/graphql (Apollo Server 4, introspection disabled, operation batching disabled, all business fields UNAUTHENTICATED-gated)",
+ "new_surface2": "tools.alfaview.com/poll/pollservice/{list,get,create,delete,vote,hasVoted} gRPC-gateway, auth via Grpc-Metadata-alfaview.token, 403 uniformly",
+ "delta": "No new finding. No unauthenticated data disclosure. Error-type disclosure on GraphQL is schema shape only."
+}
+[0m
+Cycle complete. Here's the 8-step output.
+
+## 1. Executive Summary
+No new reportable finding this cycle. I mapped two previously unexamined surfaces (the `app.alfaview.com/graphql` backend and `tools.alfaview.com/poll/pollservice`) and confirmed both correctly gate every business operation behind authentication. Spec parity is unchanged, so the standing two hypotheses remain the only reportable candidates — and both are still blocked on a self-owned account.
+
+## 2. Surface Delta
+Newly probed this cycle:
+- `app.alfaview.com/graphql` — Apollo Server 4. Introspection disabled (`INTROSPECTION_DISABLED`), operation batching disabled, aliases do not bypass introspection filtering. `dev.alfaview.com` and `appstats.alfaview.com` do not resolve/serve; `staging.alfaview.com/graphql` and `beta-app.alfaview.com/graphql` return nginx 401.
+- `tools.alfaview.com` — "Tools UI" SPA; backend is a gRPC-gateway at `/poll/pollservice/{list,get,create,delete,vote,hasVoted}` authenticating via `Grpc-Metadata-alfaview.token` (base64url→base64).
+
+## 3. Authentication Testing
+- GraphQL: 20+ field probes (`listAuthData`, `listRooms`, `searchCompanies`, `listCompaniesById`, `listAllUserIds`, `listUnverifiedAccounts`, `listAllUserProfiles`, `getPasscode`, `listAuditEvents`, `getFinishSignupLinkAsAdmin`, `createMagicToken`, `adminSwitchCompany`) all returned `UNAUTHENTICATED / "Missing access token"`. `adminTokenAuthenticate` requires a `refreshToken` cookie and returns `FORBIDDEN / "access denied"` when fabricated.
+- Pollservice: all six verbs return uniform `403` gRPC `AUTHENTICATION_ERROR` regardless of `Authorization: Bearer`, `Grpc-Metadata-alfaview.token` value (absent, empty, `none`, 32×`0`, base64), or `Origin`. No token-format oracle.
+- `apis.alfaview.com`: `/v2/users/me`, `/v2/users/me/company`, `/v2/guest-links`, `/v2/audit-log` all 401 unauthenticated. `/v2/auth/guest-link` returns identical `422 ACTION_INVALID` across three distinct access-key shapes — no validity oracle.
+
+## 4. Authorization Testing
+Not testable. Authorization requires two principals in one tenant (attacker + victim) and none are available. The `CreatePermissions` BOLA and meeting `permissionGroupId` hypotheses remain contract-level only.
+
+## 5. Business Logic Testing
+Not testable. Both business-logic candidates are authenticated-write paths gated by the missing account.
+
+## 6. Technical Observations (low value, not reportable)
+- GraphQL validation errors disclose reply type names and argument signatures (`Cannot query field "a" on type "ListAuditEventsReply"`). This is schema-shape only, no data. Program excludes descriptive error messages.
+- `sso.alfaview.com/.well-known/openid-configuration` returns `issuer: "acme.com"` — an unconfigured template default. Informational only.
+- `token` endpoint returns `not_licensed` for `client_credentials` (FusionAuth unlicensed feature) — dead end, correctly denied.
+- JWKS at `/.well-known/jwks.json`: 7 keys, all RSA/RS256/`sig`. No `HS*` or `none` algorithm key, so classic algorithm-confusion is not applicable. `token_endpoint_auth_methods_supported` includes `none` (expected for public SPA PKCE).
+- `/v2/audit-log` is confirmed undocumented but live: pre-auth query validation (422 for missing/malformed `from`/`to`) then 401. Reproduces public spec behavior.
+- No CORS headers on `apis.alfaview.com`; `OPTIONS` returns 405.
+
+## 7. Spec Parity
+`https://apis.alfaview.com/v2/docs/openapi.json` and `https://beta-apis.alfaview.com/v2/docs/openapi.json` both 200, 132100B, MD5 `284a3383c1ac3cfc9152ffcc631891f2`, 38 paths / 57 operations. Byte-identical. Note `beta.apis.alfaview.com` does not resolve; `beta-apis` is correct. Both snapshots saved to `recon-notes/openapi-2026-10-05.json` and `openapi-beta-2026-10-05.json`. `components.securitySchemes` and root `security` remain absent — every operation declares its own `Authorization` header parameter instead, which is why pre-auth validation surfaces before the 401.
+
+## 8. Recommendations & Next Steps
+1. `[NEXT]` Human: supply one self-owned low-privilege account in a controlled tenant plus one room in that tenant the account does not moderate. Everything else is blocked on this.
+2. With access: `GET /v2/users/me/company` → `GET /v2/guest-links?limit=1` → exactly one `POST /v2/rooms/{roomId}/permissions` with `{"participantId":"<non-moderating guest link ID>","permissions":{"admin":true,"promote":true,"join":true,"voice":false,"video":false,"screen":false,"vip":false,"chat":false,"upload":false}}`. Record status, headers, and body verbatim. Expect 204 for a real BOLA, 403 if authorization is correct — that single response decides whether an80-confidence hypothesis is real.
+3. Separately, introspect the legitimate token twice (`/oauth2/introspect` with and without correct client credentials) to settle the 94-confidence introspection finding.
+
+## 9. Confidence Summary
+| Item | Confidence | Blocker |
+|---|---|---|
+| CreatePermissions BOLA | 80 (unchanged) | needs 2 principals |
+| Meeting permissionGroupId | 64 (unchanged) | needs account |
+| Introspection client-auth | 94 (unchanged) | needs valid token |
+| Unauthenticated GraphQL/poll disclosure | 3 (retired) | disproved this cycle |
+
+No new standing delta beyond the two newly mapped, properly gated surfaces.

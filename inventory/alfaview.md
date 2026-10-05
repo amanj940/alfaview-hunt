@@ -1447,3 +1447,7 @@ www.alfaview.com
 - CHANGED `apis.alfaview.com`: validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI `components.securitySchemes={}`, `security=null`
 - CHANGED `apis.alfaview.com/v2/users/invitation{s}`: OpenAPI declares POST only; live server advertises `Allow: DELETE,POST` on `/v2/users/invitation` and DELETE-only on undocumented `/v2/users/invitations`; b
 - CHANGED `test.alfaview.com`: alfacheck v483102 (4 platforms) unsigned; index page no sha256/signatures — supply-chain hardening absent across releases
+
+## 2026-10-05 09:26:20 UTC
+- NEW NO_DELTA @ full surface: OpenAPI MD5 `284a3383` (132100B, 38 paths, 57 ops) stable 4+ cycles; byte-identical on beta-apis. sso.alfaview.com OIDC 200/2169B md5 `f78a08fc` (issuer=acme.com, introspectio
+- CHANGED Inventory 100% probed — 55 dedicated hosts, 31 exhausted, zero genuinely-unprobed hosts remain.
