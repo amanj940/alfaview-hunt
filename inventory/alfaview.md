@@ -1429,3 +1429,21 @@ www.alfaview.com
 ## 2026-10-04 20:46:07 UTC
 
 ## 2026-10-04 23:34:42 UTC
+
+## 2026-10-05 02:24:11 UTC
+- NEW apis.alfaview.com OpenAPI md5 rotated to 284a3383 (132100B, 38 paths, 57 ops) — byte-identical on beta-apis.alfaview.com (delta path /v2/users/me/company identified)
+- NEW apis.alfaview.com GET /v2/audit-log — LIVE, UNDOCUMENTED 39th path absent from OpenAPI; pre-auth query binder complete (10 GET ops validate pre-auth)
+- CHANGED tools.alfaview.com/whiteboard/ — second unmapped RPC backend confirmed (47B gRPC envelope vs poll 45B jsonpb), staging mirror byte-identical
+- NEW `apis.alfaview.com/v2/users/me/company` (GetOwnCompany) confirmed as 38th OpenAPI path — sole 200-response supplier of `companyId` across 57 ops; enables guest-link chain execution by authorized teste
+- NEW `apis.alfaview.com GET /v2/audit-log` live undocumented 39th path; pre-auth query binder complete (10 GET ops now validate pre-auth); mirrors GraphQL `ListAuditEvents`
+- NEW `apis.alfaview.com POST /v2/rooms` — `RoomCreate.permissions` exposes `participantId` namespace collision with `RoomPermissions.participantId`
+- NEW `apis.alfaview.com PATCH /v2/rooms/{id}` — `RoomUpdate.quotas` description bare ("The quotas for the room"), no enum/constraints; mass-assignment surface on quota fields undocumented
+- NEW `apis.alfaview.com POST /v2/meetings` — second meeting-scoped bulk credential-minting path (`guestLinks`/`groupLinks` arrays with caller-supplied `permissionGroupId`); three distinct issuance routes w
+- NEW `apis.alfaview.com POST /v2/rooms/{roomId}/permissions` (CreatePermissions) — BOLA write with polymorphic `participantId` (user ID / guest link ID / group link ID) granting `admin`+`promote`; scope on
+- NEW `tools.alfaview.com/whiteboard/` — second unmapped RPC backend confirmed by controlled differential (47B gRPC envelope vs poll's 45B jsonpb); distinct marshaller; no auth challenge; zero client refere
+- CHANGED `apis.alfaview.com` OpenAPI md5 stable at `284a3383c1ac3cfc9152ffcc631891f2` (132100B, 38 paths, 57 ops) for 4+ cycles; byte-identical on beta-apis.alfaview.com
+- CHANGED `sso.alfaview.com/oauth2/introspect` — 30+ consecutive stable cycles: fabricated `client_id` accepted on POST-body and Basic channels (200 `{"active":false}`); `token_endpoint_auth_methods_supported` 
+- CHANGED `app.alfaview.com` public bundle stable at `app.min.67e8a68d4318b34ca241.js` (md5 `2cb9128353b1f7444e222b4f61e4ffa5`) carrying `adminSwitchCompany` mutation + hardcoded tenant IDs (`alfatraining-inter
+- CHANGED `apis.alfaview.com`: validation-before-auth on 9/26 GET ops (query-param routes); path-param routes correctly 401; root cause: OpenAPI `components.securitySchemes={}`, `security=null`
+- CHANGED `apis.alfaview.com/v2/users/invitation{s}`: OpenAPI declares POST only; live server advertises `Allow: DELETE,POST` on `/v2/users/invitation` and DELETE-only on undocumented `/v2/users/invitations`; b
+- CHANGED `test.alfaview.com`: alfacheck v483102 (4 platforms) unsigned; index page no sha256/signatures — supply-chain hardening absent across releases
